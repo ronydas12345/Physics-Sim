@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Launch Angle vs. Range · AP Physics 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <p class="kicker">AP Physics 1 · Projectile motion</p>
+          <h1>Launch Angle vs. Range</h1>
+        </div>
+        <p class="guiding">
+          Launch and landing heights are equal, air resistance is off, and
+          gravity is constant. Change the angle, collect data, and find which
+          launch produces the greatest horizontal range.
+        </p>
+      </header>
+
+      <div class="workspace">
+        <section class="stage" aria-label="Projectile simulation">
+          <canvas
+            id="sim-canvas"
+            role="img"
+            aria-label="Two-dimensional projectile motion on flat ground"
+          ></canvas>
+          <div class="transport">
+            <button type="button" id="btn-launch" class="btn primary">Launch</button>
+            <button type="button" id="btn-pause" class="btn">Pause</button>
+            <button type="button" id="btn-reset" class="btn">Reset</button>
+            <span class="transport-gap"></span>
+            <button type="button" id="btn-record" class="btn">Record Trial</button>
+            <button type="button" id="btn-clear" class="btn ghost">Clear Trials</button>
+          </div>
+        </section>
+
+        <aside class="rail">
+          <section class="card">
+            <h2>Controls</h2>
+            <div class="control">
+              <div class="control-head">
+                <label for="angle">Launch Angle</label>
+                <span id="angle-readout" class="readout">45°</span>
+              </div>
+              <input id="angle" type="range" min="0" max="90" step="1" value="45" />
+              <div class="presets" role="group" aria-label="Common investigation angles">
+                <button type="button" class="chip" data-angle="30">30°</button>
+                <button type="button" class="chip" data-angle="45">45°</button>
+                <button type="button" class="chip" data-angle="60">60°</button>
+                <button type="button" class="chip" data-angle="90">90°</button>
+              </div>
+            </div>
+            <div class="control">
+              <div class="control-head">
+                <label for="velocity">Initial Velocity</label>
+                <span id="velocity-readout" class="readout">20 m/s</span>
+              </div>
+              <input id="velocity" type="range" min="1" max="50" step="1" value="20" />
+            </div>
+            <div class="control">
+              <div class="control-head">
+                <label for="gravity">Gravity</label>
+                <span id="gravity-readout" class="readout">9.8 m/s²</span>
+              </div>
+              <input id="gravity" type="range" min="1" max="20" step="0.1" value="9.8" />
+            </div>
+          </section>
+
+          <section class="card data-card">
+            <h2>Live Measurements</h2>
+            <dl class="metrics" id="live-metrics">
+              <div><dt>Time</dt><dd id="m-t">0.00 s</dd></div>
+              <div><dt>X Position</dt><dd id="m-x">0.0 m</dd></div>
+              <div><dt>Y Position</dt><dd id="m-y">0.0 m</dd></div>
+              <div><dt>X Velocity</dt><dd id="m-vx">0.0 m/s</dd></div>
+              <div><dt>Y Velocity</dt><dd id="m-vy">0.0 m/s</dd></div>
+              <div><dt>Speed</dt><dd id="m-speed">0.0 m/s</dd></div>
+            </dl>
+            <h3 class="subhead">After Landing</h3>
+            <dl class="metrics finals" id="final-metrics">
+              <div><dt>Time of Flight</dt><dd id="m-tof">—</dd></div>
+              <div><dt>Maximum Height</dt><dd id="m-hmax">—</dd></div>
+              <div><dt>Range</dt><dd id="m-range">—</dd></div>
+            </dl>
+            <p id="debug-line" class="debug" hidden></p>
+          </section>
+
+          <section class="card challenge-card">
+            <div class="card-head">
+              <h2>Challenge Mode</h2>
+              <label class="switch">
+                <input id="challenge-toggle" type="checkbox" />
+                <span>On</span>
+              </label>
+            </div>
+            <div id="challenge-body" class="challenge-body" hidden>
+              <p class="challenge-q">
+                What launch angle will produce approximately this range?
+              </p>
+              <p class="challenge-target">
+                Target Range: <strong id="challenge-range">35.0 m</strong>
+              </p>
+              <p class="muted" id="challenge-constraints">
+                v<sub>0</sub> = 20 m/s · g = 9.8 m/s²
+              </p>
+              <p id="challenge-feedback" class="feedback">Launch to test your angle. The solution stays hidden until you try.</p>
+              <div class="challenge-actions">
+                <button type="button" id="btn-reveal" class="btn ghost" disabled>Reveal angles</button>
+                <button type="button" id="btn-new-target" class="btn ghost">New target</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card notes-card">
+            <button type="button" id="notes-toggle" class="notes-toggle" aria-expanded="false">
+              Physics Notes
+              <span class="chevron" aria-hidden="true"></span>
+            </button>
+            <div id="notes" class="notes" hidden>
+              <h3>Horizontal motion</h3>
+              <p>No forces act horizontally, so <span class="eq">a<sub>x</sub> = 0</span> and <span class="eq">v<sub>x</sub></span> is constant.</p>
+              <h3>Vertical motion</h3>
+              <p>Gravity is the only vertical acceleration: <span class="eq">a<sub>y</sub> = −g</span>. Vertical velocity changes continuously and is zero at the apex.</p>
+              <h3>Independence of motion</h3>
+              <p>Horizontal and vertical motion can be analyzed separately. The two components combine to make the curved path you see.</p>
+              <h3>Key idea</h3>
+              <p>Launch angle splits the same initial speed into different components:</p>
+              <p class="eq-block">v<sub>x</sub> = v<sub>0</sub> cos θ<br />v<sub>y</sub> = v<sub>0</sub> sin θ</p>
+              <p>A steeper angle buys more hang time and height, but less horizontal speed. Complementary angles such as 30° and 60° trade those effects and can land equally far.</p>
+            </div>
+          </section>
+
+          <label class="teacher">
+            <input id="debug-toggle" type="checkbox" />
+            Teacher view: compare simulation to equations
+          </label>
+        </aside>
+      </div>
+
+      <section class="lab-bottom">
+        <div class="graphs">
+          <div class="graph-wrap">
+            <h2>Launch Angle vs. Horizontal Range</h2>
+            <canvas id="graph-range" width="640" height="280" aria-label="Range versus launch angle"></canvas>
+            <p class="caption">R(θ) = v₀² sin(2θ) / g · Peak at 45° when heights are equal.</p>
+          </div>
+          <div class="graph-wrap">
+            <h2>Launch Angle vs. Maximum Height</h2>
+            <canvas id="graph-height" width="640" height="280" aria-label="Maximum height versus launch angle"></canvas>
+            <p class="caption">H(θ) = v₀² sin²(θ) / (2g) · Height keeps increasing toward 90°.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head">
+            <h2>Trial Comparison</h2>
+            <p class="muted">Record 30°, 45°, and 60° with the same speed and gravity.</p>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Trial</th>
+                  <th>Angle</th>
+                  <th>Velocity</th>
+                  <th>Gravity</th>
+                  <th>Time</th>
+                  <th>Max Height</th>
+                  <th>Range</th>
+                </tr>
+              </thead>
+              <tbody id="trial-body">
+                <tr class="empty-row">
+                  <td colspan="7">No trials yet. Launch, then record a trial to start a data table.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "ap-physics-1-projectile-motion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AP Physics 1 interactive lab: launch angle vs. projectile range",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

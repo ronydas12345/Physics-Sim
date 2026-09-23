@@ -1,0 +1,412 @@
+import {
+  analyzeLaunch,
+  analytical,
+  anglesForRange,
+  createLaunchState,
+  launch as startLaunch,
+  pause as pauseSim,
+  predictedTrajectory,
+  rangeError,
+  resume as resumeSim,
+  step,
+  sweepAngles,
+} from "/lib/projectile.js";
+import { renderGraphs } from "./graphs.js";
+import { renderSimulation } from "./render.js";
+
+const $ = (id) => document.getElementById(id);
+
+const ui = {
+  v0: 20,
+  angleDeg: 45,
+  g: 9.8,
+};
+
+let sim = createLaunchState(ui);
+let trials = [];
+let predicted = predictedTrajectory(ui);
+let ghost = [];
+let debugMode = false;
+let challenge = {
+  active: false,
+  targetRange: 35,
+  v0: 20,
+  g: 9.8,
+  attempted: false,
+  revealed: false,
+  lastMeasured: null,
+};
+
+const els = {
+  canvas: $("sim-canvas"),
+  graphRange: $("graph-range"),
+  graphHeight: $("graph-height"),
+  angle: $("angle"),
+  velocity: $("velocity"),
+  gravity: $("gravity"),
+  angleRead: $("angle-readout"),
+  velRead: $("velocity-readout"),
+  gRead: $("gravity-readout"),
+  launch: $("btn-launch"),
+  pause: $("btn-pause"),
+  reset: $("btn-reset"),
+  record: $("btn-record"),
+  clear: $("btn-clear"),
+  trialBody: $("trial-body"),
+  challengeToggle: $("challenge-toggle"),
+  challengeBody: $("challenge-body"),
+  challengeRange: $("challenge-range"),
+  challengeFeedback: $("challenge-feedback"),
+  reveal: $("btn-reveal"),
+  newTarget: $("btn-new-target"),
+  notesToggle: $("notes-toggle"),
+  notes: $("notes"),
+  debugToggle: $("debug-toggle"),
+  debugLine: $("debug-line"),
+};
+
+function fmt(n, digits) {
+  if (!Number.isFinite(n)) return "—";
+  return n.toFixed(digits);
+}
+
+function paramsMatch(a, b) {
+  return a.v0 === b.v0 && a.angleDeg === b.angleDeg && a.g === b.g;
+}
+
+function flightLocked() {
+  return sim.isRunning || (sim.landed && sim.trajectory.length > 1);
+}
+
+function syncReadouts() {
+  els.angleRead.textContent = `${ui.angleDeg}°`;
+  els.velRead.textContent = `${ui.v0} m/s`;
+  els.gRead.textContent = `${ui.g.toFixed(1)} m/s²`;
+  for (const chip of document.querySelectorAll(".chip[data-angle]")) {
+    chip.classList.toggle("active", Number(chip.dataset.angle) === ui.angleDeg);
+  }
+}
+
+function setControlsEnabled() {
+  const lockVG = challenge.active;
+  els.velocity.disabled = lockVG;
+  els.gravity.disabled = lockVG;
+}
+
+function updateLive() {
+  $("m-t").textContent = `${fmt(sim.t, 2)} s`;
+  $("m-x").textContent = `${fmt(sim.x, 1)} m`;
+  $("m-y").textContent = `${fmt(Math.max(0, sim.y), 1)} m`;
+  $("m-vx").textContent = `${fmt(sim.vx, 1)} m/s`;
+  $("m-vy").textContent = `${fmt(sim.vy, 1)} m/s`;
+  $("m-speed").textContent = `${fmt(sim.speed, 1)} m/s`;
+
+  if (sim.landed) {
+    $("m-tof").textContent = `${fmt(sim.measuredTimeOfFlight, 2)} s`;
+    $("m-hmax").textContent = `${fmt(sim.measuredMaxHeight, 1)} m`;
+    $("m-range").textContent = `${fmt(sim.measuredRange, 1)} m`;
+  } else {
+    $("m-tof").textContent = "—";
+    $("m-hmax").textContent = "—";
+    $("m-range").textContent = "—";
+  }
+
+  if (debugMode) {
+    const report = analyzeLaunch({ v0: sim.v0, angleDeg: sim.angleDeg, g: sim.g });
+    const a = report.analytical;
+    const s = report.simulated;
+    els.debugLine.hidden = false;
+    els.debugLine.textContent =
+      `Equations  T=${fmt(a.timeOfFlight, 2)} s  H=${fmt(a.maxHeight, 2)} m  R=${fmt(a.range, 2)} m   ·   ` +
+      `Simulated  T=${fmt(s.timeOfFlight, 2)} s  H=${fmt(s.maxHeight, 2)} m  R=${fmt(s.range, 2)} m`;
+  } else {
+    els.debugLine.hidden = true;
+  }
+}
+
+function refreshPredicted() {
+  predicted = predictedTrajectory(ui);
+  if (flightLocked() && !paramsMatch(sim, ui)) {
+    ghost = predictedTrajectory(ui);
+  } else {
+    ghost = [];
+  }
+}
+
+function closedForUi() {
+  return analytical(ui.v0, ui.angleDeg, ui.g);
+}
+
+function drawSim() {
+  renderSimulation(els.canvas, {
+    sim,
+    pending: ui,
+    predicted,
+    ghost,
+    challenge,
+  });
+}
+
+function drawCharts() {
+  const curve = sweepAngles({ v0: ui.v0, g: ui.g, stepDeg: 1 }).points;
+  const closed = closedForUi();
+  renderGraphs({
+    rangeCanvas: els.graphRange,
+    heightCanvas: els.graphHeight,
+    curve,
+    trials,
+    currentAngle: ui.angleDeg,
+    currentRange: closed.range,
+    currentHeight: closed.maxHeight,
+  });
+}
+
+function drawAll() {
+  drawSim();
+  drawCharts();
+}
+
+function renderTrials() {
+  if (!trials.length) {
+    els.trialBody.innerHTML =
+      '<tr class="empty-row"><td colspan="7">No trials yet. Launch, then record a trial to start a data table.</td></tr>';
+    return;
+  }
+  const maxRange = Math.max(...trials.map((t) => t.range));
+  els.trialBody.innerHTML = trials
+    .map((t) => {
+      const best = t.range === maxRange && maxRange > 0 ? "best" : "";
+      return `<tr class="${best}">
+        <td>${t.id}</td>
+        <td>${t.angleDeg}°</td>
+        <td>${t.v0} m/s</td>
+        <td>${t.g.toFixed(1)}</td>
+        <td>${fmt(t.time, 2)} s</td>
+        <td>${fmt(t.maxHeight, 1)} m</td>
+        <td>${fmt(t.range, 1)} m</td>
+      </tr>`;
+    })
+    .join("");
+}
+
+function applyUiFromSliders() {
+  ui.angleDeg = Number(els.angle.value);
+  ui.v0 = Number(els.velocity.value);
+  ui.g = Number(els.gravity.value);
+  if (!sim.isRunning && !sim.landed && sim.t === 0) {
+    sim = createLaunchState(ui);
+  }
+  syncReadouts();
+  refreshPredicted();
+  updateLive();
+  drawAll();
+}
+
+function doLaunch() {
+  sim = startLaunch(createLaunchState(ui));
+  acc = 0;
+  els.pause.textContent = "Pause";
+  refreshPredicted();
+  updateLive();
+  drawAll();
+}
+
+function doPause() {
+  if (!sim.isRunning || sim.landed) return;
+  if (sim.isPaused) {
+    resumeSim(sim);
+    els.pause.textContent = "Pause";
+  } else {
+    pauseSim(sim);
+    els.pause.textContent = "Resume";
+  }
+}
+
+function doReset() {
+  sim = createLaunchState(ui);
+  acc = 0;
+  els.pause.textContent = "Pause";
+  refreshPredicted();
+  updateLive();
+  drawAll();
+}
+
+function recordTrial() {
+  const report = analyzeLaunch({ v0: ui.v0, angleDeg: ui.angleDeg, g: ui.g });
+  const useFlight = sim.landed && paramsMatch(sim, ui);
+  trials.push({
+    id: trials.length + 1,
+    angleDeg: ui.angleDeg,
+    v0: ui.v0,
+    g: ui.g,
+    time: useFlight ? sim.measuredTimeOfFlight : report.simulated.timeOfFlight,
+    maxHeight: useFlight ? sim.measuredMaxHeight : report.simulated.maxHeight,
+    range: useFlight ? sim.measuredRange : report.simulated.range,
+  });
+  renderTrials();
+  drawAll();
+}
+
+function clearTrials() {
+  trials = [];
+  renderTrials();
+  drawAll();
+}
+
+function setAngle(value) {
+  els.angle.value = String(value);
+  applyUiFromSliders();
+}
+
+function challengeSolution() {
+  return anglesForRange(challenge.targetRange, challenge.v0, challenge.g);
+}
+
+function describeChallengeFeedback() {
+  if (!challenge.attempted) {
+    els.challengeFeedback.className = "feedback";
+    els.challengeFeedback.textContent =
+      "Launch to test your angle. The solution stays hidden until you try.";
+    els.reveal.disabled = true;
+    return;
+  }
+  const err = rangeError(challenge.lastMeasured, challenge.targetRange);
+  const close = err.abs <= 1.0;
+  els.challengeFeedback.className = `feedback ${close ? "hit" : "miss"}`;
+  let text = `Your range: ${fmt(challenge.lastMeasured, 1)} m. Target: ${fmt(challenge.targetRange, 1)} m. Difference: ${fmt(err.abs, 1)} m.`;
+  if (close) text += " Close enough — that landing is on target.";
+  else text += " Complementary angles (θ and 90° − θ) can produce the same range.";
+  if (challenge.revealed) {
+    const solved = challengeSolution();
+    if (solved.possible) {
+      const angles = solved.angles.map((a) => `${a.toFixed(1)}°`).join(" and ");
+      text += ` Possible launch angles: ${angles}.`;
+    } else {
+      text += " That target is beyond the maximum range for these settings.";
+    }
+  }
+  els.challengeFeedback.textContent = text;
+  els.reveal.disabled = false;
+}
+
+function onLanded() {
+  if (challenge.active && sim.v0 === challenge.v0 && sim.g === challenge.g) {
+    challenge.attempted = true;
+    challenge.lastMeasured = sim.measuredRange;
+    describeChallengeFeedback();
+  }
+}
+
+function newTarget() {
+  const max = analytical(challenge.v0, 45, challenge.g).range;
+  const lo = max * 0.45;
+  const hi = max * 0.92;
+  challenge.targetRange = Math.round((lo + Math.random() * (hi - lo)) * 10) / 10;
+  challenge.attempted = false;
+  challenge.revealed = false;
+  challenge.lastMeasured = null;
+  els.challengeRange.textContent = `${fmt(challenge.targetRange, 1)} m`;
+  describeChallengeFeedback();
+  drawAll();
+}
+
+function setChallenge(on) {
+  challenge.active = on;
+  els.challengeBody.hidden = !on;
+  if (on) {
+    ui.v0 = challenge.v0;
+    ui.g = challenge.g;
+    els.velocity.value = String(ui.v0);
+    els.gravity.value = String(ui.g);
+    challenge.attempted = false;
+    challenge.revealed = false;
+    els.challengeRange.textContent = `${fmt(challenge.targetRange, 1)} m`;
+    describeChallengeFeedback();
+    doReset();
+  }
+  setControlsEnabled();
+  syncReadouts();
+  refreshPredicted();
+  drawAll();
+}
+
+els.angle.addEventListener("input", applyUiFromSliders);
+els.velocity.addEventListener("input", applyUiFromSliders);
+els.gravity.addEventListener("input", applyUiFromSliders);
+els.launch.addEventListener("click", doLaunch);
+els.pause.addEventListener("click", doPause);
+els.reset.addEventListener("click", doReset);
+els.record.addEventListener("click", recordTrial);
+els.clear.addEventListener("click", clearTrials);
+els.challengeToggle.addEventListener("change", () => setChallenge(els.challengeToggle.checked));
+els.reveal.addEventListener("click", () => {
+  if (!challenge.attempted) return;
+  challenge.revealed = true;
+  describeChallengeFeedback();
+});
+els.newTarget.addEventListener("click", newTarget);
+els.debugToggle.addEventListener("change", () => {
+  debugMode = els.debugToggle.checked;
+  updateLive();
+});
+els.notesToggle.addEventListener("click", () => {
+  const open = els.notesToggle.getAttribute("aria-expanded") === "true";
+  els.notesToggle.setAttribute("aria-expanded", String(!open));
+  els.notes.hidden = open;
+});
+
+for (const chip of document.querySelectorAll(".chip[data-angle]")) {
+  chip.addEventListener("click", () => setAngle(Number(chip.dataset.angle)));
+}
+
+window.addEventListener("keydown", (event) => {
+  if (event.target.matches("input, textarea, button")) return;
+  if (event.code === "Space") {
+    event.preventDefault();
+    if (sim.isRunning && !sim.landed) doPause();
+    else if (!sim.isRunning && !sim.landed) doLaunch();
+    else doLaunch();
+  }
+  if (event.key === "r" || event.key === "R") doReset();
+});
+
+let acc = 0;
+let last = performance.now();
+let wasRunning = false;
+
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (sim.isRunning && !sim.isPaused) {
+    acc += dt;
+    while (acc >= sim.dt && sim.isRunning && !sim.isPaused) {
+      step(sim);
+      acc -= sim.dt;
+    }
+    wasRunning = true;
+  }
+  if (wasRunning && sim.landed) {
+    wasRunning = false;
+    acc = 0;
+    onLanded();
+  }
+  updateLive();
+  els.pause.textContent = sim.isPaused ? "Resume" : "Pause";
+  drawSim();
+  requestAnimationFrame(tick);
+}
+
+const resize = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    if (entry.target === els.canvas) drawSim();
+    else drawCharts();
+  }
+});
+resize.observe(els.canvas);
+resize.observe(els.graphRange);
+resize.observe(els.graphHeight);
+
+syncReadouts();
+updateLive();
+renderTrials();
+requestAnimationFrame(tick);
