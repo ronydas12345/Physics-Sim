@@ -6,9 +6,11 @@ const POINT = "#1b2430";
 const NOW = "#2c6e49";
 
 function setup(canvas) {
+  if (!canvas) return null;
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, canvas.clientWidth);
   const cssH = Math.max(1, canvas.clientHeight);
+  if (cssW < 40 || cssH < 40) return null;
   const w = Math.round(cssW * dpr);
   const h = Math.round(cssH * dpr);
   if (canvas.width !== w) canvas.width = w;
@@ -86,24 +88,30 @@ function yOf(value, yMax, box) {
   return box.bottom - (value / span) * (box.bottom - box.top);
 }
 
-export function renderGraphs({
-  rangeCanvas,
-  heightCanvas,
-  curve,
-  trials,
-  currentAngle,
-  currentRange,
-  currentHeight,
-}) {
-  const yMaxR = Math.max(1, ...curve.map((p) => p.range), currentRange || 0);
-  const yMaxH = Math.max(1, ...curve.map((p) => p.maxHeight), currentHeight || 0);
-
-  drawCurve(rangeCanvas, curve, "range", yMaxR, "Launch angle", "Range (m)", CURVE, trials, "range", currentAngle, currentRange);
-  drawCurve(heightCanvas, curve, "maxHeight", yMaxH, "Launch angle", "Max height (m)", HEIGHT, trials, "maxHeight", currentAngle, currentHeight);
+function emptyMessage(ctx, cssW, cssH, text) {
+  ctx.fillStyle = AXIS;
+  ctx.font = "500 13px Figtree, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, cssW / 2, cssH / 2);
 }
 
-function drawCurve(canvas, curve, key, yMax, xLabel, yLabel, color, trials, trialKey, currentAngle, currentValue) {
-  const { ctx, cssW, cssH, pad } = setup(canvas);
+export function renderTheoryGraphs({ rangeCanvas, heightCanvas, curve }) {
+  const yMaxR = Math.max(1, ...curve.map((p) => p.range));
+  const yMaxH = Math.max(1, ...curve.map((p) => p.maxHeight));
+  drawCurve(rangeCanvas, curve, "range", yMaxR, "Launch angle", "Range (m)", CURVE);
+  drawCurve(heightCanvas, curve, "maxHeight", yMaxH, "Launch angle", "Max height (m)", HEIGHT);
+}
+
+export function renderTrialGraphs({ rangeCanvas, heightCanvas, trials }) {
+  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", CURVE);
+  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", HEIGHT);
+}
+
+function drawCurve(canvas, curve, key, yMax, xLabel, yLabel, color) {
+  const surface = setup(canvas);
+  if (!surface) return;
+  const { ctx, cssW, cssH, pad } = surface;
   const box = drawFrame(ctx, pad, cssW, cssH, xLabel, yLabel, yMax);
 
   ctx.strokeStyle = color;
@@ -116,29 +124,33 @@ function drawCurve(canvas, curve, key, yMax, xLabel, yLabel, color, trials, tria
     else ctx.lineTo(x, y);
   });
   ctx.stroke();
+}
 
-  ctx.fillStyle = POINT;
-  for (const trial of trials) {
-    const x = xOf(trial.angleDeg, box);
-    const y = yOf(trial[trialKey], yMax, box);
-    ctx.beginPath();
-    ctx.arc(x, y, 4.2, 0, Math.PI * 2);
-    ctx.fill();
+function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color) {
+  const surface = setup(canvas);
+  if (!surface) return;
+  const { ctx, cssW, cssH, pad } = surface;
+  if (!trials.length) {
+    emptyMessage(ctx, cssW, cssH, "Record a trial to plot your data.");
+    return;
   }
 
-  if (Number.isFinite(currentAngle) && Number.isFinite(currentValue)) {
-    const x = xOf(currentAngle, box);
-    const y = yOf(currentValue, yMax, box);
-    ctx.strokeStyle = NOW;
-    ctx.setLineDash([4, 3]);
+  const yMax = Math.max(1, ...trials.map((t) => t[key]));
+  const box = drawFrame(ctx, pad, cssW, cssH, xLabel, yLabel, yMax);
+  const last = trials[trials.length - 1];
+
+  ctx.fillStyle = POINT;
+  ctx.font = "600 10px Figtree, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "bottom";
+  for (const trial of trials) {
+    const x = xOf(trial.angleDeg, box);
+    const y = yOf(trial[key], yMax, box);
+    const latest = trial === last;
+    ctx.fillStyle = latest ? NOW : color;
     ctx.beginPath();
-    ctx.moveTo(x, box.top);
-    ctx.lineTo(x, box.bottom);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = NOW;
-    ctx.beginPath();
-    ctx.arc(x, y, 5.5, 0, Math.PI * 2);
+    ctx.arc(x, y, latest ? 5.6 : 4.2, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillText(`#${trial.id}`, x + 6, y - 4);
   }
 }

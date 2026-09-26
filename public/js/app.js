@@ -1,7 +1,8 @@
 import {
   analyzeLaunch,
-  analytical,
-  anglesForRange,
+  generateChallenge,
+  goalTolerance,
+  measuredGoal,
   createLaunchState,
   launch as startLaunch,
   pause as pauseSim,
@@ -11,10 +12,11 @@ import {
   step,
   sweepAngles,
 } from "/lib/projectile.js";
-import { renderGraphs } from "./graphs.js";
+import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
 import { renderSimulation } from "./render.js";
 
 const $ = (id) => document.getElementById(id);
+const THEORY_EXAMPLE = { v0: 20, g: 9.8 };
 
 const ui = {
   v0: 20,
@@ -27,20 +29,27 @@ let trials = [];
 let predicted = predictedTrajectory(ui);
 let ghost = [];
 let debugMode = false;
+let autoRecord = false;
+let activeTab = "lab";
 let challenge = {
   active: false,
-  targetRange: 35,
-  v0: 20,
-  g: 9.8,
   attempted: false,
   revealed: false,
   lastMeasured: null,
+  spec: null,
 };
 
 const els = {
   canvas: $("sim-canvas"),
   graphRange: $("graph-range"),
   graphHeight: $("graph-height"),
+  graphTheoryRange: $("graph-theory-range"),
+  graphTheoryHeight: $("graph-theory-height"),
+  panelLab: $("panel-lab"),
+  panelTheory: $("panel-theory"),
+  tabLab: $("tab-btn-lab"),
+  tabTheory: $("tab-btn-theory"),
+  openTheory: $("open-theory"),
   angle: $("angle"),
   velocity: $("velocity"),
   gravity: $("gravity"),
@@ -52,15 +61,17 @@ const els = {
   reset: $("btn-reset"),
   record: $("btn-record"),
   clear: $("btn-clear"),
+  autoRecord: $("auto-record"),
   trialBody: $("trial-body"),
   challengeToggle: $("challenge-toggle"),
   challengeBody: $("challenge-body"),
-  challengeRange: $("challenge-range"),
+  challengeQ: $("challenge-q"),
+  challengeGivens: $("challenge-givens"),
+  challengeGoal: $("challenge-goal"),
+  challengeUnknown: $("challenge-unknown"),
   challengeFeedback: $("challenge-feedback"),
   reveal: $("btn-reveal"),
   newTarget: $("btn-new-target"),
-  notesToggle: $("notes-toggle"),
-  notes: $("notes"),
   debugToggle: $("debug-toggle"),
   debugLine: $("debug-line"),
 };
@@ -88,9 +99,14 @@ function syncReadouts() {
 }
 
 function setControlsEnabled() {
-  const lockVG = challenge.active;
-  els.velocity.disabled = lockVG;
-  els.gravity.disabled = lockVG;
+  const spec = challenge.active ? challenge.spec : null;
+  const unknown = spec?.unknown;
+  els.angle.disabled = Boolean(spec && unknown !== "angleDeg");
+  els.velocity.disabled = Boolean(spec && unknown !== "v0");
+  els.gravity.disabled = Boolean(spec && unknown !== "g");
+  for (const chip of document.querySelectorAll(".chip[data-angle]")) {
+    chip.disabled = els.angle.disabled;
+  }
 }
 
 function updateLive() {
@@ -133,31 +149,31 @@ function refreshPredicted() {
   }
 }
 
-function closedForUi() {
-  return analytical(ui.v0, ui.angleDeg, ui.g);
-}
-
 function drawSim() {
+  if (activeTab !== "lab") return;
   renderSimulation(els.canvas, {
     sim,
     pending: ui,
     predicted,
     ghost,
-    challenge,
+    challenge: challenge.active ? { ...challenge.spec, active: true } : { active: false },
   });
 }
 
 function drawCharts() {
-  const curve = sweepAngles({ v0: ui.v0, g: ui.g, stepDeg: 1 }).points;
-  const closed = closedForUi();
-  renderGraphs({
-    rangeCanvas: els.graphRange,
-    heightCanvas: els.graphHeight,
+  if (activeTab === "lab") {
+    renderTrialGraphs({
+      rangeCanvas: els.graphRange,
+      heightCanvas: els.graphHeight,
+      trials,
+    });
+    return;
+  }
+  const curve = sweepAngles({ v0: THEORY_EXAMPLE.v0, g: THEORY_EXAMPLE.g, stepDeg: 1 }).points;
+  renderTheoryGraphs({
+    rangeCanvas: els.graphTheoryRange,
+    heightCanvas: els.graphTheoryHeight,
     curve,
-    trials,
-    currentAngle: ui.angleDeg,
-    currentRange: closed.range,
-    currentHeight: closed.maxHeight,
   });
 }
 
@@ -231,11 +247,24 @@ function doReset() {
   drawAll();
 }
 
+function pushTrial({ angleDeg, v0, g, time, maxHeight, range }) {
+  trials.push({
+    id: trials.length + 1,
+    angleDeg,
+    v0,
+    g,
+    time,
+    maxHeight,
+    range,
+  });
+  renderTrials();
+  drawCharts();
+}
+
 function recordTrial() {
   const report = analyzeLaunch({ v0: ui.v0, angleDeg: ui.angleDeg, g: ui.g });
   const useFlight = sim.landed && paramsMatch(sim, ui);
-  trials.push({
-    id: trials.length + 1,
+  pushTrial({
     angleDeg: ui.angleDeg,
     v0: ui.v0,
     g: ui.g,
@@ -243,91 +272,154 @@ function recordTrial() {
     maxHeight: useFlight ? sim.measuredMaxHeight : report.simulated.maxHeight,
     range: useFlight ? sim.measuredRange : report.simulated.range,
   });
-  renderTrials();
-  drawAll();
+}
+
+function recordLandedTrial(state) {
+  pushTrial({
+    angleDeg: state.angleDeg,
+    v0: state.v0,
+    g: state.g,
+    time: state.measuredTimeOfFlight,
+    maxHeight: state.measuredMaxHeight,
+    range: state.measuredRange,
+  });
 }
 
 function clearTrials() {
   trials = [];
   renderTrials();
-  drawAll();
+  drawCharts();
 }
 
 function setAngle(value) {
+  if (els.angle.disabled) return;
   els.angle.value = String(value);
   applyUiFromSliders();
 }
 
-function challengeSolution() {
-  return anglesForRange(challenge.targetRange, challenge.v0, challenge.g);
+function goalDigits(goalKey) {
+  return goalKey === "timeOfFlight" ? 2 : 1;
+}
+
+function formatSolution(spec) {
+  if (spec.unknown === "angleDeg") {
+    return spec.solution.map((a) => `${a.toFixed(1)}°`).join(" or ");
+  }
+  if (spec.unknown === "v0") return `${fmt(spec.solution[0], 1)} m/s`;
+  return `${fmt(spec.solution[0], 1)} m/s²`;
+}
+
+function renderChallengeCard() {
+  const spec = challenge.spec;
+  if (!spec) return;
+  els.challengeQ.textContent = spec.prompt;
+  const givenRows = [];
+  if (spec.givens.v0 != null) givenRows.push(["Initial speed v₀", `${spec.givens.v0} m/s`]);
+  if (spec.givens.angleDeg != null) givenRows.push(["Launch angle θ", `${spec.givens.angleDeg}°`]);
+  if (spec.givens.g != null) givenRows.push(["Gravity g", `${spec.givens.g.toFixed(1)} m/s²`]);
+  els.challengeGivens.innerHTML = givenRows
+    .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`)
+    .join("");
+  els.challengeGoal.textContent = `Target ${spec.goalLabel}: ${fmt(spec.goalValue, goalDigits(spec.goalKey))} ${spec.goalUnit}`;
+  els.challengeUnknown.textContent = `Solve for ${spec.unknownLabel}. Only that slider is unlocked.`;
 }
 
 function describeChallengeFeedback() {
-  if (!challenge.attempted) {
+  const spec = challenge.spec;
+  if (!spec || !challenge.attempted) {
     els.challengeFeedback.className = "feedback";
-    els.challengeFeedback.textContent =
-      "Launch to test your angle. The solution stays hidden until you try.";
+    els.challengeFeedback.textContent = "The solution stays hidden until you launch.";
     els.reveal.disabled = true;
     return;
   }
-  const err = rangeError(challenge.lastMeasured, challenge.targetRange);
-  const close = err.abs <= 1.0;
+  const err = rangeError(challenge.lastMeasured, spec.goalValue);
+  const close = err.abs <= goalTolerance(spec.goalKey, spec.goalValue);
   els.challengeFeedback.className = `feedback ${close ? "hit" : "miss"}`;
-  let text = `Your range: ${fmt(challenge.lastMeasured, 1)} m. Target: ${fmt(challenge.targetRange, 1)} m. Difference: ${fmt(err.abs, 1)} m.`;
-  if (close) text += " Close enough — that landing is on target.";
-  else text += " Complementary angles (θ and 90° − θ) can produce the same range.";
-  if (challenge.revealed) {
-    const solved = challengeSolution();
-    if (solved.possible) {
-      const angles = solved.angles.map((a) => `${a.toFixed(1)}°`).join(" and ");
-      text += ` Possible launch angles: ${angles}.`;
-    } else {
-      text += " That target is beyond the maximum range for these settings.";
-    }
-  }
+  const digits = goalDigits(spec.goalKey);
+  let text = `Yours: ${fmt(challenge.lastMeasured, digits)} ${spec.goalUnit}. Target: ${fmt(spec.goalValue, digits)} ${spec.goalUnit}. Difference: ${fmt(err.abs, digits)} ${spec.goalUnit}.`;
+  if (close) text += " Close enough.";
+  else if (spec.type === "angle-range") text += " Complementary angles can produce the same range.";
+  if (challenge.revealed) text += ` Answer: ${formatSolution(spec)}.`;
   els.challengeFeedback.textContent = text;
   els.reveal.disabled = false;
 }
 
-function onLanded() {
-  if (challenge.active && sim.v0 === challenge.v0 && sim.g === challenge.g) {
-    challenge.attempted = true;
-    challenge.lastMeasured = sim.measuredRange;
-    describeChallengeFeedback();
+function applyChallengeGivens(spec) {
+  if (spec.givens.v0 != null) {
+    ui.v0 = spec.givens.v0;
+    els.velocity.value = String(ui.v0);
+  }
+  if (spec.givens.angleDeg != null) {
+    ui.angleDeg = spec.givens.angleDeg;
+    els.angle.value = String(ui.angleDeg);
+  }
+  if (spec.givens.g != null) {
+    ui.g = spec.givens.g;
+    els.gravity.value = String(ui.g);
+  }
+  if (spec.unknown === "angleDeg") {
+    ui.angleDeg = spec.secrets.angleDeg >= 45 ? 25 : 65;
+    els.angle.value = String(ui.angleDeg);
+  } else if (spec.unknown === "v0") {
+    ui.v0 = spec.secrets.v0 >= 25 ? 12 : 36;
+    els.velocity.value = String(ui.v0);
+  } else if (spec.unknown === "g") {
+    ui.g = spec.secrets.g >= 10 ? 5.0 : 14.0;
+    els.gravity.value = String(ui.g);
   }
 }
 
-function newTarget() {
-  const max = analytical(challenge.v0, 45, challenge.g).range;
-  const lo = max * 0.45;
-  const hi = max * 0.92;
-  challenge.targetRange = Math.round((lo + Math.random() * (hi - lo)) * 10) / 10;
+function loadChallenge(spec) {
+  challenge.spec = spec;
   challenge.attempted = false;
   challenge.revealed = false;
   challenge.lastMeasured = null;
-  els.challengeRange.textContent = `${fmt(challenge.targetRange, 1)} m`;
+  applyChallengeGivens(spec);
+  renderChallengeCard();
   describeChallengeFeedback();
-  drawAll();
+  setControlsEnabled();
+  syncReadouts();
+  doReset();
+}
+
+function newChallenge() {
+  loadChallenge(generateChallenge());
 }
 
 function setChallenge(on) {
   challenge.active = on;
   els.challengeBody.hidden = !on;
-  if (on) {
-    ui.v0 = challenge.v0;
-    ui.g = challenge.g;
-    els.velocity.value = String(ui.v0);
-    els.gravity.value = String(ui.g);
-    challenge.attempted = false;
-    challenge.revealed = false;
-    els.challengeRange.textContent = `${fmt(challenge.targetRange, 1)} m`;
-    describeChallengeFeedback();
-    doReset();
+  if (on) newChallenge();
+  else {
+    challenge.spec = null;
+    setControlsEnabled();
+    syncReadouts();
+    refreshPredicted();
+    drawAll();
   }
-  setControlsEnabled();
-  syncReadouts();
-  refreshPredicted();
-  drawAll();
+}
+
+function onLanded() {
+  if (autoRecord) recordLandedTrial(sim);
+  if (challenge.active && challenge.spec) {
+    challenge.attempted = true;
+    challenge.lastMeasured = measuredGoal(sim, challenge.spec.goalKey);
+    describeChallengeFeedback();
+  }
+}
+
+function showTab(name) {
+  activeTab = name;
+  const lab = name === "lab";
+  els.panelLab.hidden = !lab;
+  els.panelTheory.hidden = lab;
+  els.tabLab.classList.toggle("active", lab);
+  els.tabTheory.classList.toggle("active", !lab);
+  els.tabLab.setAttribute("aria-selected", String(lab));
+  els.tabTheory.setAttribute("aria-selected", String(!lab));
+  requestAnimationFrame(() => {
+    drawAll();
+  });
 }
 
 els.angle.addEventListener("input", applyUiFromSliders);
@@ -338,22 +430,25 @@ els.pause.addEventListener("click", doPause);
 els.reset.addEventListener("click", doReset);
 els.record.addEventListener("click", recordTrial);
 els.clear.addEventListener("click", clearTrials);
+els.autoRecord.addEventListener("change", () => {
+  autoRecord = els.autoRecord.checked;
+});
 els.challengeToggle.addEventListener("change", () => setChallenge(els.challengeToggle.checked));
 els.reveal.addEventListener("click", () => {
   if (!challenge.attempted) return;
   challenge.revealed = true;
   describeChallengeFeedback();
 });
-els.newTarget.addEventListener("click", newTarget);
+els.newTarget.addEventListener("click", () => {
+  if (challenge.active) newChallenge();
+});
 els.debugToggle.addEventListener("change", () => {
   debugMode = els.debugToggle.checked;
   updateLive();
 });
-els.notesToggle.addEventListener("click", () => {
-  const open = els.notesToggle.getAttribute("aria-expanded") === "true";
-  els.notesToggle.setAttribute("aria-expanded", String(!open));
-  els.notes.hidden = open;
-});
+els.tabLab.addEventListener("click", () => showTab("lab"));
+els.tabTheory.addEventListener("click", () => showTab("theory"));
+els.openTheory.addEventListener("click", () => showTab("theory"));
 
 for (const chip of document.querySelectorAll(".chip[data-angle]")) {
   chip.addEventListener("click", () => setAngle(Number(chip.dataset.angle)));
@@ -364,7 +459,6 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Space") {
     event.preventDefault();
     if (sim.isRunning && !sim.landed) doPause();
-    else if (!sim.isRunning && !sim.landed) doLaunch();
     else doLaunch();
   }
   if (event.key === "r" || event.key === "R") doReset();
@@ -405,6 +499,8 @@ const resize = new ResizeObserver((entries) => {
 resize.observe(els.canvas);
 resize.observe(els.graphRange);
 resize.observe(els.graphHeight);
+resize.observe(els.graphTheoryRange);
+resize.observe(els.graphTheoryHeight);
 
 syncReadouts();
 updateLive();

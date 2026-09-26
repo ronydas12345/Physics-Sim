@@ -27,6 +27,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -91,11 +95,137 @@ h2 {
   max-width: 42em;
 }
 
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.tab {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.45rem 1.05rem;
+  font-weight: 650;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--ink);
+  color: #fbf7ef;
+  border-color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.switch.light {
+  color: #d7e3ee;
+  white-space: nowrap;
+}
+
+.givens {
+  margin: 8px 0 0;
+  display: grid;
+  gap: 4px;
+}
+
+.givens div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.givens dt {
+  color: var(--ink-soft);
+}
+
+.givens dd {
+  margin: 0;
+  font-family: var(--mono);
+}
+
+.theory-link {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+
+.text-link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--teal);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.theory {
+  display: grid;
+  gap: 16px;
+}
+
+.theory-hero,
+.theory-block {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.theory-hero h2,
+.theory-block h3 {
+  margin-bottom: 8px;
+}
+
+.theory-block h4 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+
+.theory-hero p,
+.theory-block p,
+.theory-block li {
+  color: var(--ink-soft);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.theory-block ul {
+  margin: 8px 0 0;
+  padding-left: 1.15rem;
+}
+
+.theory-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.theory-conditions {
+  margin: 0 0 10px;
+}
+
+.theory-graphs {
+  margin-top: 8px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .stage {
@@ -105,14 +235,16 @@ h2 {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  min-height: min(64vh, 680px);
+  height: min(62vh, 620px);
+  min-height: 480px;
+  max-height: 620px;
 }
 
 #sim-canvas {
   display: block;
   width: 100%;
-  flex: 1;
-  min-height: 420px;
+  flex: 1 1 auto;
+  min-height: 0;
   height: auto;
   background: #132230;
 }
@@ -175,6 +307,7 @@ h2 {
 .rail {
   display: grid;
   gap: 12px;
+  align-content: start;
 }
 
 .card {
@@ -238,6 +371,16 @@ input[type="range"] {
 .chip.active {
   border-color: var(--accent);
   color: var(--accent-dark);
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.card-head .switch {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .metrics {
@@ -486,12 +629,15 @@ tbody tr.best td {
 @media (max-width: 1100px) {
   .workspace,
   .topbar,
-  .graphs {
+  .graphs,
+  .theory-split {
     grid-template-columns: 1fr;
   }
 
-  #sim-canvas {
-    min-height: min(52vh, 520px);
+  .stage {
+    height: min(52vh, 520px);
+    min-height: 400px;
+    max-height: 520px;
   }
 }
 

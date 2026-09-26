@@ -30,7 +30,7 @@ function niceStep(span, ticks = 6) {
   return 10 * pow;
 }
 
-export function createView(canvas, v0, g) {
+export function createView(canvas, v0, g, extras = {}) {
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, canvas.clientWidth);
   const cssH = Math.max(1, canvas.clientHeight);
@@ -39,11 +39,11 @@ export function createView(canvas, v0, g) {
   if (canvas.width !== nextW) canvas.width = nextW;
   if (canvas.height !== nextH) canvas.height = nextH;
 
-  const pad = { l: 58, r: 22, t: 28, b: 62 };
+  const pad = { l: 58, r: 28, t: 52, b: 62 };
   const plotW = cssW - pad.l - pad.r;
   const plotH = cssH - pad.t - pad.b;
-  const maxR = Math.max((v0 * v0) / Math.max(g, 0.01), 8);
-  const maxH = Math.max((v0 * v0) / (2 * Math.max(g, 0.01)), 4);
+  const maxR = Math.max((v0 * v0) / Math.max(g, 0.01), extras.targetRange || 0, 8);
+  const maxH = Math.max((v0 * v0) / (2 * Math.max(g, 0.01)), extras.targetHeight || 0, 4);
   const worldW = maxR * 1.12;
   const worldH = maxH * 1.2;
   const scale = Math.min(plotW / worldW, plotH / worldH);
@@ -331,24 +331,38 @@ function drawRange(ctx, view, sim) {
 }
 
 function drawTarget(ctx, view, challenge) {
-  if (!challenge.active) return;
-  const base = view.toScreen(challenge.targetRange, 0);
-  ctx.strokeStyle = COLORS.target;
-  ctx.setLineDash([5, 4]);
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(base.x, view.originY);
-  ctx.lineTo(base.x, view.pad.t + 8);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = COLORS.target;
-  ctx.beginPath();
-  ctx.moveTo(base.x, view.pad.t + 8);
-  ctx.lineTo(base.x + 22, view.pad.t + 16);
-  ctx.lineTo(base.x, view.pad.t + 24);
-  ctx.closePath();
-  ctx.fill();
-  label(ctx, "Target", base.x + 10, view.pad.t + 36, COLORS.target);
+  if (!challenge?.active) return;
+  if (challenge.goalKey === "range" && Number.isFinite(challenge.goalValue)) {
+    const base = view.toScreen(challenge.goalValue, 0);
+    ctx.strokeStyle = COLORS.target;
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(base.x, view.originY);
+    ctx.lineTo(base.x, view.pad.t + 8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = COLORS.target;
+    ctx.beginPath();
+    ctx.moveTo(base.x, view.pad.t + 8);
+    ctx.lineTo(base.x + 22, view.pad.t + 16);
+    ctx.lineTo(base.x, view.pad.t + 24);
+    ctx.closePath();
+    ctx.fill();
+    label(ctx, "Target", base.x + 10, view.pad.t + 36, COLORS.target);
+  }
+  if (challenge.goalKey === "maxHeight" && Number.isFinite(challenge.goalValue)) {
+    const left = view.toScreen(0, challenge.goalValue);
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = COLORS.target;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(left.x, left.y);
+    ctx.lineTo(view.cssW - view.pad.r, left.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    label(ctx, `Target height ${challenge.goalValue.toFixed(1)} m`, left.x + 10, left.y - 10, COLORS.target);
+  }
 }
 
 function drawLaunchPad(ctx, view) {
@@ -373,7 +387,10 @@ function drawProjectile(ctx, view, sim) {
 }
 
 export function renderSimulation(canvas, { sim, pending, predicted, ghost, challenge }) {
-  const view = createView(canvas, pending.v0, pending.g);
+  const view = createView(canvas, pending.v0, pending.g, {
+    targetRange: challenge?.active && challenge.goalKey === "range" ? challenge.goalValue : 0,
+    targetHeight: challenge?.active && challenge.goalKey === "maxHeight" ? challenge.goalValue : 0,
+  });
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
