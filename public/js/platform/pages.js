@@ -1,4 +1,4 @@
-import { availableCount, getModule, modules, projectileSim, statusLabel } from "./curriculum.js";
+import { availableCount, getModule, modules, projectileSim } from "./curriculum.js";
 import { moduleCards, statusBadge } from "./chrome.js";
 
 export function homePage() {
