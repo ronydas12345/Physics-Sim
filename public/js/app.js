@@ -12,6 +12,7 @@ import {
   step,
   sweepAngles,
 } from "/lib/projectile.js";
+import { canFit, formatFitEquation, formatR2 } from "/lib/regression.js";
 import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
 import { renderSimulation } from "./render.js";
 
@@ -30,6 +31,7 @@ let predicted = predictedTrajectory(ui);
 let ghost = [];
 let debugMode = false;
 let autoRecord = false;
+let showRegression = false;
 let activeTab = "lab";
 let challenge = {
   active: false,
@@ -62,6 +64,9 @@ const els = {
   record: $("btn-record"),
   clear: $("btn-clear"),
   autoRecord: $("auto-record"),
+  regression: $("btn-regression"),
+  fitRangeEq: $("fit-range-eq"),
+  fitHeightEq: $("fit-height-eq"),
   trialBody: $("trial-body"),
   challengeToggle: $("challenge-toggle"),
   challengeBody: $("challenge-body"),
@@ -162,11 +167,14 @@ function drawSim() {
 
 function drawCharts() {
   if (activeTab === "lab") {
-    renderTrialGraphs({
+    const fits = renderTrialGraphs({
       rangeCanvas: els.graphRange,
       heightCanvas: els.graphHeight,
       trials,
+      showRegression,
     });
+    updateFitCaptions(fits);
+    syncRegressionButton();
     return;
   }
   const curve = sweepAngles({ v0: THEORY_EXAMPLE.v0, g: THEORY_EXAMPLE.g, stepDeg: 1 }).points;
@@ -175,6 +183,36 @@ function drawCharts() {
     heightCanvas: els.graphTheoryHeight,
     curve,
   });
+}
+
+function trialPoints(key) {
+  return trials.map((trial) => ({ x: trial.angleDeg, y: trial[key] }));
+}
+
+function updateFitCaptions(fits) {
+  setFitCaption(els.fitRangeEq, showRegression ? fits?.rangeFit : null, "R");
+  setFitCaption(els.fitHeightEq, showRegression ? fits?.heightFit : null, "H");
+}
+
+function setFitCaption(el, fit, name) {
+  if (!el) return;
+  if (!fit) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  const kind = fit.degree === 1 ? "Linear" : "Quadratic";
+  el.textContent = `${kind}: ${formatFitEquation(fit, name, "θ")}   ·   R² = ${formatR2(fit.r2)}`;
+}
+
+function syncRegressionButton() {
+  if (!els.regression) return;
+  const ready = canFit(trialPoints("range"));
+  els.regression.disabled = !ready;
+  const on = showRegression && ready;
+  els.regression.setAttribute("aria-pressed", String(on));
+  els.regression.textContent = on ? "Hide regression" : "Show regression";
 }
 
 function drawAll() {
@@ -186,6 +224,7 @@ function renderTrials() {
   if (!trials.length) {
     els.trialBody.innerHTML =
       '<tr class="empty-row"><td colspan="7">No trials yet. Launch, then record a trial to start a data table.</td></tr>';
+    syncRegressionButton();
     return;
   }
   const maxRange = Math.max(...trials.map((t) => t.range));
@@ -203,6 +242,7 @@ function renderTrials() {
       </tr>`;
     })
     .join("");
+  syncRegressionButton();
 }
 
 function applyUiFromSliders() {
@@ -433,6 +473,11 @@ els.clear.addEventListener("click", clearTrials);
 els.autoRecord.addEventListener("change", () => {
   autoRecord = els.autoRecord.checked;
 });
+els.regression.addEventListener("click", () => {
+  if (els.regression.disabled) return;
+  showRegression = !showRegression;
+  drawCharts();
+});
 els.challengeToggle.addEventListener("change", () => setChallenge(els.challengeToggle.checked));
 els.reveal.addEventListener("click", () => {
   if (!challenge.attempted) return;
@@ -505,4 +550,5 @@ resize.observe(els.graphTheoryHeight);
 syncReadouts();
 updateLive();
 renderTrials();
+syncRegressionButton();
 requestAnimationFrame(tick);

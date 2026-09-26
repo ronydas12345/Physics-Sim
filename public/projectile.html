@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Projectile Motion · AP Physics 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/platform.css" />
+  </head>
+  <body class="projectile-page">
+    <div id="site-header"></div>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <p class="kicker">AP Physics 1 · Existing simulation</p>
+          <h1>Launch Angle vs. Range</h1>
+        </div>
+        <p class="guiding">
+          Launch and landing heights are equal, air resistance is off, and
+          gravity is constant. Change a variable, collect data, and discover
+          which launch produces the greatest horizontal range.
+        </p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Lab sections">
+        <button type="button" class="tab active" id="tab-btn-lab" role="tab" aria-selected="true" aria-controls="panel-lab">
+          Lab
+        </button>
+        <button type="button" class="tab" id="tab-btn-theory" role="tab" aria-selected="false" aria-controls="panel-theory">
+          Theory
+        </button>
+      </nav>
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage" aria-label="Projectile simulation">
+            <canvas
+              id="sim-canvas"
+              role="img"
+              aria-label="Two-dimensional projectile motion on flat ground"
+            ></canvas>
+            <div class="transport">
+              <button type="button" id="btn-launch" class="btn primary">Launch</button>
+              <button type="button" id="btn-pause" class="btn">Pause</button>
+              <button type="button" id="btn-reset" class="btn">Reset</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" id="btn-record" class="btn">Record Trial</button>
+              <button type="button" id="btn-clear" class="btn ghost">Clear Trials</button>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card">
+              <h2>Controls</h2>
+              <div class="control">
+                <div class="control-head">
+                  <label for="angle">Launch Angle</label>
+                  <span id="angle-readout" class="readout">45°</span>
+                </div>
+                <input id="angle" type="range" min="0" max="90" step="1" value="45" />
+                <div class="presets" role="group" aria-label="Common investigation angles">
+                  <button type="button" class="chip" data-angle="30">30°</button>
+                  <button type="button" class="chip" data-angle="45">45°</button>
+                  <button type="button" class="chip" data-angle="60">60°</button>
+                  <button type="button" class="chip" data-angle="90">90°</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head">
+                  <label for="velocity">Initial Velocity</label>
+                  <span id="velocity-readout" class="readout">20 m/s</span>
+                </div>
+                <input id="velocity" type="range" min="1" max="50" step="1" value="20" />
+              </div>
+              <div class="control">
+                <div class="control-head">
+                  <label for="gravity">Gravity</label>
+                  <span id="gravity-readout" class="readout">9.8 m/s²</span>
+                </div>
+                <input id="gravity" type="range" min="1" max="20" step="0.1" value="9.8" />
+              </div>
+            </section>
+
+            <section class="card data-card">
+              <div class="card-head">
+                <h2>Live Measurements</h2>
+                <label class="switch">
+                  <input id="debug-toggle" type="checkbox" />
+                  <span>Teacher view</span>
+                </label>
+              </div>
+              <dl class="metrics" id="live-metrics">
+                <div><dt>Time</dt><dd id="m-t">0.00 s</dd></div>
+                <div><dt>X Position</dt><dd id="m-x">0.0 m</dd></div>
+                <div><dt>Y Position</dt><dd id="m-y">0.0 m</dd></div>
+                <div><dt>X Velocity</dt><dd id="m-vx">0.0 m/s</dd></div>
+                <div><dt>Y Velocity</dt><dd id="m-vy">0.0 m/s</dd></div>
+                <div><dt>Speed</dt><dd id="m-speed">0.0 m/s</dd></div>
+              </dl>
+              <h3 class="subhead">After Landing</h3>
+              <dl class="metrics finals" id="final-metrics">
+                <div><dt>Time of Flight</dt><dd id="m-tof">—</dd></div>
+                <div><dt>Maximum Height</dt><dd id="m-hmax">—</dd></div>
+                <div><dt>Range</dt><dd id="m-range">—</dd></div>
+              </dl>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card challenge-card">
+              <div class="card-head">
+                <h2>Challenge Mode</h2>
+                <label class="switch">
+                  <input id="challenge-toggle" type="checkbox" />
+                  <span>On</span>
+                </label>
+              </div>
+              <div id="challenge-body" class="challenge-body" hidden>
+                <p class="challenge-q" id="challenge-q">Solve for the missing variable, then launch.</p>
+                <dl class="givens" id="challenge-givens"></dl>
+                <p class="challenge-target" id="challenge-goal">Target: —</p>
+                <p class="muted" id="challenge-unknown">Unknown: —</p>
+                <p id="challenge-feedback" class="feedback">The solution stays hidden until you launch.</p>
+                <div class="challenge-actions">
+                  <button type="button" id="btn-reveal" class="btn ghost" disabled>Reveal answer</button>
+                  <button type="button" id="btn-new-target" class="btn ghost">New challenge</button>
+                </div>
+              </div>
+            </section>
+
+            <p class="theory-link">Need the equations? Open the <button type="button" id="open-theory" class="text-link">Theory</button> tab.</p>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graphs">
+            <div class="graphs-toolbar">
+              <p class="muted">Record different angles, then fit a curve to your points.</p>
+              <button type="button" class="btn" id="btn-regression" disabled aria-pressed="false" title="Least-squares fit of range and height versus launch angle">
+                Show regression
+              </button>
+            </div>
+            <div class="graph-wrap">
+              <h2>Your Trials · Range vs. Angle</h2>
+              <canvas id="graph-range" width="640" height="280" aria-label="Recorded range versus launch angle"></canvas>
+              <p class="caption">Each point is a trial you recorded. Compare 30°, 45°, and 60° with the same speed and gravity.</p>
+              <p class="caption fit-eq" id="fit-range-eq" hidden></p>
+            </div>
+            <div class="graph-wrap">
+              <h2>Your Trials · Height vs. Angle</h2>
+              <canvas id="graph-height" width="640" height="280" aria-label="Recorded maximum height versus launch angle"></canvas>
+              <p class="caption">Steeper launches usually go higher, even when they do not travel farther.</p>
+              <p class="caption fit-eq" id="fit-height-eq" hidden></p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-head">
+              <h2>Trial Comparison</h2>
+              <p class="muted">Record 30°, 45°, and 60° with the same speed and gravity.</p>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trial</th>
+                    <th>Angle</th>
+                    <th>Velocity</th>
+                    <th>Gravity</th>
+                    <th>Time</th>
+                    <th>Max Height</th>
+                    <th>Range</th>
+                  </tr>
+                </thead>
+                <tbody id="trial-body">
+                  <tr class="empty-row">
+                    <td colspan="7">No trials yet. Launch, then record a trial to start a data table.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this first, then return to the lab</p>
+            <h2>Projectile motion, from the ground up</h2>
+            <p>
+              A projectile is an object that has been launched and then moves only under gravity.
+              This lab uses the AP Physics 1 model: a point mass, no air resistance, constant
+              <span class="eq">g</span> downward, and a landing height equal to the launch height.
+            </p>
+          </header>
+
+          <section class="theory-block">
+            <h3>1. Two independent motions</h3>
+            <p>
+              The most important idea is that the curved path is not a special new kind of motion.
+              It is two ordinary one-dimensional motions happening at the same time.
+            </p>
+            <div class="theory-split">
+              <div>
+                <h4>Horizontal</h4>
+                <p>No horizontal force, so no horizontal acceleration.</p>
+                <p class="eq-block">a<sub>x</sub> = 0<br />v<sub>x</sub> = constant = v<sub>0</sub> cos θ<br />x(t) = v<sub>x</sub> t</p>
+              </div>
+              <div>
+                <h4>Vertical</h4>
+                <p>Gravity is the only vertical acceleration. Up is positive here.</p>
+                <p class="eq-block">a<sub>y</sub> = −g<br />v<sub>y</sub>(t) = v<sub>0</sub> sin θ − g t<br />y(t) = v<sub>0</sub> sin θ · t − ½ g t²</p>
+              </div>
+            </div>
+            <p>
+              Because <span class="eq">a<sub>x</sub> = 0</span>, the <span class="eq">x</span> velocity never changes.
+              Because <span class="eq">a<sub>y</sub> = −g</span>, the <span class="eq">y</span> velocity steadily decreases,
+              is zero at the top, and is equally large but downward when the projectile lands.
+            </p>
+          </section>
+
+          <section class="theory-block">
+            <h3>2. Launch angle splits the initial speed</h3>
+            <p>
+              The launcher does not choose <span class="eq">v<sub>x</sub></span> and
+              <span class="eq">v<sub>y</sub></span> separately. It chooses one speed
+              <span class="eq">v<sub>0</sub></span> and an angle <span class="eq">θ</span> above the horizontal.
+            </p>
+            <p class="eq-block">v<sub>x</sub> = v<sub>0</sub> cos θ<br />v<sub>y</sub> = v<sub>0</sub> sin θ</p>
+            <ul>
+              <li>A small angle puts almost all of <span class="eq">v<sub>0</sub></span> into <span class="eq">v<sub>x</sub></span>. The projectile is fast horizontally but barely leaves the ground.</li>
+              <li>A steep angle puts almost all of <span class="eq">v<sub>0</sub></span> into <span class="eq">v<sub>y</sub></span>. The projectile hangs in the air longer and goes higher, but crawls horizontally.</li>
+              <li>At 45°, <span class="eq">sin θ = cos θ</span>, so the two components start equal.</li>
+            </ul>
+          </section>
+
+          <section class="theory-block">
+            <h3>3. Time of flight</h3>
+            <p>
+              Landing happens when <span class="eq">y</span> returns to zero (after launch). Set
+              <span class="eq">y(t) = 0</span>:
+            </p>
+            <p class="eq-block">0 = (v<sub>0</sub> sin θ) t − ½ g t²<br />t (v<sub>0</sub> sin θ − ½ g t) = 0</p>
+            <p>
+              One root is <span class="eq">t = 0</span> (launch). The other is the landing time:
+            </p>
+            <p class="eq-block">t<sub>flight</sub> = 2 v<sub>0</sub> sin θ / g</p>
+            <p>
+              Flight time depends only on the vertical part of the launch. Larger
+              <span class="eq">θ</span> or larger <span class="eq">v<sub>0</sub></span> means more hang time.
+              Larger <span class="eq">g</span> brings the projectile down sooner.
+            </p>
+          </section>
+
+          <section class="theory-block">
+            <h3>4. Maximum height — where v<sub>y</sub> = 0</h3>
+            <p>
+              The apex is not “where the path looks highest.” It is the instant vertical velocity is zero.
+              After that, gravity has finished canceling the upward component and the projectile starts falling.
+            </p>
+            <p class="eq-block">0 = v<sub>0</sub> sin θ − g t<sub>apex</sub><br />t<sub>apex</sub> = v<sub>0</sub> sin θ / g<br />H = v<sub>0</sub>² sin²θ / (2g)</p>
+            <p>
+              Notice <span class="eq">t<sub>apex</sub></span> is exactly half the flight time when launch and landing heights are equal.
+              Height keeps increasing as <span class="eq">θ</span> approaches 90°. A vertical launch has the greatest height and zero range.
+            </p>
+          </section>
+
+          <section class="theory-block">
+            <h3>5. Horizontal range</h3>
+            <p>
+              Range is how far the projectile travels horizontally during the flight:
+              <span class="eq">R = v<sub>x</sub> t<sub>flight</sub></span>. Substitute the two pieces:
+            </p>
+            <p class="eq-block">R = (v<sub>0</sub> cos θ)(2 v<sub>0</sub> sin θ / g)<br />R = v<sub>0</sub>² (2 sin θ cos θ) / g<br />R = v<sub>0</sub>² sin(2θ) / g</p>
+            <p>
+              The identity <span class="eq">sin(2θ) = 2 sin θ cos θ</span> is why complementary angles matter.
+              <span class="eq">sin(2θ)</span> has a maximum of 1 when <span class="eq">2θ = 90°</span>, so
+              <strong>θ = 45°</strong> gives the greatest range when the landing height equals the launch height.
+            </p>
+            <p class="eq-block">R<sub>max</sub> = v<sub>0</sub>² / g &nbsp;&nbsp; at &nbsp;&nbsp; θ = 45°</p>
+          </section>
+
+          <section class="theory-block">
+            <h3>6. Why 30° and 60° land equally far</h3>
+            <p>
+              <span class="eq">sin(2θ)</span> is symmetric about 45°. For any angle <span class="eq">θ</span>,
+              the complement <span class="eq">90° − θ</span> has the same <span class="eq">sin(2θ)</span> and therefore the same range.
+            </p>
+            <ul>
+              <li>30° and 60°: same range, but 60° goes higher and stays up longer.</li>
+              <li>20° and 70°, 35° and 55°, and so on: same pattern.</li>
+              <li>Greater height does <em>not</em> mean greater range. 60° beats 30° in height and loses to 45° in range.</li>
+            </ul>
+          </section>
+
+          <section class="theory-block">
+            <h3>7. Worked example</h3>
+            <p>Use the lab defaults: <span class="eq">v<sub>0</sub> = 20 m/s</span>, <span class="eq">g = 9.8 m/s²</span>, <span class="eq">θ = 45°</span>.</p>
+            <p class="eq-block">
+              v<sub>x</sub> = 20 cos 45° = 14.1 m/s<br />
+              v<sub>y</sub> = 20 sin 45° = 14.1 m/s<br />
+              t<sub>flight</sub> = 2(20)sin 45° / 9.8 = 2.89 s<br />
+              H = (20)² sin²45° / (2 × 9.8) = 10.2 m<br />
+              R = (20)² sin 90° / 9.8 = 40.8 m
+            </p>
+            <p>
+              In the lab, the numerical stepper uses <span class="eq">dt = 0.01 s</span>, so the displayed landing values
+              should be within a few tenths of a meter of these closed-form results. Teacher view compares the two.
+            </p>
+          </section>
+
+          <section class="theory-block">
+            <h3>8. Predicted graphs for these example conditions</h3>
+            <p class="muted theory-conditions">v<sub>0</sub> = 20 m/s · g = 9.8 m/s² · no air resistance · equal launch and landing height</p>
+            <div class="graphs theory-graphs">
+              <div class="graph-wrap">
+                <h4>Launch Angle vs. Horizontal Range</h4>
+                <canvas id="graph-theory-range" width="640" height="280" aria-label="Theoretical range versus launch angle"></canvas>
+                <p class="caption">R(θ) = v₀² sin(2θ) / g. The peak is at 45°. 30° and 60° sit at the same height on this curve.</p>
+              </div>
+              <div class="graph-wrap">
+                <h4>Launch Angle vs. Maximum Height</h4>
+                <canvas id="graph-theory-height" width="640" height="280" aria-label="Theoretical maximum height versus launch angle"></canvas>
+                <p class="caption">H(θ) = v₀² sin²(θ) / (2g) · Height keeps rising toward 90°, the opposite of the range graph.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="theory-block">
+            <h3>9. What this model leaves out</h3>
+            <ul>
+              <li>Air resistance would shorten range, lower the best angle below 45°, and break the 30°/60° symmetry.</li>
+              <li>If the landing is below the launch point, the best angle is less than 45°.</li>
+              <li>If the landing is above the launch point, the best angle is greater than 45°.</li>
+            </ul>
+            <p>Those extensions are later physics. This lab is built so you can see the equal-height case cleanly.</p>
+          </section>
+        </article>
+      </div>
+    </div>
+    <div id="site-footer"></div>
+    <script type="module" src="/js/platform/boot-chrome.js"></script>
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>

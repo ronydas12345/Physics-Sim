@@ -57,6 +57,26 @@ app.post("/api/challenge/solve", (req, res) => {
   }
 });
 
+app.get("/simulations/projectile", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "projectile.html"));
+});
+
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    next();
+    return;
+  }
+  if (req.path.startsWith("/api") || req.path.startsWith("/lib")) {
+    next();
+    return;
+  }
+  if (path.extname(req.path)) {
+    next();
+    return;
+  }
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.listen(PORT, () => {
-  console.log(`AP Physics 1 Projectile Motion → http://localhost:${PORT}`);
+  console.log(`AP Physics 1 Simulation Platform → http://localhost:${PORT}`);
 });
