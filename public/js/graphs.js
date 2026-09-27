@@ -1,3 +1,5 @@
+import { formatFitEquation, formatR2, polynomialFit, sampleFit } from "/lib/regression.js";
+
 const AXIS = "rgba(27, 36, 48, 0.7)";
 const GRID = "rgba(27, 36, 48, 0.1)";
 const CURVE = "#c45c26";
@@ -104,8 +106,8 @@ export function renderTheoryGraphs({ rangeCanvas, heightCanvas, curve }) {
 }
 
 export function renderTrialGraphs({ rangeCanvas, heightCanvas, trials }) {
-  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", CURVE);
-  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", HEIGHT);
+  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", CURVE, { yName: "R", xName: "θ" });
+  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", HEIGHT, { yName: "H", xName: "θ" });
 }
 
 function drawCurve(canvas, curve, key, yMax, xLabel, yLabel, color) {
@@ -126,7 +128,22 @@ function drawCurve(canvas, curve, key, yMax, xLabel, yLabel, color) {
   ctx.stroke();
 }
 
-export function renderXYScatter(canvas, points, { xKey, yKey, xLabel, yLabel, color, xMin, xMax, yMin, yMax }) {
+export function renderXYScatter(canvas, points, options = {}) {
+  const {
+    xKey,
+    yKey,
+    xLabel,
+    yLabel,
+    color,
+    xMin,
+    xMax,
+    yMin,
+    yMax,
+    fitDegree = 1,
+    fitYName = "y",
+    fitXName = "x",
+    showFit = true,
+  } = options;
   const surface = setup(canvas);
   if (!surface) return;
   const { ctx, cssW, cssH, pad } = surface;
@@ -139,17 +156,33 @@ export function renderXYScatter(canvas, points, { xKey, yKey, xLabel, yLabel, co
   const ys = points.map((p) => p[yKey]);
   const lo = xMin ?? Math.min(0, ...xs);
   const hi = xMax ?? Math.max(1, ...xs);
-  const yLo = yMin ?? Math.min(0, ...ys);
-  const yHi = yMax ?? Math.max(1, ...ys);
+  let yLo = yMin ?? Math.min(0, ...ys);
+  let yHi = yMax ?? Math.max(1, ...ys);
+  const pairs = points.map((p) => ({ x: p[xKey], y: p[yKey] }));
+  const xScale = Math.max(Math.abs(lo), Math.abs(hi), 1);
+  const fit = showFit ? polynomialFit(pairs, { maxDegree: fitDegree, xScale }) : null;
+  if (fit) {
+    for (const sample of sampleFit(fit, { start: lo, end: hi, steps: 48 })) {
+      yLo = Math.min(yLo, sample.y);
+      yHi = Math.max(yHi, sample.y);
+    }
+  }
+  if (yLo === yHi) {
+    yLo -= 1;
+    yHi += 1;
+  }
   const box = drawLinearFrame(ctx, pad, cssW, cssH, xLabel, yLabel, lo, hi, yLo, yHi);
+  if (showFit) {
+    drawFitOverlay(ctx, box, fit, lo, hi, yLo, yHi, color, fitYName, fitXName);
+  }
   const last = points[points.length - 1];
 
   ctx.font = "600 10px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
   for (const point of points) {
-    const x = box.left + ((point[xKey] - lo) / Math.max(hi - lo, 1e-6)) * (box.right - box.left);
-    const y = box.bottom - ((point[yKey] - yLo) / Math.max(yHi - yLo, 1e-6)) * (box.bottom - box.top);
+    const x = mapPlotX(point[xKey], lo, hi, box);
+    const y = mapPlotY(point[yKey], yLo, yHi, box);
     const latest = point === last;
     ctx.fillStyle = latest ? NOW : color;
     ctx.beginPath();
@@ -318,7 +351,7 @@ function drawLinearFrame(ctx, pad, w, h, xLabel, yLabel, xMin, xMax, yMin, yMax)
   return { left, right, top, bottom };
 }
 
-function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color) {
+function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = "y", xName = "θ", maxDegree = 2 } = {}) {
   const surface = setup(canvas);
   if (!surface) return;
   const { ctx, cssW, cssH, pad } = surface;
@@ -327,8 +360,16 @@ function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color) {
     return;
   }
 
-  const yMax = Math.max(1, ...trials.map((t) => t[key]));
+  const fit = polynomialFit(
+    trials.map((trial) => ({ x: trial.angleDeg, y: trial[key] })),
+    { maxDegree, xScale: 90 },
+  );
+  let yMax = Math.max(1, ...trials.map((t) => t[key]));
+  if (fit) {
+    yMax = Math.max(yMax, ...sampleFit(fit, { start: 0, end: 90, steps: 90 }).map((p) => p.y));
+  }
   const box = drawFrame(ctx, pad, cssW, cssH, xLabel, yLabel, yMax);
+  drawFitOverlay(ctx, box, fit, 0, 90, 0, yMax, color, yName, xName);
   const last = trials[trials.length - 1];
 
   ctx.fillStyle = POINT;
@@ -345,4 +386,48 @@ function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color) {
     ctx.fill();
     ctx.fillText(`#${trial.id}`, x + 6, y - 4);
   }
+}
+
+function mapPlotX(x, xMin, xMax, box) {
+  return box.left + ((x - xMin) / Math.max(xMax - xMin, 1e-6)) * (box.right - box.left);
+}
+
+function mapPlotY(y, yMin, yMax, box) {
+  return box.bottom - ((y - yMin) / Math.max(yMax - yMin, 1e-6)) * (box.bottom - box.top);
+}
+
+function drawFitOverlay(ctx, box, fit, xMin, xMax, yMin, yMax, color, yName, xName) {
+  ctx.save();
+  ctx.font = "600 11px IBM Plex Mono, monospace";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  const label = fit
+    ? `${formatFitEquation(fit, yName, xName)}   R² = ${formatR2(fit.r2)}`
+    : "Record two trials with different x-values to fit a curve.";
+  const maxW = Math.max(40, box.right - box.left - 12);
+  const textW = Math.min(ctx.measureText(label).width + 10, maxW);
+  ctx.fillStyle = "rgba(251, 247, 239, 0.92)";
+  ctx.fillRect(box.left + 4, box.top + 4, textW, 18);
+  ctx.fillStyle = AXIS;
+  ctx.fillText(label, box.left + 8, box.top + 13, maxW - 8);
+
+  if (fit) {
+    const samples = sampleFit(fit, { start: xMin, end: xMax, steps: 64 });
+    ctx.beginPath();
+    ctx.rect(box.left, box.top, box.right - box.left, box.bottom - box.top);
+    ctx.clip();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    samples.forEach((p, i) => {
+      const x = mapPlotX(p.x, xMin, xMax, box);
+      const y = mapPlotY(p.y, yMin, yMax, box);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+  ctx.restore();
 }

@@ -344,6 +344,8 @@ export function mountRepresentingMotion(root) {
       xLabel: "Displacement (m)",
       yLabel: "Distance (m)",
       color: "#c45c26",
+      fitYName: "D",
+      fitXName: "Δx",
     });
     renderXYScatter(graphHeight, list, {
       xKey: "time",
@@ -351,6 +353,8 @@ export function mountRepresentingMotion(root) {
       xLabel: "Time (s)",
       yLabel: "Average velocity (m/s)",
       color: "#1c6b73",
+      fitYName: "v_avg",
+      fitXName: "t",
     });
     drawLiveGraphs();
   }

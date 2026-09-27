@@ -104,7 +104,7 @@ export function trialSection({ rangeTitle, heightTitle, rangeCaption, heightCapt
       <div class="table-wrap">
         <div class="table-head">
           <h2>Trial Comparison</h2>
-          <p class="muted">Record after an investigation so the table and graphs belong to you.</p>
+          <p class="muted">Record after an investigation so the table and graphs belong to you. A fit appears once two trials have different x-values.</p>
         </div>
         <div class="table-scroll">
           <table>

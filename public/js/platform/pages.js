@@ -9,6 +9,19 @@ import {
   trialSection,
 } from "./lab-kit.js";
 
+function trialFitTheory(compareHtml) {
+  return `
+          <section class="theory-block">
+            <h3>Fit your recorded trials</h3>
+            <p>
+              After you record at least two trials with different x-values, each “Your Trials” graph draws a dashed
+              least-squares curve and prints the fitted equation with R². Two points always give a perfect line
+              (R² = 1). Record several different runs, then compare the fitted shape to the identities derived on this tab.
+            </p>
+            ${compareHtml}
+          </section>`;
+}
+
 export function homePage() {
   const first = modules[0].simulations[0];
   const motion = modules[0].simulations[1];
@@ -294,8 +307,8 @@ export function sim11Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Distance vs. Displacement",
           heightTitle: "Your Trials · Position vs. Distance",
-          rangeCaption: "Displacement can shrink while distance keeps growing if the object turns around.",
-          heightCaption: "Each point is a snapshot you recorded. Compare several paths from the same origin.",
+          rangeCaption: "The dashed curve is a least-squares fit. Distance should never fall below |displacement|.",
+          heightCaption: "Each point is a snapshot you recorded. Compare the fitted line to several paths from the same origin.",
           columns: ["Trial", "Position", "Displacement", "Distance", "+ direction"],
           emptyCols: 5,
         })}
@@ -314,31 +327,41 @@ export function sim11Page() {
           <section class="theory-block">
             <h3>1. Scalars have magnitude only</h3>
             <p>A scalar is fully described by a number and a unit. Distance, speed, and time are scalars. They never carry a plus or minus that means direction.</p>
-            <p class="eq-block">D = Σ |Δx<sub>i</sub>|</p>
-            <p>Distance is the sum of the lengths of every move, not the shortcut from start to finish.</p>
+            <p>Distance is the length of the actual path. Split the motion into segments that do not reverse, take the length of each segment, and add:</p>
+            <p class="eq-block">D = Σ |Δx<sub>i</sub>| = |x<sub>1</sub> − x<sub>0</sub>| + |x<sub>2</sub> − x<sub>1</sub>| + ⋯</p>
+            <p>The absolute values drop the signs, so a 3 m trip left and a 3 m trip right both add 3 m to D.</p>
           </section>
           <section class="theory-block">
             <h3>2. Vectors have magnitude and direction</h3>
-            <p>On a line, direction is a sign. Displacement, velocity, and acceleration are vectors.</p>
+            <p>On a line, direction is a sign. Displacement, velocity, and acceleration are vectors. Displacement is the change in position, not the length of the journey:</p>
             <p class="eq-block">Δx = x<sub>f</sub> − x<sub>i</sub></p>
-            <p>If the object returns to its start, Δx = 0 even if it traveled a long path.</p>
+            <p>That is the definition of a change: final minus initial. If the object returns to its start, x<sub>f</sub> = x<sub>i</sub>, so Δx = 0 even if it traveled a long path. The magnitude of the displacement is the straight-line gap |Δx|; the direction is the sign of Δx.</p>
           </section>
           <section class="theory-block">
-            <h3>3. Sign convention is a choice</h3>
+            <h3>3. Why D ≥ |Δx|</h3>
+            <p>Each segment contributes |Δx<sub>i</sub>| to distance, but those signed pieces can cancel when you add them as a net change:</p>
+            <p class="eq-block">Δx = Σ Δx<sub>i</sub><br />|Δx| = |Σ Δx<sub>i</sub>| ≤ Σ |Δx<sub>i</sub>| = D</p>
+            <p>Equality holds only when every segment has the same sign — the object never turned around. On the Distance vs. Displacement graph, every point must sit on or above the V-shaped floor D = |Δx|. A fitted line through mixed out-and-back trials will not be D = |Δx|; that mismatch is the result, not a bug.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Sign convention is a choice</h3>
             <p>This lab usually takes right as positive:</p>
             <p class="eq-block">+ = right<br />− = left</p>
             <p>Flip the convention and the displayed signs change. The object’s motion on the track does not. Teacher view shows both the screen-right world coordinate and the displayed coordinate.</p>
           </section>
           <section class="theory-block">
-            <h3>4. Worked experiment</h3>
+            <h3>5. Worked experiment</h3>
             <p>Start at 0, move to +5 m, then to +2 m.</p>
             <p class="eq-block">
-              Segments: 5 m then 3 m<br />
-              Distance D = 8 m<br />
-              Displacement Δx = +2 m
+              Δx<sub>1</sub> = +5 m, Δx<sub>2</sub> = −3 m<br />
+              D = |+5| + |−3| = 8 m<br />
+              Δx = (+5) + (−3) = +2 m
             </p>
             <p>Record that path as a trial, then try a round trip: out and back to 0. Displacement vanishes; distance does not.</p>
           </section>
+          ${trialFitTheory(`
+            <p>On Distance vs. Displacement, a one-way run should hug D ≈ |Δx| (slope about +1 or −1 depending on direction). After a reversal the points rise above that V. Position vs. Distance has no single required slope: the same D can end at many x values, so a weak R² is physically honest.</p>
+          `)}
         </article>
       </div>
     </section>
@@ -513,8 +536,8 @@ export function sim12Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Distance vs. Displacement",
           heightTitle: "Your Trials · Average Velocity vs. Time",
-          rangeCaption: "If the object reverses, distance keeps growing while displacement can shrink.",
-          heightCaption: "Each point is a snapshot you recorded. Average velocity is Δx / Δt for that run.",
+          rangeCaption: "The dashed curve is a least-squares fit. If the object reverses, distance keeps growing while displacement can shrink.",
+          heightCaption: "Average velocity is Δx / Δt for that run. For constant acceleration the points should lie near a straight line.",
           columns: ["Trial", "t", "Position", "Displacement", "Distance", "v", "a", "v_avg"],
           emptyCols: 8,
         })}
@@ -536,23 +559,36 @@ export function sim12Page() {
             <p class="eq-block">Δx = x − x₀<br />D = Σ |Δx<sub>i</sub>|</p>
           </section>
           <section class="theory-block">
-            <h3>2. Velocity</h3>
-            <p>Average velocity over an interval is displacement divided by elapsed time. Instantaneous velocity is the value of v at one instant.</p>
-            <p class="eq-block">v<sub>avg</sub> = Δx / Δt<br />v(t) = v₀ + at</p>
-            <p>Do not label the average as the instantaneous value. Signs still mean direction: +v is toward +x.</p>
+            <h3>2. Average and instantaneous velocity</h3>
+            <p>Average velocity over an interval is displacement divided by elapsed time, by definition:</p>
+            <p class="eq-block">v<sub>avg</sub> = Δx / Δt = (x − x₀) / t</p>
+            <p>Instantaneous velocity is the value of v at one instant — the limit of that ratio as Δt shrinks, which is the slope of x vs. t at that moment. Do not label the average as the instantaneous value unless the velocity never changed. Signs still mean direction: +v is toward +x.</p>
           </section>
           <section class="theory-block">
-            <h3>3. Acceleration</h3>
-            <p>Acceleration describes how velocity changes, not which way the object is currently moving.</p>
-            <p class="eq-block">a<sub>avg</sub> = Δv / Δt<br />x(t) = x₀ + v₀t + ½at²</p>
-            <p>An object with v₀ = +8 m/s and a = −2 m/s² is still moving in the positive direction until t = 4 s, when v = 0. After that it reverses.</p>
+            <h3>3. Constant acceleration gives v = v₀ + at</h3>
+            <p>Average acceleration is the change in velocity per unit time. If a is constant, that average is the acceleration itself:</p>
+            <p class="eq-block">a = Δv / Δt = (v − v₀) / t<br />v − v₀ = a t<br />v(t) = v₀ + a t</p>
+            <p>An object with v₀ = +8 m/s and a = −2 m/s² is still moving in the positive direction until t = 4 s, when v = 0. After that it reverses. Negative acceleration is not automatically “moving left.”</p>
           </section>
           <section class="theory-block">
-            <h3>4. Graph shapes</h3>
+            <h3>4. Integrating velocity gives x(t)</h3>
+            <p>Velocity is the rate of change of position, so position is the accumulation of velocity. With v(t) = v₀ + at, the area under that line from 0 to t is a rectangle plus a triangle:</p>
+            <p class="eq-block">
+              Δx = v₀ t + ½ a t²<br />
+              x(t) = x₀ + v₀ t + ½ a t²
+            </p>
+            <p>The same algebra from Δx = v<sub>avg</sub> t, using the fact that a linear v(t) has average (v₀ + v)/2:</p>
+            <p class="eq-block">
+              v<sub>avg</sub> = (v₀ + v) / 2 = (v₀ + v₀ + a t) / 2 = v₀ + ½ a t<br />
+              Δx = (v₀ + ½ a t) t = v₀ t + ½ a t²
+            </p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Graph shapes</h3>
             <p>Constant velocity: x vs. t is linear, v vs. t is horizontal, a vs. t is zero. Constant acceleration: x vs. t is a parabola, v vs. t is a sloped line, a vs. t is horizontal.</p>
           </section>
           <section class="theory-block">
-            <h3>5. Quantity comparison</h3>
+            <h3>6. Quantity comparison</h3>
             <table class="compare-table">
               <thead>
                 <tr><th>Quantity</th><th>Meaning</th><th>Unit</th></tr>
@@ -566,6 +602,9 @@ export function sim12Page() {
               </tbody>
             </table>
           </section>
+          ${trialFitTheory(`
+            <p>Hold a constant and record at several times: v<sub>avg</sub> vs. t should fit a line with slope a/2, because v<sub>avg</sub> = v₀ + ½ a t. A horizontal fit (slope ≈ 0) means a ≈ 0. Distance vs. displacement still follows D ≥ |Δx| from Simulation 1.1.</p>
+          `)}
         </article>
       </div>
     </section>
@@ -759,8 +798,8 @@ export function sim13Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Distance vs. Displacement",
           heightTitle: "Your Trials · Average Velocity vs. Time",
-          rangeCaption: "If the object reverses or bounces, distance keeps growing while displacement can shrink.",
-          heightCaption: "Each point is a snapshot you recorded. Average velocity is Δx / Δt for that run.",
+          rangeCaption: "The dashed curve is a least-squares fit. If the object reverses or bounces, distance keeps growing while displacement can shrink.",
+          heightCaption: "Average velocity is Δx / Δt for that run. Compare the fitted slope to (v₀ + v) / 2 when acceleration is constant.",
           columns: ["Trial", "t", "Position", "Displacement", "Distance", "v", "a", "v_avg"],
           emptyCols: 8,
         })}
@@ -778,27 +817,35 @@ export function sim13Page() {
           </header>
           <section class="theory-block">
             <h3>1. Motion diagrams use equal time, not equal distance</h3>
-            <p>Each dot is taken 0.50 s after the last. Wider gaps mean the object covered more distance in that same interval, so it was moving faster.</p>
-            <p class="eq-block">equal Δt · spacing ∝ speed</p>
+            <p>Each dot is taken 0.50 s after the last. In a fixed interval Δt, the gap between dots is the distance covered in that interval:</p>
+            <p class="eq-block">Δx<sub>dot</sub> ≈ v Δt<br />spacing ∝ speed &nbsp;&nbsp;(equal Δt)</p>
+            <p>Wider gaps mean the object covered more distance in that same interval, so it was moving faster. Dots piling up means it is slowing or at rest.</p>
           </section>
           <section class="theory-block">
-            <h3>2. Graph slopes</h3>
-            <p class="eq-block">slope of x vs. t = v<br />slope of v vs. t = a</p>
+            <h3>2. Graph slopes from the definitions</h3>
+            <p>A slope is a rise over a run. On a position–time graph the rise is displacement and the run is time, which is average velocity over that interval. Shrinking the interval gives instantaneous velocity:</p>
+            <p class="eq-block">slope of x vs. t = Δx / Δt = v</p>
+            <p>On a velocity–time graph the rise is the change in velocity:</p>
+            <p class="eq-block">slope of v vs. t = Δv / Δt = a</p>
             <p>A horizontal x–t graph means the object is at rest. A horizontal v–t graph means acceleration is zero.</p>
           </section>
           <section class="theory-block">
-            <h3>3. Area under v vs. t</h3>
-            <p>The signed area between the velocity graph and the time axis is displacement, not distance. Area below the axis is negative.</p>
+            <h3>3. Area under v vs. t is displacement</h3>
+            <p>For a short interval at nearly constant velocity, the rectangle under the graph has area (height)×(width) = v Δt, which is Δx. Adding those rectangles (or using a trapezoid when v changes linearly) reconstructs the net displacement. Area below the time axis is negative because v is negative:</p>
             <p class="eq-block">Δx = area under v(t)</p>
+            <p>Distance is the total area counting both sides as positive: D = Σ |v| Δt. That is why a round trip can have Δx = 0 and D &gt; 0 on the same v–t graph.</p>
           </section>
           <section class="theory-block">
             <h3>4. Speeding up vs. slowing down</h3>
-            <p>The object speeds up when velocity and acceleration have the same sign, and slows down when they have opposite signs. Negative acceleration is not automatically “moving left.”</p>
+            <p>Speed is |v|. Speed increases when velocity and acceleration have the same sign (both positive, or both negative), because then |v| is growing. Speed decreases when v and a have opposite signs. Negative acceleration is not automatically “moving left.”</p>
           </section>
           <section class="theory-block">
             <h3>5. Collisions</h3>
-            <p>Turn on <strong>Allow collisions</strong> to place elastic walls at ±20 m. On impact, velocity reverses (v → −v) and acceleration keeps its value. Distance still counts every meter of the path, including the return from the wall.</p>
+            <p>Turn on <strong>Allow collisions</strong> to place elastic walls at ±20 m. On impact the wall does not move, so the object’s velocity reverses (v → −v) while the programmed acceleration keeps its value. Distance still counts every meter of the path, including the return from the wall.</p>
           </section>
+          ${trialFitTheory(`
+            <p>The live x–t, v–t, and a–t graphs are the motion itself. The recorded scatters test the same identities across several runs: D vs. Δx should respect D ≥ |Δx|, and v<sub>avg</sub> vs. t should be linear with slope a/2 when a is constant and you have not yet bounced.</p>
+          `)}
         </article>
       </div>
     </section>
@@ -993,8 +1040,8 @@ export function sim14Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Relative Position vs. Relative Velocity",
           heightTitle: "Your Trials · Separation vs. Time",
-          rangeCaption: "When v_A/B = 0 the gap stays constant even though both objects may still move relative to the ground.",
-          heightCaption: "Each point is a snapshot you recorded.",
+          rangeCaption: "A snapshot of x_A/B is not determined by v_A/B alone. When v_A/B = 0 the gap stays constant even if both still move relative to the ground.",
+          heightCaption: "The dashed curve is a least-squares fit. Separation is |x_A/B|, so a straight line only holds until they meet.",
           columns: ["Trial", "Frame", "t", "x_A", "v_A", "x_B", "v_B", "v_A/B"],
           emptyCols: 8,
         })}
@@ -1011,23 +1058,39 @@ export function sim14Page() {
             </p>
           </header>
           <section class="theory-block">
-            <h3>1. Relative velocity</h3>
-            <p class="eq-block">v<sub>A/B</sub> = v<sub>A</sub> − v<sub>B</sub><br />v<sub>B/A</sub> = −v<sub>A/B</sub></p>
-            <p>If both trains move east, a passenger on the slower train still sees the faster train moving east, but more slowly.</p>
+            <h3>1. Relative velocity from relative position</h3>
+            <p>Define the position of A relative to B as the difference of their ground positions. Relative velocity is how that difference changes with time:</p>
+            <p class="eq-block">
+              x<sub>A/B</sub> = x<sub>A</sub> − x<sub>B</sub><br />
+              v<sub>A/B</sub> = d x<sub>A/B</sub> / dt = v<sub>A</sub> − v<sub>B</sub>
+            </p>
+            <p>Swapping the labels flips the sign, so v<sub>B/A</sub> = −v<sub>A/B</sub>. If both trains move east, a passenger on the slower train still sees the faster train moving east, but more slowly.</p>
           </section>
           <section class="theory-block">
             <h3>2. Same velocity, different stories</h3>
-            <p>If v<sub>A</sub> = v<sub>B</sub> = +5 m/s, the ground observer sees both objects move. In A's frame, B is at rest. Both descriptions are correct.</p>
+            <p>If v<sub>A</sub> = v<sub>B</sub> = +5 m/s, then v<sub>A/B</sub> = 0. The ground observer sees both objects move. In A's frame, B is at rest. Both descriptions are correct.</p>
           </section>
           <section class="theory-block">
             <h3>3. Positions in a moving frame</h3>
-            <p class="eq-block">x<sub>B/A</sub> = x<sub>B</sub> − x<sub>A</sub></p>
-            <p>When you choose Object A as the frame, A is drawn at x = 0. B's displayed position is how far B is from A.</p>
+            <p>Each object follows x = x₀ + v t on the ground (constant velocity). Subtract those two lines:</p>
+            <p class="eq-block">
+              x<sub>A/B</sub>(t) = (x<sub>A0</sub> + v<sub>A</sub> t) − (x<sub>B0</sub> + v<sub>B</sub> t)<br />
+              x<sub>A/B</sub>(t) = x<sub>A0</sub> − x<sub>B0</sub> + (v<sub>A</sub> − v<sub>B</sub>) t
+            </p>
+            <p>When you choose Object A as the frame, A is drawn at x = 0. B's displayed position is how far B is from A. The slope of x<sub>A/B</sub> vs. t is exactly v<sub>A/B</sub>.</p>
           </section>
           <section class="theory-block">
             <h3>4. Meeting time</h3>
-            <p>If they close, t = (x<sub>B</sub> − x<sub>A</sub>) / (v<sub>A</sub> − v<sub>B</sub>). If relative velocity is zero and they start apart, they never meet. They pass through each other; this lab does not bounce them.</p>
+            <p>They meet when they occupy the same ground position, which is the same statement as x<sub>A/B</sub> = 0:</p>
+            <p class="eq-block">
+              0 = (x<sub>A0</sub> − x<sub>B0</sub>) + (v<sub>A</sub> − v<sub>B</sub>) t<br />
+              t = (x<sub>B0</sub> − x<sub>A0</sub>) / (v<sub>A</sub> − v<sub>B</sub>)
+            </p>
+            <p>If relative velocity is zero and they start apart, the denominator is zero and they never meet. They pass through each other; this lab does not bounce them. Separation on the trial graph is the absolute value s = |x<sub>A/B</sub>|, so s vs. t is a V that touches zero at the meeting time.</p>
           </section>
+          ${trialFitTheory(`
+            <p>x<sub>A/B</sub> vs. v<sub>A/B</sub> at mixed times is not a required line: relative position also depends on the starting gap and on t. A near-zero slope is common if you change speed without changing the snapshot time much. Separation vs. time should fit a line while they close or recede without meeting; after they pass, s starts increasing and a single straight fit will look worse (lower R²).</p>
+          `)}
         </article>
       </div>
     </section>

@@ -213,6 +213,8 @@ export function mountVectors1D(root) {
       color: "#c45c26",
       xMin: -12,
       xMax: 12,
+      fitYName: "D",
+      fitXName: "Δx",
     });
     renderXYScatter(graphHeight, list, {
       xKey: "distance",
@@ -223,6 +225,8 @@ export function mountVectors1D(root) {
       xMin: 0,
       yMin: -12,
       yMax: 12,
+      fitYName: "x",
+      fitXName: "D",
     });
   }
 

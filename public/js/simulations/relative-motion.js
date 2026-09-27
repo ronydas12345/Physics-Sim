@@ -331,6 +331,8 @@ export function mountRelativeMotion(root) {
       xLabel: "v_A/B (m/s)",
       yLabel: "x_A/B (m)",
       color: "#c45c26",
+      fitYName: "x_A/B",
+      fitXName: "v_A/B",
     });
     renderXYScatter(graphHeight, list, {
       xKey: "time",
@@ -338,6 +340,8 @@ export function mountRelativeMotion(root) {
       xLabel: "Time (s)",
       yLabel: "Separation (m)",
       color: "#1c6b73",
+      fitYName: "s",
+      fitXName: "t",
     });
     drawLiveGraphs();
   }

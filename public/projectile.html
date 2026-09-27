@@ -165,12 +165,12 @@
             <div class="graph-wrap">
               <h2>Your Trials · Range vs. Angle</h2>
               <canvas id="graph-range" width="640" height="280" aria-label="Recorded range versus launch angle"></canvas>
-              <p class="caption">Each point is a trial you recorded. Compare 30°, 45°, and 60° with the same speed and gravity.</p>
+              <p class="caption">Each point is a trial you recorded. The dashed curve is a least-squares fit in θ. Compare 30°, 45°, and 60° with the same speed and gravity to the identity R = v₀² sin(2θ) / g.</p>
             </div>
             <div class="graph-wrap">
               <h2>Your Trials · Height vs. Angle</h2>
               <canvas id="graph-height" width="640" height="280" aria-label="Recorded maximum height versus launch angle"></canvas>
-              <p class="caption">Steeper launches usually go higher, even when they do not travel farther.</p>
+              <p class="caption">The dashed curve is a fit to your points. Steeper launches usually go higher, even when they do not travel farther. Compare to H = v₀² sin²θ / (2g).</p>
             </div>
           </div>
           <div class="table-wrap">
@@ -278,7 +278,16 @@
               The apex is not “where the path looks highest.” It is the instant vertical velocity is zero.
               After that, gravity has finished canceling the upward component and the projectile starts falling.
             </p>
-            <p class="eq-block">0 = v<sub>0</sub> sin θ − g t<sub>apex</sub><br />t<sub>apex</sub> = v<sub>0</sub> sin θ / g<br />H = v<sub>0</sub>² sin²θ / (2g)</p>
+            <p class="eq-block">0 = v<sub>0</sub> sin θ − g t<sub>apex</sub><br />t<sub>apex</sub> = v<sub>0</sub> sin θ / g</p>
+            <p>
+              Height is vertical position at that instant. Substitute t<sub>apex</sub> into y(t):
+            </p>
+            <p class="eq-block">
+              H = (v<sub>0</sub> sin θ) t<sub>apex</sub> − ½ g t<sub>apex</sub>²<br />
+              H = (v<sub>0</sub> sin θ)(v<sub>0</sub> sin θ / g) − ½ g (v<sub>0</sub> sin θ / g)²<br />
+              H = v<sub>0</sub>² sin²θ / g − ½ v<sub>0</sub>² sin²θ / g<br />
+              H = v<sub>0</sub>² sin²θ / (2g)
+            </p>
             <p>
               Notice <span class="eq">t<sub>apex</sub></span> is exactly half the flight time when launch and landing heights are equal.
               Height keeps increasing as <span class="eq">θ</span> approaches 90°. A vertical launch has the greatest height and zero range.
@@ -354,6 +363,29 @@
               <li>If the landing is above the launch point, the best angle is greater than 45°.</li>
             </ul>
             <p>Those extensions are later physics. This lab is built so you can see the equal-height case cleanly.</p>
+          </section>
+
+          <section class="theory-block">
+            <h3>10. Fit your recorded trials</h3>
+            <p>
+              The Theory graphs above plot the exact identities. Your Lab tab graphs are different: they show only the
+              trials you recorded, with a dashed least-squares polynomial in the launch angle θ (in degrees) and an R².
+              Two points always give a perfect line. Record several angles at the same v<sub>0</sub> and g before you
+              trust the curve.
+            </p>
+            <p>
+              A quadratic in θ is an approximation of the true shapes, not a replacement for them. Use the fit to
+              discover the pattern, then check it against the derivations:
+            </p>
+            <ul>
+              <li><strong>Range vs. angle.</strong> R = v<sub>0</sub>² sin(2θ) / g peaks at 45° and is symmetric about that peak, so 30° and 60° should land equally far. A parabola fitted through 0°–90° can look similar, but it is not sin(2θ). If your fitted peak sits near 45° and R(30°) ≈ R(60°), the data match the identity.</li>
+              <li><strong>Height vs. angle.</strong> H = v<sub>0</sub>² sin²θ / (2g) keeps rising toward 90°. The fit should not peak near 45°. If it does, you mixed different speeds or gravities in the same table.</li>
+            </ul>
+            <p>
+              R² near 1 means the points lie close to the fitted polynomial. It does not prove the trigonometric formula
+              unless you also compare the shape to the closed form — or to the predicted graphs in section 8 with the
+              same v<sub>0</sub> and g.
+            </p>
           </section>
         </article>
       </div>

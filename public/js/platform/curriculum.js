@@ -7,7 +7,7 @@ export const STATUSES = {
 
 export const LAB_FEATURES = [
   { id: "theory", title: "Theory", blurb: "Equations, worked examples, and predicted graphs live in a dedicated tab so the lab stays an experiment, not a textbook." },
-  { id: "investigate", title: "Investigate", blurb: "Change one variable, watch the model respond immediately, and record trials into a table and graphs you own." },
+  { id: "investigate", title: "Investigate", blurb: "Change one variable, watch the model respond immediately, and record trials into a table and graphs with a least-squares fit you can compare to Theory." },
   { id: "challenge", title: "Challenge", blurb: "Randomized unknowns hide the answer until you run the experiment. Reveal only after you have a measurement." },
   { id: "teacher", title: "Teacher view", blurb: "Compare live simulated values with the closed-form identities the course expects, without changing the student model." },
 ];
