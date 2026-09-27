@@ -28,13 +28,20 @@ export function homePage() {
           <a class="btn ghost-paper" href="/simulations/module-1" data-link>Start with Kinematics</a>
         </div>
       </div>
-      <div class="hero-visual" aria-hidden="true">
-        <svg viewBox="0 0 320 180">
-          <line x1="24" y1="150" x2="296" y2="150" stroke="#5a4634" stroke-width="6"/>
-          <path d="M40 150 Q 140 18 260 150" fill="none" stroke="#c45c26" stroke-width="3"/>
-          <circle cx="40" cy="150" r="8" fill="#f0a202"/>
-          <circle cx="168" cy="72" r="8" fill="#f0a202"/>
-        </svg>
+      <div class="hero-visual">
+        <canvas id="hero-reel" width="640" height="360" aria-hidden="true"></canvas>
+        <a class="hero-reel-copy" id="hero-reel-link" href="${modules[0].path}" data-link>
+          <p class="kicker" id="hero-reel-kicker">Unit ${modules[0].id}</p>
+          <p class="hero-reel-title" id="hero-reel-title">Kinematics</p>
+        </a>
+        <div class="hero-reel-dots" role="tablist" aria-label="AP Physics 1 units">
+          ${modules
+            .map(
+              (mod, i) =>
+                `<button type="button" class="hero-reel-dot${i === 0 ? " is-active" : ""}" data-hero-unit="${i}" role="tab" aria-selected="${i === 0 ? "true" : "false"}" aria-label="Unit ${mod.id}: ${mod.title}"></button>`,
+            )
+            .join("")}
+        </div>
       </div>
     </section>
 

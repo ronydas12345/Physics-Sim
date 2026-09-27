@@ -5,6 +5,7 @@ import { mountVectors1D } from "../simulations/vectors-1d.js";
 import { mountMotion1D } from "../simulations/motion-1d.js";
 import { mountRepresentingMotion } from "../simulations/representing-motion.js";
 import { mountRelativeMotion } from "../simulations/relative-motion.js";
+import { mountHeroReel } from "./hero-reel.js";
 
 const outlet = document.getElementById("outlet");
 const header = document.getElementById("site-header");
@@ -47,7 +48,10 @@ function render() {
     "sim-1-4": "1.4 Reference Frames and Relative Motion · AP Physics 1",
     notfound: "Not found · AP Physics 1",
   };
-  if (route.name === "home") outlet.innerHTML = homePage();
+  if (route.name === "home") {
+    outlet.innerHTML = homePage();
+    unmount = mountHeroReel(outlet);
+  }
   else if (route.name === "library") outlet.innerHTML = libraryPage();
   else if (route.name === "module") {
     outlet.innerHTML = modulePage(route.id);
