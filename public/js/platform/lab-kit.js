@@ -240,12 +240,44 @@ export function createTrialBook({ columns, renderRow, onChange }) {
   };
 }
 
-export function bindFullscreen(button, node) {
-  if (!button || !node) return;
+export function bindFullscreen(button) {
+  if (!button) return () => {};
+  const target = document.getElementById("page-root") || document.body;
+
+  function active() {
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function enter() {
+    const fn = target.requestFullscreen || target.webkitRequestFullscreen;
+    return fn?.call(target);
+  }
+
+  function exit() {
+    const fn = document.exitFullscreen || document.webkitExitFullscreen;
+    return fn?.call(document);
+  }
+
+  function sync() {
+    const on = active() === target;
+    button.setAttribute("aria-pressed", String(on));
+    button.title = on ? "Exit fullscreen" : "Fullscreen";
+    button.setAttribute("aria-label", on ? "Exit fullscreen" : "Fullscreen");
+    target.classList.toggle("is-fullscreen", on);
+  }
+
   button.addEventListener("click", () => {
-    if (!document.fullscreenElement) node.requestFullscreen?.();
-    else document.exitFullscreen?.();
+    if (active()) exit();
+    else enter();
   });
+  document.addEventListener("fullscreenchange", sync);
+  document.addEventListener("webkitfullscreenchange", sync);
+  sync();
+  return () => {
+    document.removeEventListener("fullscreenchange", sync);
+    document.removeEventListener("webkitfullscreenchange", sync);
+    if (active() !== target) target.classList.remove("is-fullscreen");
+  };
 }
 
 export function bindDownload(root, { getTable, filename }) {

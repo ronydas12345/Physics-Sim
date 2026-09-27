@@ -63,7 +63,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1, 1.2, and 1.5, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.5, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -187,7 +187,7 @@ export function aboutPage() {
     </header>
     <article class="prose card">
       <h2>Navigation</h2>
-      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1 Scalars and Vectors, 1.2 Displacement, Velocity, and Acceleration, and 1.5 Vectors and Motion in Two Dimensions (the projectile lab).</p>
+      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1 Scalars and Vectors, 1.2 Displacement, Velocity, and Acceleration, 1.3 Representing Motion, 1.4 Reference Frames and Relative Motion, and 1.5 Vectors and Motion in Two Dimensions (the projectile lab).</p>
       <h2>Lab, Theory, Challenge, Teacher view</h2>
       <p>Every available lab uses the same shell. Theory holds equations and examples. Challenge randomizes a target and hides the answer until you check or launch. Teacher view compares live values with the identities the course uses. Record and auto-record fill a trial table and graphs.</p>
       <h2>Reset</h2>
@@ -346,7 +346,7 @@ export function sim12Page() {
           <p class="kicker">Unit 1 · Simulation 1.2</p>
           <h1>Displacement, Velocity, and Acceleration</h1>
           <p class="objective">Learning objective: Connect one-dimensional motion over time to average and instantaneous velocity and acceleration, including graphs and direction change.</p>
-          <p class="sim-nav"><a href="/simulations/module-1/1-1" data-link>← 1.1</a> · <a href="/simulations/module-1" data-link>Module 1</a></p>
+          <p class="sim-nav"><a href="/simulations/module-1/1-1" data-link>← 1.1</a> · <a href="/simulations/module-1" data-link>Module 1</a> · <a href="/simulations/module-1/1-3" data-link>1.3 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -558,6 +558,468 @@ export function sim12Page() {
                 <tr><td>Acceleration</td><td>Change in velocity / time</td><td>m/s²</td></tr>
               </tbody>
             </table>
+          </section>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim13Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 1 · Simulation 1.3</p>
+          <h1>Representing Motion</h1>
+          <p class="objective">Learning objective: Connect the same one-dimensional motion to a motion diagram, position-time, velocity-time, and acceleration-time graphs, and to the live numbers.</p>
+          <p class="sim-nav"><a href="/simulations/module-1/1-2" data-link>← 1.2</a> · <a href="/simulations/module-1" data-link>Module 1</a> · <a href="/simulations/module-1/1-4" data-link>1.4 →</a></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage" aria-label="One-dimensional motion representations">
+            <canvas id="axis-canvas" width="960" height="280" aria-label="Object moving on a one-dimensional position axis"></canvas>
+            <div class="transport">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-13">Check</button>
+              <button type="button" class="chip" id="btn-collide" aria-pressed="false">Allow collisions</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control">
+                <div class="control-head"><span>Presets</span></div>
+                <div class="presets" role="group" aria-label="Motion presets">
+                  <button type="button" class="chip" data-preset="still">Stationary</button>
+                  <button type="button" class="chip" data-preset="const-v">Constant +v</button>
+                  <button type="button" class="chip" data-preset="const-neg">Constant −v</button>
+                  <button type="button" class="chip" data-preset="speed-up">Speeding up</button>
+                  <button type="button" class="chip" data-preset="slow-down">Slowing down</button>
+                  <button type="button" class="chip" data-preset="reverse">Direction change</button>
+                  <button type="button" class="chip" data-preset="neg-speed">Speeding up left</button>
+                  <button type="button" class="chip" data-preset="neg-slow">Slowing down left</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">
+                  Initial position
+                  <input id="x0-input" type="number" step="0.5" min="-20" max="20" value="0" aria-label="Initial position in meters" />
+                  <span>m</span>
+                </label>
+                <label class="pos-input">
+                  Initial velocity
+                  <input id="v0-input" type="number" step="0.5" min="-15" max="15" value="4" aria-label="Initial velocity in meters per second" />
+                  <span>m/s</span>
+                </label>
+                <label class="pos-input">
+                  Acceleration
+                  <input id="a-input" type="number" step="0.5" min="-8" max="8" value="0" aria-label="Acceleration in meters per second squared" />
+                  <span>m/s²</span>
+                </label>
+                <label class="pos-input">
+                  Duration
+                  <input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" />
+                  <span>s</span>
+                </label>
+              </div>
+              <p class="sr-only">
+                <span id="read-x0"></span>
+                <span id="read-v0"></span>
+                <span id="read-a0"></span>
+                <span id="read-T"></span>
+              </p>
+              <div class="nudge-row">
+                <label class="switch light"><input id="toggle-object" type="checkbox" checked /> Object</label>
+                <label class="switch light"><input id="toggle-diagram" type="checkbox" checked /> Motion diagram</label>
+                <label class="switch light"><input id="toggle-vectors" type="checkbox" checked /> Velocity and acceleration arrows</label>
+                <label class="switch light"><input id="toggle-area" type="checkbox" /> Shade v–t area (Δx)</label>
+                <label class="switch light"><input id="pause-reverse" type="checkbox" /> Pause at v = 0</label>
+              </div>
+              <p class="track-help">Dot spacing is speed at equal time steps. Click a graph while paused to jump to that time. Allow collisions to bounce elastically at ±20 m.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="values-panel">
+              <div class="card-head">
+                <h2>Live Measurements</h2>
+                ${teacherSwitch()}
+              </div>
+              <dl class="metrics metrics-wide">
+                <div>
+                  <dt>Time</dt>
+                  <dd id="read-t">0.00 s</dd>
+                </div>
+                <div>
+                  <dt>Position <span class="tag">vector</span></dt>
+                  <dd id="read-x">0.00 m</dd>
+                </div>
+                <div>
+                  <dt>Displacement <span class="tag">vector</span></dt>
+                  <dd id="read-dx">0.00 m <span id="dx-arrow" class="dir-glyph"></span></dd>
+                </div>
+                <div>
+                  <dt>Distance traveled <span class="tag tag-scalar">scalar</span></dt>
+                  <dd id="read-d">0.00 m</dd>
+                </div>
+                <div>
+                  <dt>Velocity <span class="tag">instantaneous</span></dt>
+                  <dd id="read-v">+4.00 m/s</dd>
+                </div>
+                <div>
+                  <dt>Acceleration <span class="tag">instantaneous</span></dt>
+                  <dd id="read-a">0.00 m/s²</dd>
+                </div>
+                <div>
+                  <dt>Slope of x vs. t</dt>
+                  <dd id="read-slope-x">+4.00 m/s</dd>
+                </div>
+                <div>
+                  <dt>Slope of v vs. t</dt>
+                  <dd id="read-slope-v">0.00 m/s²</dd>
+                </div>
+                <div>
+                  <dt>Area under v vs. t</dt>
+                  <dd id="read-area-v">0.00 m</dd>
+                </div>
+              </dl>
+              <p class="caption">Slope of x–t is velocity. Slope of v–t is acceleration. Signed area under v–t is displacement.</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+          </aside>
+        </div>
+
+        <section class="lab-bottom" id="wrap-diagram">
+          <div class="graph-wrap diagram-wrap">
+            <h2>Motion diagram</h2>
+            <canvas id="diagram-canvas" width="960" height="160" aria-label="Motion diagram with equal time intervals"></canvas>
+            <p class="caption">Each dot is the position 0.50 s after the previous dot. Equal spacing means constant speed; growing gaps mean speeding up. The diamond is now.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graph-toggles" role="group" aria-label="Graph visibility">
+            <label><input type="checkbox" data-graph="x" checked /> Position vs. time</label>
+            <label><input type="checkbox" data-graph="v" checked /> Velocity vs. time</label>
+            <label><input type="checkbox" data-graph="a" checked /> Acceleration vs. time</label>
+          </div>
+          <div class="graphs graphs-three">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Position versus time"></canvas>
+              <p class="caption">Slope = velocity. A curve means velocity is changing.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Velocity versus time"></canvas>
+              <p class="caption">Slope = acceleration. Signed area under the curve = displacement.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-a">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-at" width="640" height="240" aria-label="Acceleration versus time"></canvas>
+              <p class="caption">Constant acceleration is a horizontal line. Zero acceleration sits on the time axis.</p>
+            </div>
+          </div>
+        </section>
+
+        ${trialSection({
+          rangeTitle: "Your Trials · Distance vs. Displacement",
+          heightTitle: "Your Trials · Average Velocity vs. Time",
+          rangeCaption: "If the object reverses or bounces, distance keeps growing while displacement can shrink.",
+          heightCaption: "Each point is a snapshot you recorded. Average velocity is Δx / Δt for that run.",
+          columns: ["Trial", "t", "Position", "Displacement", "Distance", "v", "a", "v_avg"],
+          emptyCols: 8,
+        })}
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>One motion, several pictures</h2>
+            <p>
+              The object, the motion diagram, and the three graphs are not separate problems.
+              They are translations of the same x(t), v(t), and a(t).
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Motion diagrams use equal time, not equal distance</h3>
+            <p>Each dot is taken 0.50 s after the last. Wider gaps mean the object covered more distance in that same interval, so it was moving faster.</p>
+            <p class="eq-block">equal Δt · spacing ∝ speed</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Graph slopes</h3>
+            <p class="eq-block">slope of x vs. t = v<br />slope of v vs. t = a</p>
+            <p>A horizontal x–t graph means the object is at rest. A horizontal v–t graph means acceleration is zero.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Area under v vs. t</h3>
+            <p>The signed area between the velocity graph and the time axis is displacement, not distance. Area below the axis is negative.</p>
+            <p class="eq-block">Δx = area under v(t)</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Speeding up vs. slowing down</h3>
+            <p>The object speeds up when velocity and acceleration have the same sign, and slows down when they have opposite signs. Negative acceleration is not automatically “moving left.”</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Collisions</h3>
+            <p>Turn on <strong>Allow collisions</strong> to place elastic walls at ±20 m. On impact, velocity reverses (v → −v) and acceleration keeps its value. Distance still counts every meter of the path, including the return from the wall.</p>
+          </section>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim14Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 1 · Simulation 1.4</p>
+          <h1>Reference Frames and Relative Motion</h1>
+          <p class="objective">Learning objective: Describe the same one-dimensional motion from the ground and from moving observers using relative position and velocity.</p>
+          <p class="sim-nav"><a href="/simulations/module-1/1-3" data-link>← 1.3</a> · <a href="/simulations/module-1" data-link>Module 1</a> · <a href="/simulations/module-1/1-5">1.5 →</a></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage relative-stage" aria-label="Two objects in a chosen reference frame">
+            <canvas id="axis-canvas" width="960" height="320" aria-label="Objects A and B on a one-dimensional axis"></canvas>
+            <div class="transport">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-14">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control">
+                <div class="control-head"><span>Reference frame</span></div>
+                <div class="presets" role="radiogroup" aria-label="Reference frame">
+                  <button type="button" class="chip active" data-frame="ground">Ground</button>
+                  <button type="button" class="chip" data-frame="A">Object A</button>
+                  <button type="button" class="chip" data-frame="B">Object B</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Presets</span></div>
+                <div class="presets" role="group" aria-label="Relative motion presets">
+                  <button type="button" class="chip" data-preset="same-v">Same velocity</button>
+                  <button type="button" class="chip" data-preset="a-faster">A faster</button>
+                  <button type="button" class="chip" data-preset="b-faster">B faster</button>
+                  <button type="button" class="chip" data-preset="opposite">Opposite directions</button>
+                  <button type="button" class="chip" data-preset="b-still">B stationary</button>
+                  <button type="button" class="chip" data-preset="a-observer">A as observer</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">
+                  x₀ of A
+                  <input id="xa-input" type="number" step="0.5" value="0" aria-label="Initial position of A in meters" />
+                  <span>m</span>
+                </label>
+                <label class="pos-input">
+                  v of A
+                  <input id="va-input" type="number" step="0.5" value="5" aria-label="Velocity of A in meters per second" />
+                  <span>m/s</span>
+                </label>
+                <label class="pos-input">
+                  x₀ of B
+                  <input id="xb-input" type="number" step="0.5" value="10" aria-label="Initial position of B in meters" />
+                  <span>m</span>
+                </label>
+                <label class="pos-input">
+                  v of B
+                  <input id="vb-input" type="number" step="0.5" value="5" aria-label="Velocity of B in meters per second" />
+                  <span>m/s</span>
+                </label>
+                <label class="pos-input">
+                  Duration
+                  <input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" />
+                  <span>s</span>
+                </label>
+              </div>
+              <p class="track-help">Switch frames while the motion runs. A and B pass through each other. Drag either object at t = 0 to set its starting position.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="values-panel">
+              <div class="card-head">
+                <h2>This frame</h2>
+                ${teacherSwitch()}
+              </div>
+              <p class="caption" id="frame-note">Positions and velocities below are relative to the ground.</p>
+              <dl class="metrics metrics-wide">
+                <div>
+                  <dt>Current frame</dt>
+                  <dd id="read-frame">Ground</dd>
+                </div>
+                <div>
+                  <dt>Time</dt>
+                  <dd id="read-t">0.00 s</dd>
+                </div>
+                <div>
+                  <dt>A position</dt>
+                  <dd id="read-xa">0.00 m</dd>
+                </div>
+                <div>
+                  <dt>A velocity</dt>
+                  <dd id="read-va">+5.00 m/s</dd>
+                </div>
+                <div>
+                  <dt>B position</dt>
+                  <dd id="read-xb">+10.00 m</dd>
+                </div>
+                <div>
+                  <dt>B velocity</dt>
+                  <dd id="read-vb">+5.00 m/s</dd>
+                </div>
+                <div>
+                  <dt>x<sub>A/B</sub></dt>
+                  <dd id="read-xab">−10.00 m</dd>
+                </div>
+                <div>
+                  <dt>v<sub>A/B</sub></dt>
+                  <dd id="read-vab">0.00 m/s</dd>
+                </div>
+                <div>
+                  <dt>x<sub>B/A</sub></dt>
+                  <dd id="read-xba">+10.00 m</dd>
+                </div>
+                <div>
+                  <dt>v<sub>B/A</sub></dt>
+                  <dd id="read-vba">0.00 m/s</dd>
+                </div>
+                <div>
+                  <dt>Time to meeting</dt>
+                  <dd id="read-meet">No future meeting within the current conditions.</dd>
+                </div>
+              </dl>
+              <p class="caption">v<sub>A/B</sub> = v<sub>A</sub> − v<sub>B</sub>. The physical event does not change when you switch frames.</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap">
+            <h2>Motion diagram in this frame</h2>
+            <canvas id="diagram-canvas" width="960" height="160" aria-label="Motion diagrams for A and B in the selected frame"></canvas>
+            <p class="caption">Equal time steps. In a moving object's frame that object stays at x = 0 and the other object's spacing is relative speed.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graphs graphs-three">
+            <div class="graph-wrap">
+              <h2>Relative position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Position of A relative to B versus time"></canvas>
+              <p class="caption">x<sub>A/B</sub> vs. t. Slope = v<sub>A/B</sub>. Click while paused to jump to that time.</p>
+            </div>
+            <div class="graph-wrap">
+              <h2>Relative velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Velocity of A relative to B versus time"></canvas>
+              <p class="caption">For constant ground velocities this graph is a horizontal line at v<sub>A</sub> − v<sub>B</sub>.</p>
+            </div>
+            <div class="graph-wrap">
+              <h2>Position in this frame vs. time</h2>
+              <canvas id="graph-frame" width="640" height="240" aria-label="Positions of A and B in the selected reference frame versus time"></canvas>
+              <p class="caption">Switch to Object A: A stays at x = 0 and B’s graph is x<sub>B</sub> − x<sub>A</sub>.</p>
+            </div>
+          </div>
+        </section>
+
+        ${trialSection({
+          rangeTitle: "Your Trials · Relative Position vs. Relative Velocity",
+          heightTitle: "Your Trials · Separation vs. Time",
+          rangeCaption: "When v_A/B = 0 the gap stays constant even though both objects may still move relative to the ground.",
+          heightCaption: "Each point is a snapshot you recorded.",
+          columns: ["Trial", "Frame", "t", "x_A", "v_A", "x_B", "v_B", "v_A/B"],
+          emptyCols: 8,
+        })}
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Motion is measured from a frame</h2>
+            <p>
+              A reference frame is the coordinate system you use to report position and velocity.
+              Changing frames changes the numbers, not the event.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Relative velocity</h3>
+            <p class="eq-block">v<sub>A/B</sub> = v<sub>A</sub> − v<sub>B</sub><br />v<sub>B/A</sub> = −v<sub>A/B</sub></p>
+            <p>If both trains move east, a passenger on the slower train still sees the faster train moving east, but more slowly.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Same velocity, different stories</h3>
+            <p>If v<sub>A</sub> = v<sub>B</sub> = +5 m/s, the ground observer sees both objects move. In A's frame, B is at rest. Both descriptions are correct.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Positions in a moving frame</h3>
+            <p class="eq-block">x<sub>B/A</sub> = x<sub>B</sub> − x<sub>A</sub></p>
+            <p>When you choose Object A as the frame, A is drawn at x = 0. B's displayed position is how far B is from A.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Meeting time</h3>
+            <p>If they close, t = (x<sub>B</sub> − x<sub>A</sub>) / (v<sub>A</sub> − v<sub>B</sub>). If relative velocity is zero and they start apart, they never meet. They pass through each other; this lab does not bounce them.</p>
           </section>
         </article>
       </div>

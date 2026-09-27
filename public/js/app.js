@@ -100,7 +100,7 @@ const download = bindDownload(document, {
     };
   },
 });
-bindFullscreen($("btn-fullscreen"), document.querySelector(".app"));
+bindFullscreen($("btn-fullscreen"));
 
 function fmt(n, digits) {
   if (!Number.isFinite(n)) return "—";

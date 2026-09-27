@@ -345,7 +345,7 @@ export function mountVectors1D(root) {
       };
     },
   });
-  bindFullscreen(root.querySelector("#btn-fullscreen"), root.querySelector(".sim-shell"));
+  const unbindFullscreen = bindFullscreen(root.querySelector("#btn-fullscreen"));
   const onReset = () => {
     if (autoRecord && state.distanceTraveled > 0) trials.record(snapshot());
     state = resetState(state);
@@ -425,6 +425,7 @@ export function mountVectors1D(root) {
 
   return () => {
     download.destroy();
+    unbindFullscreen?.();
     resize.disconnect();
     window.removeEventListener("keydown", onKey);
     canvas.removeEventListener("pointerdown", onPointerDown);

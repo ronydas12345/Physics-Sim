@@ -1,20 +1,23 @@
 import {
   AXIS_MAX,
   AXIS_MIN,
+  DIAGRAM_DT,
   DT,
   PLAYBACK_SPEEDS,
-  PRESETS,
+  REPRESENT_PRESETS,
   createState,
   evaluateChallenge,
   formatSigned,
   formatUnsigned,
   generateChallenge,
+  motionDiagramSamples,
   positionAt,
   reset as resetState,
+  snapshot,
   stepTo,
   teacherReport,
 } from "/lib/kinematics1d.js";
-import { renderTimeSeries, renderXYScatter } from "../graphs.js";
+import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import {
   bindChallenge,
   bindDownload,
@@ -33,6 +36,7 @@ function xToWorld(px, view) {
 }
 
 function axisBounds(state) {
+  if (state.collide) return { min: AXIS_MIN, max: AXIS_MAX };
   const xs = state.history.map((s) => s.position);
   xs.push(state.position, state.initialPosition);
   const lo = Math.min(AXIS_MIN, ...xs);
@@ -43,7 +47,7 @@ function axisBounds(state) {
   };
 }
 
-function createView(canvas, state) {
+function createView(canvas, state, axisYFrac = 0.58) {
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, canvas.clientWidth);
   const cssH = Math.max(1, canvas.clientHeight);
@@ -51,12 +55,12 @@ function createView(canvas, state) {
   const h = Math.round(cssH * dpr);
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
-  const pad = { l: 36, r: 36, t: 44, b: 46 };
+  const pad = { l: 36, r: 36, t: 36, b: 40 };
   const { min, max } = axisBounds(state);
   const plotW = cssW - pad.l - pad.r;
   const scale = plotW / Math.max(max - min, 1);
   const originX = pad.l + (0 - min) * scale;
-  const axisY = cssH * 0.58;
+  const axisY = cssH * axisYFrac;
   return { cssW, cssH, dpr, pad, scale, originX, axisY, min, max };
 }
 
@@ -78,24 +82,7 @@ function drawArrow(ctx, x1, y1, x2, y2, color) {
   ctx.fill();
 }
 
-function renderTrack(canvas, state, { showVectors, showTrail }) {
-  const view = createView(canvas, state);
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
-  ctx.clearRect(0, 0, view.cssW, view.cssH);
-
-  const sky = ctx.createLinearGradient(0, 0, 0, view.cssH);
-  sky.addColorStop(0, "#d7ebf7");
-  sky.addColorStop(1, "#f4efe6");
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, view.cssW, view.cssH);
-
-  ctx.fillStyle = "#1b2430";
-  ctx.font = "700 18px IBM Plex Mono, monospace";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillText(`Time: ${state.time.toFixed(2)} s`, view.cssW / 2, 10);
-
+function drawAxis(ctx, view) {
   const y = view.axisY;
   ctx.strokeStyle = "#1b2430";
   ctx.lineWidth = 2;
@@ -103,15 +90,13 @@ function renderTrack(canvas, state, { showVectors, showTrail }) {
   ctx.moveTo(view.pad.l, y);
   ctx.lineTo(view.cssW - view.pad.r, y);
   ctx.stroke();
-
   drawArrow(ctx, view.originX, y, view.cssW - view.pad.r, y, "#1c6b73");
   ctx.fillStyle = "#4d5a68";
   ctx.font = "600 12px Figtree, sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText("positive →", view.cssW - 18, y - 18);
+  ctx.fillText("positive →", view.cssW - 18, y - 16);
   ctx.textAlign = "left";
-  ctx.fillText("← negative", 18, y - 18);
-
+  ctx.fillText("← negative", 18, y - 16);
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.font = "12px IBM Plex Mono, monospace";
@@ -127,76 +112,142 @@ function renderTrack(canvas, state, { showVectors, showTrail }) {
     ctx.stroke();
     if (major) {
       ctx.fillStyle = "#1b2430";
-      ctx.fillText(String(world), x, y + 14);
+      ctx.fillText(String(world), x, y + 12);
     }
   }
+}
 
-  ctx.fillStyle = "#1b2430";
-  ctx.font = "600 11px Figtree, sans-serif";
-  ctx.fillText("origin", worldToX(0, view), y + 32);
-
-  if (showTrail) {
-    const marks = state.history.filter((s, i) => i === 0 || s.time % 0.4 < DT || i === state.history.length - 1);
-    marks.forEach((s, i) => {
-      const x = worldToX(s.position, view);
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(28,107,115,${0.18 + 0.55 * (i / Math.max(marks.length - 1, 1))})`;
-      ctx.arc(x, y, 4.2, 0, Math.PI * 2);
-      ctx.fill();
-    });
+function drawWalls(ctx, view) {
+  ctx.strokeStyle = "#7a3e08";
+  ctx.lineWidth = 4;
+  ctx.setLineDash([]);
+  for (const wall of [AXIS_MIN, AXIS_MAX]) {
+    const x = worldToX(wall, view);
+    ctx.beginPath();
+    ctx.moveTo(x, view.axisY - 28);
+    ctx.lineTo(x, view.axisY + 28);
+    ctx.stroke();
   }
+  ctx.fillStyle = "#7a3e08";
+  ctx.font = "600 11px Figtree, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("wall", worldToX(AXIS_MIN, view), view.axisY - 40);
+  ctx.fillText("wall", worldToX(AXIS_MAX, view), view.axisY - 40);
+}
 
+function renderTrack(canvas, state, { showObject, showVectors, collide }) {
+  const view = createView(canvas, state, 0.58);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  ctx.clearRect(0, 0, view.cssW, view.cssH);
+  const sky = ctx.createLinearGradient(0, 0, 0, view.cssH);
+  sky.addColorStop(0, "#d7ebf7");
+  sky.addColorStop(1, "#f4efe6");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, view.cssW, view.cssH);
+  ctx.fillStyle = "#1b2430";
+  ctx.font = "700 18px IBM Plex Mono, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText(`Time: ${state.time.toFixed(2)} s`, view.cssW / 2, 8);
+  drawAxis(ctx, view);
+  if (collide) drawWalls(ctx, view);
   const tRev = state.reversalAt;
-  if (tRev != null && state.time + 1e-9 >= tRev) {
+  if (!state.bounces && tRev != null && state.time + 1e-9 >= tRev) {
     const xRev = worldToX(positionAt(state, tRev), view);
     ctx.fillStyle = "#7a3e08";
     ctx.beginPath();
-    ctx.moveTo(xRev, y - 28);
-    ctx.lineTo(xRev + 7, y - 16);
-    ctx.lineTo(xRev - 7, y - 16);
+    ctx.moveTo(xRev, view.axisY - 28);
+    ctx.lineTo(xRev + 7, view.axisY - 16);
+    ctx.lineTo(xRev - 7, view.axisY - 16);
     ctx.closePath();
     ctx.fill();
     ctx.font = "600 11px Figtree, sans-serif";
-    ctx.fillText("v = 0", xRev, y - 42);
+    ctx.fillText("v = 0", xRev, view.axisY - 42);
   }
-
-  const xNow = worldToX(state.position, view);
-  if (showVectors) {
-    const vPx = Math.max(-72, Math.min(72, state.velocity * 8));
-    if (Math.abs(vPx) > 6) {
-      drawArrow(ctx, xNow, y - 36, xNow + vPx, y - 36, "#1c6b73");
-      ctx.fillStyle = "#1c6b73";
-      ctx.font = "600 11px Figtree, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("velocity", xNow + vPx / 2, y - 52);
+  if (showObject) {
+    const xNow = worldToX(state.position, view);
+    if (showVectors) {
+      const vPx = Math.max(-72, Math.min(72, state.velocity * 8));
+      if (Math.abs(vPx) > 6) {
+        drawArrow(ctx, xNow, view.axisY - 36, xNow + vPx, view.axisY - 36, "#1c6b73");
+        ctx.fillStyle = "#1c6b73";
+        ctx.font = "600 11px Figtree, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("velocity", xNow + vPx / 2, view.axisY - 52);
+      }
+      const aPx = Math.max(-56, Math.min(56, state.acceleration * 16));
+      if (Math.abs(aPx) > 6) {
+        drawArrow(ctx, xNow, view.axisY + 28, xNow + aPx, view.axisY + 28, "#c45c26");
+        ctx.fillStyle = "#c45c26";
+        ctx.font = "600 11px Figtree, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("acceleration", xNow + aPx / 2, view.axisY + 42);
+      }
     }
-    const aPx = Math.max(-56, Math.min(56, state.acceleration * 16));
-    if (Math.abs(aPx) > 6) {
-      drawArrow(ctx, xNow, y + 28, xNow + aPx, y + 28, "#c45c26");
-      ctx.fillStyle = "#c45c26";
-      ctx.font = "600 11px Figtree, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("acceleration", xNow + aPx / 2, y + 42);
-    }
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(240,162,2,0.2)";
+    ctx.arc(xNow, view.axisY, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = "#f0a202";
+    ctx.strokeStyle = "#7a3e08";
+    ctx.lineWidth = 2;
+    ctx.arc(xNow, view.axisY, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
   }
-
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(240,162,2,0.2)";
-  ctx.arc(xNow, y, 16, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.fillStyle = "#f0a202";
-  ctx.strokeStyle = "#7a3e08";
-  ctx.lineWidth = 2;
-  ctx.arc(xNow, y, 10, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
   return view;
 }
 
-export function mountMotion1D(root) {
+function renderDiagram(canvas, state) {
+  const view = createView(canvas, state, 0.48);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  ctx.clearRect(0, 0, view.cssW, view.cssH);
+  ctx.fillStyle = "#fbf7ef";
+  ctx.fillRect(0, 0, view.cssW, view.cssH);
+  drawAxis(ctx, view);
+  if (state.collide) drawWalls(ctx, view);
+  const dots = motionDiagramSamples(state, DIAGRAM_DT);
+  dots.forEach((dot, i) => {
+    const x = worldToX(dot.position, view);
+    const last = i === dots.length - 1;
+    if (i > 0) {
+      const prev = worldToX(dots[i - 1].position, view);
+      ctx.strokeStyle = "rgba(28,107,115,0.35)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(prev, view.axisY);
+      ctx.lineTo(x, view.axisY);
+      ctx.stroke();
+    }
+    if (last) {
+      ctx.fillStyle = "#c45c26";
+      ctx.beginPath();
+      ctx.moveTo(x, view.axisY - 11);
+      ctx.lineTo(x + 8, view.axisY);
+      ctx.lineTo(x, view.axisY + 11);
+      ctx.lineTo(x - 8, view.axisY);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.fillStyle = "#1c6b73";
+      ctx.beginPath();
+      ctx.arc(x, view.axisY, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+  ctx.fillStyle = "#4d5a68";
+  ctx.font = "600 12px Figtree, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(`Δt = ${DIAGRAM_DT.toFixed(2)} s between dots`, view.pad.l, 14);
+  return view;
+}
+
+export function mountRepresentingMotion(root) {
   const canvas = root.querySelector("#axis-canvas");
+  const diagram = root.querySelector("#diagram-canvas");
   const graphXt = root.querySelector("#graph-xt");
   const graphVt = root.querySelector("#graph-vt");
   const graphAt = root.querySelector("#graph-at");
@@ -214,8 +265,10 @@ export function mountMotion1D(root) {
   let lastStamp = 0;
   let carry = 0;
   let playback = 1;
+  let showObject = true;
+  let showDiagram = true;
   let showVectors = true;
-  let showTrail = true;
+  let showArea = false;
   let pauseAtReverse = false;
   let autoRecord = false;
   let activeTab = "lab";
@@ -243,15 +296,7 @@ export function mountMotion1D(root) {
   });
 
   function trialSnapshot() {
-    return {
-      time: state.time,
-      position: state.position,
-      displacement: state.position - state.initialPosition,
-      distance: state.distance,
-      velocity: state.velocity,
-      acceleration: state.acceleration,
-      averageVelocity: state.time > 1e-12 ? (state.position - state.initialPosition) / state.time : null,
-    };
+    return snapshot(state);
   }
 
   function drawLiveGraphs() {
@@ -275,6 +320,7 @@ export function mountMotion1D(root) {
         yLabel: "Velocity (m/s)",
         duration: state.duration,
         now: state.time,
+        fillToZero: showArea,
       });
     }
     if (graphs.a) {
@@ -330,7 +376,7 @@ export function mountMotion1D(root) {
     } else {
       host.querySelector("#challenge-goal").textContent = `Target: v at t = ${formatUnsigned(spec.targets.time, "s")}`;
     }
-    host.querySelector("#challenge-unknown").textContent = `Find ${spec.unknownLabel}.`;
+    host.querySelector("#challenge-unknown").textContent = `Find ${spec.unknownLabel}. Compare the object, motion diagram, and graphs.`;
   }
 
   function describeFeedback(host, challengeState) {
@@ -338,16 +384,14 @@ export function mountMotion1D(root) {
     const reveal = host.querySelector("#btn-reveal");
     if (!challengeState.spec || !challengeState.attempted) {
       feedback.className = "feedback";
-      feedback.textContent = "Run the motion, then check. The solution stays hidden until then.";
+      feedback.textContent = "Predict from the graphs, then run and check.";
       reveal.disabled = true;
       return;
     }
     const result = challengeState.last;
     feedback.className = `feedback ${result.ok ? "hit" : "miss"}`;
     let text = `Yours: t = ${formatUnsigned(result.time, "s")}, x = ${formatSigned(result.position, "m")}, v = ${formatSigned(result.velocity, "m/s")}. `;
-    text += result.ok
-      ? "Close enough."
-      : "Compare instantaneous values at the requested time. Negative a does not mean the object is already moving left.";
+    text += result.ok ? "The representations agree." : "Match the live values to the graph markers at the same time.";
     if (challengeState.revealed) text += ` Hint: ${challengeState.spec.solutionHint}`;
     feedback.textContent = text;
     reveal.disabled = false;
@@ -360,6 +404,7 @@ export function mountMotion1D(root) {
       initialVelocity: params.initialVelocity,
       acceleration: params.acceleration,
       duration: params.duration,
+      collide: params.collide,
     });
     paint();
   }
@@ -368,7 +413,7 @@ export function mountMotion1D(root) {
     generate: generateChallenge,
     apply(spec) {
       if (!spec) return;
-      applyMotion(spec.params);
+      applyMotion({ ...spec.params, collide: false });
     },
     describeCard,
     describeFeedback,
@@ -383,7 +428,7 @@ export function mountMotion1D(root) {
     root.querySelector("#read-v0").textContent = formatSigned(state.initialVelocity, "m/s");
     root.querySelector("#read-a0").textContent = formatSigned(state.acceleration, "m/s²");
     root.querySelector("#read-T").textContent = formatUnsigned(state.duration, "s");
-    PRESETS.forEach((preset) => {
+    REPRESENT_PRESETS.forEach((preset) => {
       const btn = root.querySelector(`[data-preset="${preset.id}"]`);
       const active =
         preset.initialPosition === state.initialPosition &&
@@ -394,6 +439,8 @@ export function mountMotion1D(root) {
     PLAYBACK_SPEEDS.forEach((speed) => {
       root.querySelector(`[data-speed="${speed}"]`)?.classList.toggle("active", speed === playback);
     });
+    root.querySelector("#btn-collide")?.classList.toggle("active", state.collide);
+    root.querySelector("#btn-collide")?.setAttribute("aria-pressed", String(state.collide));
     const busy = running;
     [x0Input, v0Input, aInput, tInput].forEach((el) => {
       el.disabled = busy;
@@ -408,17 +455,9 @@ export function mountMotion1D(root) {
   }
 
   function paint() {
-    view = renderTrack(canvas, state, { showVectors, showTrail });
-    const snap = {
-      time: state.time,
-      position: state.position,
-      displacement: state.position - state.initialPosition,
-      distance: state.distance,
-      velocity: state.velocity,
-      acceleration: state.acceleration,
-      averageVelocity: state.time > 1e-12 ? (state.position - state.initialPosition) / state.time : null,
-      averageAcceleration: state.time > 1e-12 ? (state.velocity - state.initialVelocity) / state.time : null,
-    };
+    view = renderTrack(canvas, state, { showObject, showVectors, collide: state.collide });
+    if (showDiagram) renderDiagram(diagram, state);
+    const snap = snapshot(state);
     root.querySelector("#read-t").textContent = formatUnsigned(snap.time, "s");
     root.querySelector("#read-x").textContent = formatSigned(snap.position, "m");
     const dxNode = root.querySelector("#read-dx");
@@ -428,10 +467,10 @@ export function mountMotion1D(root) {
     root.querySelector("#read-d").textContent = formatUnsigned(snap.distance, "m");
     root.querySelector("#read-v").textContent = formatSigned(snap.velocity, "m/s");
     root.querySelector("#read-a").textContent = formatSigned(snap.acceleration, "m/s²");
-    root.querySelector("#read-vavg").textContent =
-      snap.averageVelocity == null ? "—" : formatSigned(snap.averageVelocity, "m/s");
-    root.querySelector("#read-aavg").textContent =
-      snap.averageAcceleration == null ? "—" : formatSigned(snap.averageAcceleration, "m/s²");
+    root.querySelector("#read-slope-x").textContent = formatSigned(state.velocity, "m/s");
+    root.querySelector("#read-slope-v").textContent = formatSigned(state.acceleration, "m/s²");
+    root.querySelector("#read-area-v").textContent = formatSigned(snap.displacement, "m");
+    root.querySelector("#wrap-diagram").hidden = !showDiagram;
     syncInputs();
     teacher.refresh();
     drawLiveGraphs();
@@ -457,7 +496,7 @@ export function mountMotion1D(root) {
     const realDt = Math.min(0.05, (stamp - lastStamp) / 1000);
     lastStamp = stamp;
     carry += realDt * playback;
-    const tRev = state.reversalAt;
+    const tRev = state.collide ? null : state.reversalAt;
     while (carry + 1e-12 >= DT) {
       const next = Math.min(state.time + DT, state.duration);
       if (pauseAtReverse && tRev != null && state.time < tRev && next + 1e-12 >= tRev) {
@@ -506,13 +545,28 @@ export function mountMotion1D(root) {
     return Number.isFinite(n) ? n : fallback;
   }
 
-  function commitParams() {
-    applyMotion({
+  function paramsFromUi() {
+    return {
       initialPosition: readNumber(x0Input, state.initialPosition),
       initialVelocity: readNumber(v0Input, state.initialVelocity),
       acceleration: readNumber(aInput, state.acceleration),
       duration: readNumber(tInput, state.duration),
-    });
+      collide: state.collide,
+    };
+  }
+
+  function seek(t) {
+    stopLoop();
+    const params = {
+      initialPosition: state.initialPosition,
+      initialVelocity: state.initialVelocity,
+      acceleration: state.acceleration,
+      duration: state.duration,
+      collide: state.collide,
+    };
+    state = createState(params);
+    stepTo(state, t);
+    paint();
   }
 
   const onPointerDown = (event) => {
@@ -521,23 +575,11 @@ export function mountMotion1D(root) {
     dragging = true;
     canvas.style.cursor = "grabbing";
     canvas.setPointerCapture(event.pointerId);
-    const rect = canvas.getBoundingClientRect();
-    applyMotion({
-      initialPosition: xToWorld(event.clientX - rect.left, view),
-      initialVelocity: state.initialVelocity,
-      acceleration: state.acceleration,
-      duration: state.duration,
-    });
+    applyMotion({ ...paramsFromUi(), initialPosition: xToWorld(event.clientX - canvas.getBoundingClientRect().left, view) });
   };
   const onPointerMove = (event) => {
     if (!dragging || !view) return;
-    const rect = canvas.getBoundingClientRect();
-    applyMotion({
-      initialPosition: xToWorld(event.clientX - rect.left, view),
-      initialVelocity: state.initialVelocity,
-      acceleration: state.acceleration,
-      duration: state.duration,
-    });
+    applyMotion({ ...paramsFromUi(), initialPosition: xToWorld(event.clientX - canvas.getBoundingClientRect().left, view) });
   };
   const onPointerUp = () => {
     dragging = false;
@@ -545,10 +587,10 @@ export function mountMotion1D(root) {
   };
 
   const download = bindDownload(root, {
-    filename: "ap-physics-1-1-2-trials",
+    filename: "ap-physics-1-1-3-trials",
     getTable() {
       return {
-        title: "AP Physics 1 — 1.2 Displacement, Velocity, and Acceleration",
+        title: "AP Physics 1 — 1.3 Representing Motion",
         columns: [
           "Trial",
           "Time (s)",
@@ -601,17 +643,20 @@ export function mountMotion1D(root) {
     if (state.time >= state.duration - 1e-12 && autoRecord) trials.record(trialSnapshot());
     paint();
   });
-  root.querySelector("#btn-check-12").addEventListener("click", () => {
+  root.querySelector("#btn-check-13").addEventListener("click", () => {
     if (challenge.state.active && challenge.state.spec) {
       challenge.markAttempt(evaluateChallenge(trialSnapshot(), challenge.state.spec));
     }
     if (autoRecord && state.time > 1e-9) trials.record(trialSnapshot());
   });
+  root.querySelector("#btn-collide").addEventListener("click", () => {
+    applyMotion({ ...paramsFromUi(), collide: !state.collide });
+  });
   root.querySelectorAll("[data-preset]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const preset = PRESETS.find((p) => p.id === btn.dataset.preset);
+      const preset = REPRESENT_PRESETS.find((p) => p.id === btn.dataset.preset);
       if (!preset) return;
-      applyMotion({ ...preset, duration: state.duration });
+      applyMotion({ ...preset, duration: state.duration, collide: state.collide });
     });
   });
   root.querySelectorAll("[data-speed]").forEach((btn) => {
@@ -621,15 +666,23 @@ export function mountMotion1D(root) {
     });
   });
   [x0Input, v0Input, aInput, tInput].forEach((input) => {
-    input.addEventListener("change", commitParams);
+    input.addEventListener("change", () => applyMotion(paramsFromUi()));
+  });
+  root.querySelector("#toggle-object").addEventListener("change", (event) => {
+    showObject = event.target.checked;
+    paint();
+  });
+  root.querySelector("#toggle-diagram").addEventListener("change", (event) => {
+    showDiagram = event.target.checked;
+    paint();
   });
   root.querySelector("#toggle-vectors").addEventListener("change", (event) => {
     showVectors = event.target.checked;
     paint();
   });
-  root.querySelector("#toggle-trail").addEventListener("change", (event) => {
-    showTrail = event.target.checked;
-    paint();
+  root.querySelector("#toggle-area").addEventListener("change", (event) => {
+    showArea = event.target.checked;
+    drawLiveGraphs();
   });
   root.querySelector("#pause-reverse").addEventListener("change", (event) => {
     pauseAtReverse = event.target.checked;
@@ -646,6 +699,11 @@ export function mountMotion1D(root) {
       drawLiveGraphs();
     });
   });
+  const onGraphClick = (event) => {
+    if (running) return;
+    seek(timeAtPointer(event.currentTarget, event, state.duration));
+  };
+  [graphXt, graphVt, graphAt].forEach((el) => el.addEventListener("click", onGraphClick));
 
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointermove", onPointerMove);
@@ -658,6 +716,7 @@ export function mountMotion1D(root) {
     drawCharts();
   });
   resize.observe(canvas);
+  resize.observe(diagram);
   [graphXt, graphVt, graphAt, graphRange, graphHeight].forEach((el) => resize.observe(el));
 
   trials.render(trialBody);
@@ -675,5 +734,6 @@ export function mountMotion1D(root) {
     canvas.removeEventListener("pointermove", onPointerMove);
     canvas.removeEventListener("pointerup", onPointerUp);
     canvas.removeEventListener("pointercancel", onPointerUp);
+    [graphXt, graphVt, graphAt].forEach((el) => el.removeEventListener("click", onGraphClick));
   };
 }

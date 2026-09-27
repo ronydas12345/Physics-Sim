@@ -160,13 +160,15 @@ export function renderXYScatter(canvas, points, { xKey, yKey, xLabel, yLabel, co
   }
 }
 
-export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel, duration, now }) {
+export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel, duration, now, fillToZero = false, series }) {
   const surface = setup(canvas);
-  if (!surface) return;
+  if (!surface) return null;
   const { ctx, cssW, cssH, pad } = surface;
-  const points = history?.length ? history : [{ time: 0, [yKey]: 0 }];
+  const lines = series?.length ? series : [{ yKey, color }];
+  const fallbackKey = lines[0].yKey || yKey;
+  const points = history?.length ? history : [{ time: 0, [fallbackKey]: 0 }];
   const tMax = Math.max(duration || 1, ...points.map((p) => p.time), now || 0, 1e-6);
-  const ys = points.map((p) => p[yKey]);
+  const ys = points.flatMap((p) => lines.map((line) => p[line.yKey]));
   let yLo = Math.min(0, ...ys);
   let yHi = Math.max(0, ...ys);
   if (yLo === yHi) {
@@ -190,16 +192,38 @@ export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel,
     ctx.stroke();
   }
 
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2.2;
-  ctx.beginPath();
-  points.forEach((p, i) => {
-    const x = xOfT(p.time);
-    const y = yOfV(p[yKey]);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
+  if (fillToZero && points.length) {
+    ctx.beginPath();
+    ctx.moveTo(xOfT(points[0].time), yOfV(0));
+    points.forEach((p) => ctx.lineTo(xOfT(p.time), yOfV(p[fallbackKey])));
+    ctx.lineTo(xOfT(points[points.length - 1].time), yOfV(0));
+    ctx.closePath();
+    ctx.fillStyle = "rgba(28, 107, 115, 0.18)";
+    ctx.fill();
+  }
+
+  for (const line of lines) {
+    ctx.strokeStyle = line.color || color || CURVE;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      const x = xOfT(p.time);
+      const y = yOfV(p[line.yKey]);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+
+  if (lines.length > 1) {
+    ctx.font = "600 11px Figtree, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    lines.forEach((line, i) => {
+      ctx.fillStyle = line.color || color || CURVE;
+      ctx.fillText(line.label || line.yKey, box.left + 8 + i * 72, box.top + 6);
+    });
+  }
 
   const tNow = now ?? points[points.length - 1].time;
   const xNow = xOfT(tNow);
@@ -213,10 +237,25 @@ export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel,
   ctx.setLineDash([]);
 
   const current = points.reduce((best, p) => (Math.abs(p.time - tNow) < Math.abs(best.time - tNow) ? p : best), points[0]);
-  ctx.fillStyle = NOW;
-  ctx.beginPath();
-  ctx.arc(xNow, yOfV(current[yKey]), 4.4, 0, Math.PI * 2);
-  ctx.fill();
+  for (const line of lines) {
+    ctx.fillStyle = NOW;
+    ctx.beginPath();
+    ctx.arc(xNow, yOfV(current[line.yKey]), 4.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  return { tMax, box };
+}
+
+export function timeAtPointer(canvas, event, duration) {
+  if (!canvas) return 0;
+  const rect = canvas.getBoundingClientRect();
+  const padL = 44;
+  const padR = 16;
+  const left = padL;
+  const right = Math.max(left + 1, rect.width - padR);
+  const u = (event.clientX - rect.left - left) / (right - left);
+  const T = Math.max(duration || 1, 1e-6);
+  return Math.min(T, Math.max(0, u * T));
 }
 
 function drawLinearFrame(ctx, pad, w, h, xLabel, yLabel, xMin, xMax, yMin, yMax) {
