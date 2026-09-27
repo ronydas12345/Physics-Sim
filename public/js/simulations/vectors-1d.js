@@ -4,14 +4,26 @@ import {
   createState,
   displayedPosition,
   displacement,
+  evaluateChallenge,
   formatDistance,
   formatSignedMeters,
+  generateChallenge,
   nudgeDisplayed,
   reset as resetState,
   setDisplayedPosition,
   setPositiveRight,
   setWorldPosition,
+  teacherReport,
 } from "/lib/vectors1d.js";
+import { renderXYScatter } from "../graphs.js";
+import {
+  bindChallenge,
+  bindDownload,
+  bindFullscreen,
+  bindLabTabs,
+  bindTeacher,
+  createTrialBook,
+} from "../platform/lab-kit.js";
 
 const MIN_X = AXIS_MIN;
 const MAX_X = AXIS_MAX;
@@ -155,12 +167,115 @@ export function mountVectors1D(root) {
   const dxArrow = root.querySelector("#dx-arrow");
   const readD = root.querySelector("#read-d");
   const input = root.querySelector("#pos-input");
-  const valuesPanel = root.querySelector("#values-panel");
-  const explainPanel = root.querySelector("#explain-panel");
+  const graphRange = root.querySelector("#graph-range");
+  const graphHeight = root.querySelector("#graph-height");
+  const trialBody = root.querySelector("#trial-body");
   let state = createState();
   let showVectors = true;
   let view = null;
   let dragging = false;
+  let autoRecord = false;
+  let activeTab = "lab";
+
+  const trials = createTrialBook({
+    columns: 5,
+    renderRow: (t) => `<tr>
+      <td>${t.id}</td>
+      <td>${formatSignedMeters(t.position)}</td>
+      <td>${formatSignedMeters(t.displacement)}</td>
+      <td>${formatDistance(t.distance)}</td>
+      <td>${t.positiveRight ? "right" : "left"}</td>
+    </tr>`,
+    onChange() {
+      trials.render(trialBody);
+      drawCharts();
+      download.sync();
+    },
+  });
+
+  function snapshot() {
+    return {
+      position: displayedPosition(state),
+      displacement: displacement(state),
+      distance: state.distanceTraveled,
+      positiveRight: state.positiveRight,
+    };
+  }
+
+  function drawCharts() {
+    if (activeTab !== "lab") return;
+    const list = trials.list();
+    renderXYScatter(graphRange, list, {
+      xKey: "displacement",
+      yKey: "distance",
+      xLabel: "Displacement (m)",
+      yLabel: "Distance (m)",
+      color: "#c45c26",
+      xMin: -12,
+      xMax: 12,
+    });
+    renderXYScatter(graphHeight, list, {
+      xKey: "distance",
+      yKey: "position",
+      xLabel: "Distance (m)",
+      yLabel: "Position (m)",
+      color: "#1c6b73",
+      xMin: 0,
+      yMin: -12,
+      yMax: 12,
+    });
+  }
+
+  const teacher = bindTeacher(root, (on, line) => {
+    if (!on) {
+      line.hidden = true;
+      return;
+    }
+    line.hidden = false;
+    line.textContent = teacherReport(state);
+  });
+
+  function describeCard(host, spec) {
+    host.querySelector("#challenge-q").textContent = spec.prompt;
+    host.querySelector("#challenge-givens").innerHTML = spec.givens
+      .map((row) => `<div><dt>${row.label}</dt><dd>${row.value}</dd></div>`)
+      .join("");
+    const t = spec.targets;
+    host.querySelector("#challenge-goal").textContent =
+      spec.type === "round-trip"
+        ? `Target: Δx = 0 m and distance = ${formatDistance(t.distance)}`
+        : `Target: x = ${formatSignedMeters(t.position)} and distance = ${formatDistance(t.distance)}`;
+    host.querySelector("#challenge-unknown").textContent = `Find ${spec.unknownLabel}.`;
+  }
+
+  function describeFeedback(host, challengeState) {
+    const feedback = host.querySelector("#challenge-feedback");
+    const reveal = host.querySelector("#btn-reveal");
+    if (!challengeState.spec || !challengeState.attempted) {
+      feedback.className = "feedback";
+      feedback.textContent = "The solution stays hidden until you check.";
+      reveal.disabled = true;
+      return;
+    }
+    const result = challengeState.last;
+    feedback.className = `feedback ${result.ok ? "hit" : "miss"}`;
+    let text = `Yours: x = ${formatSignedMeters(result.position)}, D = ${formatDistance(result.distance)}. `;
+    text += result.ok ? "Close enough." : "Distance is path length. Turning around adds meters without changing the final shortcut.";
+    if (challengeState.revealed) text += ` Hint: ${challengeState.spec.solutionHint}`;
+    feedback.textContent = text;
+    reveal.disabled = false;
+  }
+
+  const challenge = bindChallenge(root, {
+    generate: generateChallenge,
+    apply(spec) {
+      if (!spec) return;
+      state = createState({ positiveRight: state.positiveRight });
+      paint();
+    },
+    describeCard,
+    describeFeedback,
+  });
 
   function paint() {
     view = renderAxis(canvas, state, showVectors);
@@ -168,12 +283,12 @@ export function mountVectors1D(root) {
     const dx = displacement(state);
     readX.textContent = formatSignedMeters(x);
     readD.textContent = formatDistance(state.distanceTraveled);
-    const dxText = formatSignedMeters(dx);
-    readDx.childNodes[0].textContent = `${dxText} `;
+    readDx.childNodes[0].textContent = `${formatSignedMeters(dx)} `;
     dxArrow.textContent = Math.abs(dx) < 0.05 ? "" : dx > 0 ? "→" : "←";
     if (document.activeElement !== input) input.value = String(Math.round(x * 10) / 10);
     root.querySelector("#dir-right").classList.toggle("active", state.positiveRight);
     root.querySelector("#dir-left").classList.toggle("active", !state.positiveRight);
+    teacher.refresh();
   }
 
   function moveDisplayed(next) {
@@ -208,26 +323,33 @@ export function mountVectors1D(root) {
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerUp);
 
-  const buttons = {
-    reset: root.querySelector("#btn-reset-1d"),
-    full: root.querySelector("#btn-full-1d"),
-    neg: root.querySelector("#nudge-neg"),
-    pos: root.querySelector("#nudge-pos"),
-    dirR: root.querySelector("#dir-right"),
-    dirL: root.querySelector("#dir-left"),
-    togV: root.querySelector("#toggle-values"),
-    togVec: root.querySelector("#toggle-vectors"),
-    togE: root.querySelector("#toggle-explain"),
-  };
-
+  const download = bindDownload(root, {
+    filename: "ap-physics-1-1-1-trials",
+    getTable() {
+      return {
+        title: "AP Physics 1 — 1.1 Scalars and Vectors in One Dimension",
+        columns: [
+          "Trial",
+          "Position (m)",
+          "Displacement (m)",
+          "Distance (m)",
+          "Positive direction",
+        ],
+        rows: trials.list().map((t) => [
+          t.id,
+          t.position,
+          t.displacement,
+          t.distance,
+          t.positiveRight ? "right" : "left",
+        ]),
+      };
+    },
+  });
+  bindFullscreen(root.querySelector("#btn-fullscreen"), root.querySelector(".sim-shell"));
   const onReset = () => {
+    if (autoRecord && state.distanceTraveled > 0) trials.record(snapshot());
     state = resetState(state);
     paint();
-  };
-  const onFull = () => {
-    const node = root.querySelector(".sim-shell") || root;
-    if (!document.fullscreenElement) node.requestFullscreen?.();
-    else document.exitFullscreen?.();
   };
   const onNeg = () => {
     nudgeDisplayed(state, -1);
@@ -237,20 +359,14 @@ export function mountVectors1D(root) {
     nudgeDisplayed(state, 1);
     paint();
   };
-  const onDirR = () => {
-    setPositiveRight(state, true);
-    paint();
-  };
-  const onDirL = () => {
-    setPositiveRight(state, false);
-    paint();
-  };
-  const onInput = () => {
-    const n = Number(input.value);
-    if (Number.isFinite(n)) moveDisplayed(n);
+  const onCheck = () => {
+    if (challenge.state.active && challenge.state.spec) {
+      challenge.markAttempt(evaluateChallenge(state, challenge.state.spec));
+    }
+    if (autoRecord && state.distanceTraveled > 0) trials.record(snapshot());
   };
   const onKey = (event) => {
-    if (event.target.matches("input")) return;
+    if (event.target.matches("input, textarea, button")) return;
     if (event.key === "ArrowRight") {
       event.preventDefault();
       onPos();
@@ -261,29 +377,54 @@ export function mountVectors1D(root) {
     }
   };
 
-  buttons.reset.addEventListener("click", onReset);
-  buttons.full.addEventListener("click", onFull);
-  buttons.neg.addEventListener("click", onNeg);
-  buttons.pos.addEventListener("click", onPos);
-  buttons.dirR.addEventListener("click", onDirR);
-  buttons.dirL.addEventListener("click", onDirL);
-  input.addEventListener("change", onInput);
-  buttons.togV.addEventListener("change", () => {
-    valuesPanel.hidden = !buttons.togV.checked;
+  bindLabTabs(root, (name) => {
+    activeTab = name;
+    requestAnimationFrame(() => {
+      paint();
+      drawCharts();
+    });
   });
-  buttons.togVec.addEventListener("change", () => {
-    showVectors = buttons.togVec.checked;
+
+  root.querySelector("#btn-reset").addEventListener("click", onReset);
+  root.querySelector("#nudge-neg").addEventListener("click", onNeg);
+  root.querySelector("#nudge-pos").addEventListener("click", onPos);
+  root.querySelector("#btn-check-1d").addEventListener("click", onCheck);
+  root.querySelector("#dir-right").addEventListener("click", () => {
+    setPositiveRight(state, true);
     paint();
   });
-  buttons.togE.addEventListener("change", () => {
-    explainPanel.hidden = !buttons.togE.checked;
+  root.querySelector("#dir-left").addEventListener("click", () => {
+    setPositiveRight(state, false);
+    paint();
   });
+  input.addEventListener("change", () => {
+    const n = Number(input.value);
+    if (Number.isFinite(n)) moveDisplayed(n);
+  });
+  root.querySelector("#toggle-vectors").addEventListener("change", (event) => {
+    showVectors = event.target.checked;
+    paint();
+  });
+  root.querySelector("#auto-record").addEventListener("change", (event) => {
+    autoRecord = event.target.checked;
+  });
+  root.querySelector("#btn-record").addEventListener("click", () => trials.record(snapshot()));
+  root.querySelector("#btn-clear").addEventListener("click", () => trials.clear());
   window.addEventListener("keydown", onKey);
-  const resize = new ResizeObserver(() => paint());
+  const resize = new ResizeObserver(() => {
+    paint();
+    drawCharts();
+  });
   resize.observe(canvas);
+  resize.observe(graphRange);
+  resize.observe(graphHeight);
+  trials.render(trialBody);
+  download.sync();
   paint();
+  drawCharts();
 
   return () => {
+    download.destroy();
     resize.disconnect();
     window.removeEventListener("keydown", onKey);
     canvas.removeEventListener("pointerdown", onPointerDown);

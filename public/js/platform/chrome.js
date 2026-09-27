@@ -20,7 +20,6 @@ export function renderHeader(pathname = currentPath()) {
         <nav class="site-nav" aria-label="Primary">
           ${navLink("/", "Home", pathname)}
           ${navLink("/simulations", "Simulations", pathname)}
-          ${navLink("/simulations/module-1", "Module 1", pathname)}
           ${navLink("/about", "Help", pathname)}
         </nav>
       </div>
@@ -35,7 +34,6 @@ export function renderFooter() {
         <p>AP Physics 1 Simulation Platform</p>
         <nav aria-label="Footer">
           <a href="/simulations" data-link>Simulations</a>
-          <a href="/simulations/module-1" data-link>Modules</a>
           <a href="/about" data-link>Help / About</a>
           <a href="https://github.com/ronydas12345/Physics-Sim" rel="noreferrer">GitHub</a>
         </nav>

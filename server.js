@@ -57,7 +57,7 @@ app.post("/api/challenge/solve", (req, res) => {
   }
 });
 
-app.get("/simulations/projectile", (_req, res) => {
+app.get(["/simulations/projectile", "/simulations/module-1/1-5"], (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "projectile.html"));
 });
 

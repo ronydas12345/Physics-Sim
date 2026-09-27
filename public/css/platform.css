@@ -61,6 +61,15 @@
   min-height: calc(100vh - 180px);
 }
 
+.section {
+  margin-bottom: 40px;
+}
+
+.values-card .debug {
+  white-space: normal;
+  margin-top: 10px;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
@@ -178,7 +187,7 @@
 
 .featured-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin: 28px 0 8px;
 }
@@ -270,6 +279,96 @@
 .sim-toolbar {
   display: flex;
   gap: 8px;
+  align-items: center;
+}
+
+.brand-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.icon-btn {
+  appearance: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-btn:hover {
+  background: #f4efe6;
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.download-menu {
+  position: relative;
+}
+
+.download-pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 11.5rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(27, 36, 48, 0.12);
+  z-index: 30;
+  overflow: hidden;
+}
+
+.download-pop button {
+  appearance: none;
+  display: block;
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.download-pop button:hover {
+  background: #f4efe6;
+}
+
+.app:fullscreen,
+.app:-webkit-full-screen {
+  background: #efe6d6;
+  overflow: auto;
+  padding: 20px;
 }
 
 .sim-shell:fullscreen,
@@ -380,14 +479,139 @@
   line-height: 1.5;
 }
 
-body.projectile-page .app {
-  padding-top: 16px;
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.how-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.how-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+
+.lab-steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  max-width: 52em;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.lab-steps li {
+  margin-bottom: 8px;
+}
+
+.lab-steps strong {
+  color: var(--ink);
+}
+
+.track-stage {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.track-stage #axis-canvas {
+  flex: none;
+  height: 240px;
+  background: transparent;
+}
+
+.motion-stage #axis-canvas {
+  height: 280px;
+}
+
+.sim-nav {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+}
+
+.sim-nav a {
+  color: var(--accent-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sim-nav a:hover {
+  text-decoration: underline;
+}
+
+.metrics-wide {
+  grid-template-columns: 1fr 1fr;
+}
+
+.graph-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+}
+
+.graphs.graphs-three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.compare-table th,
+.compare-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.motion-inputs .pos-input {
+  flex-direction: column;
+  align-items: flex-start;
+  color: #d7e3ee;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.sim-shell .workspace {
+  margin-bottom: 16px;
 }
 
 @media (max-width: 1100px) {
   .hero,
   .featured-row,
   .sim-1d-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .graphs.graphs-three,
+  .metrics-wide {
     grid-template-columns: 1fr;
   }
 }

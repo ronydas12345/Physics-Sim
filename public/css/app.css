@@ -562,27 +562,6 @@ input[type="range"] {
   gap: 12px;
 }
 
-.graphs-toolbar {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.graphs-toolbar .btn[aria-pressed="true"] {
-  background: var(--ink);
-  color: #fbf7ef;
-  border-color: var(--ink);
-}
-
-.fit-eq {
-  font-family: Cambria, "Times New Roman", Georgia, serif;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-
 .graph-wrap,
 .table-wrap {
   background: var(--panel);
@@ -651,6 +630,7 @@ tbody tr.best td {
   .workspace,
   .topbar,
   .graphs,
+  .graphs.graphs-three,
   .theory-split {
     grid-template-columns: 1fr;
   }

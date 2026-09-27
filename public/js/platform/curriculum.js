@@ -5,19 +5,28 @@ export const STATUSES = {
   "coming-soon": { label: "Coming Soon", kind: "soon" },
 };
 
+export const LAB_FEATURES = [
+  { id: "theory", title: "Theory", blurb: "Equations, worked examples, and predicted graphs live in a dedicated tab so the lab stays an experiment, not a textbook." },
+  { id: "investigate", title: "Investigate", blurb: "Change one variable, watch the model respond immediately, and record trials into a table and graphs you own." },
+  { id: "challenge", title: "Challenge", blurb: "Randomized unknowns hide the answer until you run the experiment. Reveal only after you have a measurement." },
+  { id: "teacher", title: "Teacher view", blurb: "Compare live simulated values with the closed-form identities the course expects, without changing the student model." },
+];
+
 export const projectileSim = {
-  id: "projectile",
+  id: "1-5",
   module: 1,
-  number: null,
-  title: "Projectile Motion",
+  number: "1.5",
+  title: "Vectors and Motion in Two Dimensions",
   shortTitle: "Projectile Motion",
   description:
-    "Investigate how launch angle, speed, and gravity affect trajectory, height, and range.",
+    "Investigate how launch angle, speed, and gravity affect trajectory, height, and range on flat ground.",
   status: "available",
-  path: "/simulations/projectile",
-  legacy: true,
-  badge: "Existing Simulation",
-  topics: ["projectile motion", "range", "launch angle"],
+  path: "/simulations/module-1/1-5",
+  aliases: ["/simulations/projectile"],
+  fullPage: true,
+  objective: "Use two-dimensional kinematics to relate launch angle, hang time, height, and range.",
+  topics: ["2D vectors", "projectile motion", "range", "launch angle"],
+  features: ["theory", "challenge", "teacher", "trials", "autoRecord"],
 };
 
 export const modules = [
@@ -39,6 +48,7 @@ export const modules = [
         path: "/simulations/module-1/1-1",
         objective: "Distinguish scalar and vector quantities using position, distance, and displacement.",
         topics: ["scalars", "vectors", "distance", "displacement"],
+        features: ["theory", "challenge", "teacher", "trials", "autoRecord"],
       },
       {
         id: "1-2",
@@ -46,10 +56,12 @@ export const modules = [
         number: "1.2",
         title: "Displacement, Velocity, and Acceleration",
         shortTitle: "Motion Quantities",
-        description: "Connect changes in position to velocity and acceleration.",
-        status: "planned",
+        description: "Explore how position, velocity, and acceleration change over time.",
+        status: "available",
         path: "/simulations/module-1/1-2",
-        topics: ["velocity", "acceleration"],
+        objective: "Connect one-dimensional motion to average and instantaneous velocity and acceleration, including graphs and direction change.",
+        topics: ["displacement", "velocity", "acceleration", "time", "motion graphs"],
+        features: ["theory", "challenge", "teacher", "trials", "autoRecord"],
       },
       {
         id: "1-3",
@@ -73,17 +85,7 @@ export const modules = [
         path: "/simulations/module-1/1-4",
         topics: ["reference frames"],
       },
-      {
-        id: "1-5",
-        module: 1,
-        number: "1.5",
-        title: "Vectors and Motion in Two Dimensions",
-        shortTitle: "2D Motion",
-        description: "Combine perpendicular components to describe two-dimensional motion.",
-        status: "planned",
-        path: "/simulations/module-1/1-5",
-        topics: ["2D vectors", "projectile motion"],
-      },
+      projectileSim,
     ],
   },
   {
@@ -195,6 +197,8 @@ export const modules = [
     description: sim.description || "",
     path: sim.path || `/simulations/${mod.slug}/${sim.id}`,
     topics: sim.topics || [],
+    features: sim.features || ["theory", "challenge", "teacher", "trials", "autoRecord"],
+    fullPage: Boolean(sim.fullPage),
     ...sim,
   })),
 }));
@@ -213,4 +217,10 @@ export function availableCount(mod) {
 
 export function statusLabel(status) {
   return STATUSES[status]?.label ?? "Planned";
+}
+
+export function fullPagePaths() {
+  return modules.flatMap((mod) =>
+    mod.simulations.flatMap((sim) => (sim.fullPage ? [sim.path, ...(sim.aliases || [])] : [])),
+  );
 }

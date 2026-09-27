@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Projectile Motion · AP Physics 1</title>
+    <title>1.5 Vectors and Motion in Two Dimensions · AP Physics 1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,7 +18,10 @@
     <div class="app">
       <header class="topbar">
         <div class="brand">
-          <p class="kicker">AP Physics 1 · Existing simulation</p>
+          <div class="brand-tools">
+            <p class="kicker">Unit 1 · Simulation 1.5</p>
+            <div id="lab-icon-toolbar"></div>
+          </div>
           <h1>Launch Angle vs. Range</h1>
         </div>
         <p class="guiding">
@@ -48,7 +51,6 @@
             <div class="transport">
               <button type="button" id="btn-launch" class="btn primary">Launch</button>
               <button type="button" id="btn-pause" class="btn">Pause</button>
-              <button type="button" id="btn-reset" class="btn">Reset</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -143,23 +145,15 @@
 
         <section class="lab-bottom">
           <div class="graphs">
-            <div class="graphs-toolbar">
-              <p class="muted">Record different angles, then fit a curve to your points.</p>
-              <button type="button" class="btn" id="btn-regression" disabled aria-pressed="false" title="Least-squares fit of range and height versus launch angle">
-                Show regression
-              </button>
-            </div>
             <div class="graph-wrap">
               <h2>Your Trials · Range vs. Angle</h2>
               <canvas id="graph-range" width="640" height="280" aria-label="Recorded range versus launch angle"></canvas>
               <p class="caption">Each point is a trial you recorded. Compare 30°, 45°, and 60° with the same speed and gravity.</p>
-              <p class="caption fit-eq" id="fit-range-eq" hidden></p>
             </div>
             <div class="graph-wrap">
               <h2>Your Trials · Height vs. Angle</h2>
               <canvas id="graph-height" width="640" height="280" aria-label="Recorded maximum height versus launch angle"></canvas>
               <p class="caption">Steeper launches usually go higher, even when they do not travel farther.</p>
-              <p class="caption fit-eq" id="fit-height-eq" hidden></p>
             </div>
           </div>
           <div class="table-wrap">
@@ -330,7 +324,7 @@
               <div class="graph-wrap">
                 <h4>Launch Angle vs. Maximum Height</h4>
                 <canvas id="graph-theory-height" width="640" height="280" aria-label="Theoretical maximum height versus launch angle"></canvas>
-                <p class="caption">H(θ) = v₀² sin²(θ) / (2g) · Height keeps rising toward 90°, the opposite of the range graph.</p>
+                <p class="caption">H(θ) = v₀² sin²(θ) / (2g). Height keeps rising toward 90°, the opposite of the range graph.</p>
               </div>
             </div>
           </section>
