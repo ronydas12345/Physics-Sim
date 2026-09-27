@@ -15,6 +15,7 @@ import {
 import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
 import { renderSimulation } from "./render.js";
 import { bindDownload, bindFullscreen, labIconToolbar } from "./platform/lab-kit.js";
+import { planetById, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
 if (toolbarSlot && !toolbarSlot.querySelector("#btn-reset")) {
@@ -36,6 +37,8 @@ let predicted = predictedTrajectory(ui);
 let ghost = [];
 let debugMode = false;
 let autoRecord = false;
+let planetId = "earth";
+let planetBackgrounds = true;
 let activeTab = "lab";
 let challenge = {
   active: false,
@@ -62,6 +65,7 @@ const els = {
   angleRead: $("angle-readout"),
   velRead: $("velocity-readout"),
   gRead: $("gravity-readout"),
+  planetBackgrounds: $("planet-backgrounds"),
   launch: $("btn-launch"),
   pause: $("btn-pause"),
   reset: $("btn-reset"),
@@ -115,13 +119,31 @@ function flightLocked() {
   return sim.isRunning || (sim.landed && sim.trajectory.length > 1);
 }
 
+function planetChips() {
+  return document.querySelectorAll(".chip[data-planet]");
+}
+
+function currentScene() {
+  return sceneForGravity({ planetId, backgroundsOn: planetBackgrounds });
+}
+
+function syncPlanetChips() {
+  for (const chip of planetChips()) {
+    chip.classList.toggle("active", chip.dataset.planet === planetId);
+  }
+}
+
 function syncReadouts() {
+  const planet = planetById(planetId);
   els.angleRead.textContent = `${ui.angleDeg}°`;
   els.velRead.textContent = `${ui.v0} m/s`;
-  els.gRead.textContent = `${ui.g.toFixed(1)} m/s²`;
+  els.gRead.textContent = planet
+    ? `${ui.g.toFixed(1)} m/s² · ${planet.name}`
+    : `${ui.g.toFixed(1)} m/s²`;
   for (const chip of document.querySelectorAll(".chip[data-angle]")) {
     chip.classList.toggle("active", Number(chip.dataset.angle) === ui.angleDeg);
   }
+  syncPlanetChips();
 }
 
 function setControlsEnabled() {
@@ -132,6 +154,9 @@ function setControlsEnabled() {
   els.gravity.disabled = Boolean(spec && unknown !== "g");
   for (const chip of document.querySelectorAll(".chip[data-angle]")) {
     chip.disabled = els.angle.disabled;
+  }
+  for (const chip of planetChips()) {
+    chip.disabled = els.gravity.disabled;
   }
 }
 
@@ -177,12 +202,15 @@ function refreshPredicted() {
 
 function drawSim() {
   if (activeTab !== "lab") return;
+  const scene = currentScene();
+  els.canvas.style.background = scene.skyBottom;
   renderSimulation(els.canvas, {
     sim,
     pending: ui,
     predicted,
     ghost,
     challenge: challenge.active ? { ...challenge.spec, active: true } : { active: false },
+    scene,
   });
 }
 
@@ -237,6 +265,8 @@ function applyUiFromSliders() {
   ui.angleDeg = Number(els.angle.value);
   ui.v0 = Number(els.velocity.value);
   ui.g = Number(els.gravity.value);
+  const selected = planetById(planetId);
+  if (selected && Math.abs(ui.g - selected.g) > 0.05) planetId = null;
   if (!sim.isRunning && !sim.landed && sim.t === 0) {
     sim = createLaunchState(ui);
   }
@@ -244,6 +274,15 @@ function applyUiFromSliders() {
   refreshPredicted();
   updateLive();
   drawAll();
+}
+
+function setPlanet(id) {
+  if (els.gravity.disabled) return;
+  const planet = planetById(id);
+  if (!planet) return;
+  planetId = planet.id;
+  els.gravity.value = String(planet.g);
+  applyUiFromSliders();
 }
 
 function doLaunch() {
@@ -384,6 +423,7 @@ function applyChallengeGivens(spec) {
   if (spec.givens.g != null) {
     ui.g = spec.givens.g;
     els.gravity.value = String(ui.g);
+    planetId = null;
   }
   if (spec.unknown === "angleDeg") {
     ui.angleDeg = spec.secrets.angleDeg >= 45 ? 25 : 65;
@@ -394,6 +434,7 @@ function applyChallengeGivens(spec) {
   } else if (spec.unknown === "g") {
     ui.g = spec.secrets.g >= 10 ? 5.0 : 14.0;
     els.gravity.value = String(ui.g);
+    planetId = null;
   }
 }
 
@@ -481,6 +522,13 @@ els.openTheory.addEventListener("click", () => showTab("theory"));
 for (const chip of document.querySelectorAll(".chip[data-angle]")) {
   chip.addEventListener("click", () => setAngle(Number(chip.dataset.angle)));
 }
+for (const chip of planetChips()) {
+  chip.addEventListener("click", () => setPlanet(chip.dataset.planet));
+}
+els.planetBackgrounds?.addEventListener("change", () => {
+  planetBackgrounds = Boolean(els.planetBackgrounds.checked);
+  drawAll();
+});
 
 window.addEventListener("keydown", (event) => {
   if (event.target.matches("input, textarea, button")) return;

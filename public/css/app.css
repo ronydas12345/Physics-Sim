@@ -376,6 +376,14 @@ input[type="range"] {
   accent-color: var(--accent);
 }
 
+.planet-bg-switch {
+  margin-top: 10px;
+}
+
+.control .caption {
+  margin-top: 8px;
+}
+
 .presets {
   display: flex;
   flex-wrap: wrap;

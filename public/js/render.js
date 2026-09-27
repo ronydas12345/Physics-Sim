@@ -105,39 +105,47 @@ function label(ctx, text, x, y, color = COLORS.text, align = "left") {
   ctx.fillText(text, x, y);
 }
 
-function drawSkyAndGround(ctx, view) {
+function drawSkyAndGround(ctx, view, scene) {
   const { cssW, cssH, originY, pad } = view;
   const sky = ctx.createLinearGradient(0, 0, 0, originY);
-  sky.addColorStop(0, COLORS.skyTop);
-  sky.addColorStop(1, COLORS.skyBottom);
+  sky.addColorStop(0, scene.skyTop);
+  sky.addColorStop(1, scene.skyBottom);
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, cssW, cssH);
 
-  ctx.fillStyle = COLORS.ground;
+  ctx.fillStyle = scene.ground;
   ctx.fillRect(0, originY, cssW, cssH - originY);
-  ctx.fillStyle = COLORS.groundDark;
+  ctx.fillStyle = scene.groundDark;
   ctx.fillRect(0, originY, cssW, 6);
-  ctx.fillStyle = COLORS.soil;
+  ctx.fillStyle = scene.soil;
   ctx.fillRect(0, cssH - 18, cssW, 18);
 
   ctx.fillStyle = "rgba(255,255,255,0.18)";
   for (let x = pad.l; x < cssW; x += 18) {
     ctx.fillRect(x, originY + 6, 8, 3);
   }
+
+  if (scene.name) {
+    ctx.fillStyle = scene.ink;
+    ctx.font = "700 13px Figtree, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(scene.name, pad.l, 12);
+  }
 }
 
-function drawAxes(ctx, view) {
+function drawAxes(ctx, view, scene) {
   const { originX, originY, scale, worldW, worldH, cssW, pad } = view;
   const xEnd = originX + worldW * scale;
   const yEnd = originY - worldH * scale;
 
-  ctx.strokeStyle = COLORS.grid;
+  ctx.strokeStyle = scene.grid;
   ctx.lineWidth = 1;
   const xStep = niceStep(worldW);
   const yStep = niceStep(worldH, 5);
 
   ctx.font = "11px IBM Plex Mono, monospace";
-  ctx.fillStyle = COLORS.axis;
+  ctx.fillStyle = scene.axis;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   for (let x = 0; x <= worldW + 1e-6; x += xStep) {
@@ -160,7 +168,7 @@ function drawAxes(ctx, view) {
     ctx.fillText(`${Math.round(y)}`, originX - 8, p.y);
   }
 
-  ctx.strokeStyle = COLORS.axis;
+  ctx.strokeStyle = scene.axis;
   ctx.lineWidth = 1.6;
   ctx.beginPath();
   ctx.moveTo(originX, originY);
@@ -168,8 +176,8 @@ function drawAxes(ctx, view) {
   ctx.moveTo(originX, originY);
   ctx.lineTo(originX, yEnd - 8);
   ctx.stroke();
-  label(ctx, "x (m)", xEnd + 4, originY - 14, COLORS.text, "right");
-  label(ctx, "y (m)", originX + 28, yEnd - 6, COLORS.text, "left");
+  label(ctx, "x (m)", xEnd + 4, originY - 14, scene.ink, "right");
+  label(ctx, "y (m)", originX + 28, yEnd - 6, scene.ink, "left");
 }
 
 function pathFromPoints(ctx, view, points) {
@@ -386,7 +394,7 @@ function drawProjectile(ctx, view, sim) {
   ctx.stroke();
 }
 
-export function renderSimulation(canvas, { sim, pending, predicted, ghost, challenge }) {
+export function renderSimulation(canvas, { sim, pending, predicted, ghost, challenge, scene }) {
   const view = createView(canvas, pending.v0, pending.g, {
     targetRange: challenge?.active && challenge.goalKey === "range" ? challenge.goalValue : 0,
     targetHeight: challenge?.active && challenge.goalKey === "maxHeight" ? challenge.goalValue : 0,
@@ -395,8 +403,19 @@ export function renderSimulation(canvas, { sim, pending, predicted, ghost, chall
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
 
-  drawSkyAndGround(ctx, view);
-  drawAxes(ctx, view);
+  const palette = scene ?? {
+    skyTop: COLORS.skyTop,
+    skyBottom: COLORS.skyBottom,
+    ground: COLORS.ground,
+    groundDark: COLORS.groundDark,
+    soil: COLORS.soil,
+    ink: COLORS.text,
+    axis: COLORS.axis,
+    grid: COLORS.grid,
+  };
+
+  drawSkyAndGround(ctx, view, palette);
+  drawAxes(ctx, view, palette);
   drawTarget(ctx, view, challenge);
 
   if (ghost && ghost.length > 1) {
