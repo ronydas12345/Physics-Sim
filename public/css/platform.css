@@ -447,26 +447,37 @@
   min-height: 100%;
 }
 
+html:fullscreen #page-root,
+html:-webkit-full-screen #page-root,
+html.is-fullscreen #page-root,
 #page-root:fullscreen,
 #page-root:-webkit-full-screen,
 #page-root.is-fullscreen {
-  color-scheme: light;
-  background:
-    radial-gradient(1200px 400px at 10% -10%, #f7efe0, transparent),
-    var(--paper) !important;
+  color-scheme: only light;
   background-color: var(--paper) !important;
   color: var(--ink) !important;
-  overflow: auto !important;
+  overflow: visible !important;
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   max-width: none !important;
   max-height: none !important;
+  min-height: 100% !important;
   box-sizing: border-box !important;
 }
 
-#page-root:fullscreen::backdrop,
-#page-root:-webkit-full-screen::backdrop {
-  background: var(--paper);
+:root:fullscreen,
+:root:-webkit-full-screen {
+  color-scheme: only light;
+  background-color: var(--paper) !important;
+  color: var(--ink) !important;
+  overflow: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 100% !important;
+}
+
+:fullscreen::backdrop,
+:-webkit-full-screen::backdrop {
   background-color: var(--paper);
 }
 

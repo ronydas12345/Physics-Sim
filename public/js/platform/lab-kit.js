@@ -242,15 +242,24 @@ export function createTrialBook({ columns, renderRow, onChange }) {
 
 export function bindFullscreen(button) {
   if (!button) return () => {};
-  const target = document.getElementById("page-root") || document.body;
+  const target = document.documentElement;
 
   function active() {
     return document.fullscreenElement || document.webkitFullscreenElement || null;
   }
 
+  function isOn() {
+    const el = active();
+    return el === target || el === document.body || el === document.getElementById("page-root");
+  }
+
   function enter() {
-    const fn = target.requestFullscreen || target.webkitRequestFullscreen;
-    return fn?.call(target);
+    try {
+      if (target.requestFullscreen) return target.requestFullscreen().catch(() => {});
+      return target.webkitRequestFullscreen?.call(target);
+    } catch {
+      return undefined;
+    }
   }
 
   function exit() {
@@ -259,11 +268,12 @@ export function bindFullscreen(button) {
   }
 
   function sync() {
-    const on = active() === target;
+    const on = isOn();
     button.setAttribute("aria-pressed", String(on));
     button.title = on ? "Exit fullscreen" : "Fullscreen";
     button.setAttribute("aria-label", on ? "Exit fullscreen" : "Fullscreen");
     target.classList.toggle("is-fullscreen", on);
+    document.body?.classList.toggle("is-fullscreen", on);
   }
 
   button.addEventListener("click", () => {
@@ -276,7 +286,10 @@ export function bindFullscreen(button) {
   return () => {
     document.removeEventListener("fullscreenchange", sync);
     document.removeEventListener("webkitfullscreenchange", sync);
-    if (active() !== target) target.classList.remove("is-fullscreen");
+    if (!isOn()) {
+      target.classList.remove("is-fullscreen");
+      document.body?.classList.remove("is-fullscreen");
+    }
   };
 }
 
