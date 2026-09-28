@@ -27,6 +27,7 @@ import {
   teacherReport,
 } from "/lib/forces.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
+import { planetById, sceneForGravity } from "/lib/planets.js";
 import {
   bindChallenge,
   bindDownload,
@@ -131,10 +132,10 @@ function drawBox(ctx, x, y, w, h) {
   ctx.fillText("Box", x, y);
 }
 
-function drawAxes(ctx, x, y) {
+function drawAxes(ctx, x, y, ink = "rgba(27,36,48,0.7)") {
   ctx.save();
-  ctx.strokeStyle = "rgba(27,36,48,0.45)";
-  ctx.fillStyle = "rgba(27,36,48,0.7)";
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
   ctx.lineWidth = 1.4;
   ctx.beginPath();
   ctx.moveTo(x - 28, y);
@@ -150,50 +151,195 @@ function drawAxes(ctx, x, y) {
   ctx.restore();
 }
 
-function renderScene(canvas, state) {
+const VIEW_SPAN_M = 22;
+const HANG_SPAN_M = 12;
+const VIEW_EDGE_M = 3.5;
+const GROUND_POST_X = 10;
+const CEILING_Y = 5;
+
+function panRange(focus, span, edge, preferredLo) {
+  let lo = preferredLo;
+  if (focus < lo + edge) lo = focus - edge;
+  if (focus > lo + span - edge) lo = focus + edge - span;
+  return { lo, hi: lo + span };
+}
+
+function worldView(canvas, state, live) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
+  const hanging = state.environment === "hanging";
+  const pad = { l: 48, r: 28, t: 36, b: hanging ? 24 : 34 };
+  const plotW = Math.max(1, cssW - pad.l - pad.r);
+  const plotH = Math.max(1, cssH - pad.t - pad.b);
+  if (hanging) {
+    const scale = plotH / HANG_SPAN_M;
+    const { lo, hi } = panRange(live.y, HANG_SPAN_M, VIEW_EDGE_M, -6);
+    const originX = cssW / 2;
+    const originY = pad.t + hi * scale;
+    return {
+      cssW,
+      cssH,
+      dpr,
+      hanging,
+      pad,
+      lo,
+      hi,
+      scale,
+      originX,
+      originY,
+      groundY: cssH,
+      boxX: originX,
+      boxY: originY - live.y * scale,
+    };
+  }
+  const scale = plotW / VIEW_SPAN_M;
+  const { lo, hi } = panRange(live.x, VIEW_SPAN_M, VIEW_EDGE_M, -6);
+  const originX = pad.l + (0 - lo) * scale;
+  const groundY = cssH - pad.b;
+  return {
+    cssW,
+    cssH,
+    dpr,
+    hanging,
+    pad,
+    lo,
+    hi,
+    scale,
+    originX,
+    originY: groundY,
+    groundY,
+    boxX: originX + live.x * scale,
+    boxY: groundY - 28,
+  };
+}
+
+function xOf(world, view) {
+  return view.originX + world * view.scale;
+}
+
+function yOf(world, view) {
+  return view.originY - world * view.scale;
+}
+
+function renderScene(canvas, state, scene) {
+  const live = liveState(state);
+  const view = worldView(canvas, state, live);
+  const { cssW, cssH, dpr, hanging, lo, hi, scale, originX, originY, groundY, boxX, boxY } = view;
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
-  const hanging = state.environment === "hanging";
-  const sky = ctx.createLinearGradient(0, 0, 0, cssH);
-  sky.addColorStop(0, hanging ? "#d7ebf7" : "#d7ebf7");
-  sky.addColorStop(1, hanging ? "#eef4f8" : "#f4efe6");
+  const sky = ctx.createLinearGradient(0, 0, 0, hanging ? cssH : groundY);
+  sky.addColorStop(0, scene.skyTop);
+  sky.addColorStop(1, scene.skyBottom);
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, cssW, cssH);
 
-  const live = liveState(state);
-  const groundY = cssH * 0.78;
-  const scale = hanging ? 18 : Math.max(14, (cssW - 80) / 24);
-  const originX = hanging ? cssW / 2 : cssW / 2 - live.x * scale;
-  const boxX = hanging ? cssW / 2 : originX + live.x * scale;
-  const boxY = hanging ? cssH * 0.46 - live.y * scale : groundY - 28;
-
   if (state.visual?.floor) {
-    ctx.fillStyle = "#5a4634";
+    ctx.fillStyle = scene.soil;
     ctx.fillRect(0, groundY, cssW, cssH - groundY);
-    ctx.fillStyle = "#6f8f63";
-    ctx.fillRect(0, groundY, cssW, 8);
+    ctx.fillStyle = scene.ground;
+    ctx.fillRect(0, groundY, cssW, 12);
+    for (let wx = Math.floor(lo); wx <= hi; wx += 1) {
+      if (wx % 2 !== 0) continue;
+      ctx.fillStyle = scene.groundDark;
+      ctx.globalAlpha = 0.45;
+      ctx.fillRect(xOf(wx, view), groundY, scale, 12);
+      ctx.globalAlpha = 1;
+    }
+    ctx.strokeStyle = scene.grid;
+    ctx.lineWidth = 1;
+    for (let wx = Math.ceil(lo / 5) * 5; wx <= hi; wx += 5) {
+      if (wx === 0) continue;
+      const x = xOf(wx, view);
+      ctx.beginPath();
+      ctx.moveTo(x, groundY);
+      ctx.lineTo(x, groundY - 26);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = scene.axis;
+    ctx.fillStyle = scene.ink;
+    ctx.lineWidth = 1.4;
+    ctx.font = "12px IBM Plex Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (let wx = Math.ceil(lo); wx <= Math.floor(hi); wx += 1) {
+      const x = xOf(wx, view);
+      const major = wx % 5 === 0 || wx === 0;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY - (major ? 14 : 7));
+      ctx.lineTo(x, groundY + (major ? 10 : 5));
+      ctx.stroke();
+      if (wx % 5 === 0 || wx === 0) ctx.fillText(`${wx} m`, x, groundY + 14);
+    }
+    ctx.save();
+    ctx.strokeStyle = scene.ink;
+    ctx.globalAlpha = 0.35;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(originX, 28);
+    ctx.lineTo(originX, groundY);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = scene.groundDark;
+    ctx.fillRect(originX - 5, groundY - 36, 10, 36);
+    ctx.fillStyle = scene.ink;
+    ctx.font = "700 11px Figtree, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("x = 0", originX, groundY - 40);
+  } else {
+    ctx.strokeStyle = scene.axis;
+    ctx.fillStyle = scene.ink;
+    ctx.lineWidth = 1.4;
+    ctx.font = "12px IBM Plex Mono, monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let wy = Math.ceil(lo); wy <= Math.floor(hi); wy += 1) {
+      const y = yOf(wy, view);
+      if (y < 28 || y > cssH - 16) continue;
+      ctx.beginPath();
+      ctx.moveTo(originX - (wy === 0 ? 12 : 6), y);
+      ctx.lineTo(originX + (wy === 0 ? 12 : 6), y);
+      ctx.stroke();
+      if (wy % 2 === 0 || wy === 0) ctx.fillText(`${wy} m`, originX - 16, y);
+    }
   }
 
+  const trail = motionDiagramSamples(state, DIAGRAM_DT);
+  ctx.fillStyle = scene.ink;
+  for (const sample of trail) {
+    if (sample.time >= state.time - 1e-9) continue;
+    ctx.globalAlpha = 0.2;
+    ctx.beginPath();
+    if (hanging) ctx.arc(originX, yOf(sample.y, view), 5, 0, Math.PI * 2);
+    else ctx.arc(xOf(sample.x, view), boxY, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
   if (state.visual?.rope === "up") {
-    ctx.strokeStyle = "#5c4634";
+    const ceilY = yOf(CEILING_Y, view);
+    ctx.fillStyle = scene.groundDark;
+    if (ceilY > -12) ctx.fillRect(0, ceilY - 8, cssW, 10);
+    ctx.strokeStyle = scene.soil;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(boxX, 8);
+    ctx.moveTo(originX, ceilY);
     ctx.lineTo(boxX, boxY - 28);
     ctx.stroke();
   }
   if (state.visual?.rope === "right") {
-    ctx.strokeStyle = "#5c4634";
+    const postX = xOf(GROUND_POST_X, view);
+    ctx.strokeStyle = scene.soil;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(boxX + 28, boxY);
-    ctx.lineTo(cssW - 24, boxY);
+    ctx.lineTo(postX, boxY);
     ctx.stroke();
+    ctx.fillStyle = scene.groundDark;
+    ctx.fillRect(postX - 4, boxY - 18, 8, groundY - (boxY - 18));
   }
 
-  ctx.strokeStyle = "rgba(27, 36, 48, 0.35)";
+  ctx.strokeStyle = scene.axis;
   ctx.setLineDash([6, 4]);
   ctx.lineWidth = 1.6;
   ctx.beginPath();
@@ -201,25 +347,29 @@ function renderScene(canvas, state) {
   else ctx.rect(boxX - 58, boxY - 72, 116, 148);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(27,36,48,0.55)";
+  ctx.fillStyle = scene.ink;
+  ctx.globalAlpha = 0.7;
   ctx.font = "700 11px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.fillText("SYSTEM", boxX - 50, boxY - 78);
+  ctx.globalAlpha = 1;
 
-  drawAxes(ctx, 48, hanging ? cssH - 36 : groundY - 52);
+  if (hanging) drawAxes(ctx, originX, originY, scene.axis);
+  else if (originX > 8 && originX < cssW - 8) drawAxes(ctx, originX, groundY, scene.axis);
   drawBox(ctx, boxX, boxY, 74, 48);
   drawForceArrows(ctx, boxX, boxY, state.forces, {
     showNet: state.showNetForce,
     net: live.net,
   });
 
-  ctx.fillStyle = "#1b2430";
+  ctx.fillStyle = scene.ink;
   ctx.font = "700 15px Figtree, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   const scen = SCENARIOS.find((s) => s.id === state.scenario);
-  ctx.fillText(`${scen?.label || "Forces"} · t = ${state.time.toFixed(2)} s`, cssW / 2, 8);
-  return { scale, originX };
+  const planet = scene.name ? ` · ${scene.name}` : "";
+  ctx.fillText(`${scen?.label || "Forces"} · ground frame · t = ${state.time.toFixed(2)} s${planet}`, cssW / 2, 8);
+  return view;
 }
 
 function renderFbd(canvas, state) {
@@ -320,6 +470,8 @@ export function mountForcesFbd(root) {
   const addDir = root.querySelector("#add-dir");
 
   let state = createState();
+  let planetId = "earth";
+  let planetBackgrounds = true;
   let running = false;
   let raf = 0;
   let lastStamp = 0;
@@ -459,15 +611,23 @@ export function mountForcesFbd(root) {
       : "Not yet. Check the forces acting directly on the selected object.";
   }
 
+  function applyPlanetGravity() {
+    const planet = planetById(planetId);
+    if (planet) setGravity(state, planet.g, planet.name);
+    else setGravity(state, state.g, "Custom");
+  }
+
   function applyScenario(params) {
     state = createState({
       ...params,
+      g: params.g ?? state.g,
       dynamicMode: params.dynamicMode ?? state.dynamicMode,
       showNetForce: params.showNetForce ?? state.showNetForce,
       showComponents: params.showComponents ?? state.showComponents,
       showSources: params.showSources ?? state.showSources,
       duration: params.duration ?? state.duration,
     });
+    applyPlanetGravity();
     paint();
   }
 
@@ -475,6 +635,7 @@ export function mountForcesFbd(root) {
     generate: generateChallenge,
     apply(spec) {
       if (!spec) return;
+      planetId = "earth";
       applyScenario(spec.params);
     },
     describeCard,
@@ -505,6 +666,7 @@ export function mountForcesFbd(root) {
   }
 
   function syncInputs() {
+    const busy = running;
     if (document.activeElement !== massInput) massInput.value = String(state.mass);
     if (document.activeElement !== gInput) gInput.value = String(state.g);
     if (document.activeElement !== vInput) vInput.value = String(state.vx0);
@@ -519,10 +681,12 @@ export function mountForcesFbd(root) {
     PLAYBACK_SPEEDS.forEach((speed) => {
       root.querySelector(`[data-speed="${speed}"]`)?.classList.toggle("active", speed === playback);
     });
-    root.querySelectorAll("[data-g]").forEach((btn) => {
-      btn.classList.toggle("active", Math.abs(Number(btn.dataset.g) - state.g) < 0.05);
+    root.querySelectorAll("[data-planet]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.planet === planetId);
+      btn.disabled = busy;
     });
-    const busy = running;
+    const bg = root.querySelector("#planet-backgrounds");
+    if (bg && document.activeElement !== bg) bg.checked = planetBackgrounds;
     [massInput, gInput, vInput, tInput].forEach((el) => {
       el.disabled = busy;
     });
@@ -530,9 +694,6 @@ export function mountForcesFbd(root) {
     root.querySelector("#btn-pause").disabled = !busy;
     root.querySelector("#btn-step").disabled = busy;
     root.querySelectorAll("[data-scenario]").forEach((btn) => {
-      btn.disabled = busy;
-    });
-    root.querySelectorAll("[data-g]").forEach((btn) => {
       btn.disabled = busy;
     });
     forceBody.querySelectorAll("input, select, button").forEach((el) => {
@@ -552,14 +713,18 @@ export function mountForcesFbd(root) {
   }
 
   function paint() {
-    renderScene(canvas, state);
+    const scene = sceneForGravity({ planetId, backgroundsOn: planetBackgrounds });
+    renderScene(canvas, state, scene);
     renderFbd(fbd, state);
     renderDiagram(diagram, state);
     const snap = snapshot(state);
     const dir = snap.netDir;
+    const planet = planetById(planetId);
     root.querySelector("#read-t").textContent = formatUnsigned(snap.time, "s");
     root.querySelector("#read-m").textContent = formatUnsigned(snap.mass, "kg");
-    root.querySelector("#read-g").textContent = formatUnsigned(snap.g, "m/s²");
+    root.querySelector("#read-g").textContent = planet
+      ? `${formatUnsigned(snap.g, "m/s²")} · ${planet.name}`
+      : formatUnsigned(snap.g, "m/s²");
     root.querySelector("#read-v").textContent = formatSigned(snap.vx, "m/s");
     root.querySelector("#read-a").textContent = formatSigned(snap.a.x, "m/s²");
     root.querySelector("#read-fg").textContent = `${formatUnsigned(snap.Fg, "N")} ↓`;
@@ -638,6 +803,9 @@ export function mountForcesFbd(root) {
     if (autoRecord && state.time > 1e-9) trials.record(trialSnapshot());
     stopLoop();
     state = createState({ scenario: "box-on-surface", dynamicMode: state.dynamicMode, showNetForce: state.showNetForce });
+    planetId = "earth";
+    planetBackgrounds = true;
+    applyPlanetGravity();
     paint();
   }
 
@@ -719,18 +887,28 @@ export function mountForcesFbd(root) {
       syncInputs();
     });
   });
-  root.querySelectorAll("[data-g]").forEach((btn) => {
+  root.querySelectorAll("[data-planet]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      setGravity(state, Number(btn.dataset.g), btn.dataset.source || "Planet");
+      const planet = planetById(btn.dataset.planet);
+      if (!planet) return;
+      planetId = planet.id;
+      setGravity(state, planet.g, planet.name);
       paint();
     });
+  });
+  root.querySelector("#planet-backgrounds")?.addEventListener("change", (event) => {
+    planetBackgrounds = event.target.checked;
+    paint();
   });
   massInput.addEventListener("change", () => {
     setMass(state, readNumber(massInput, state.mass));
     paint();
   });
   gInput.addEventListener("change", () => {
-    setGravity(state, readNumber(gInput, state.g), "Custom");
+    const g = readNumber(gInput, state.g);
+    const selected = planetById(planetId);
+    if (selected && Math.abs(g - selected.g) > 0.05) planetId = null;
+    setGravity(state, g, planetById(planetId)?.name || "Custom");
     paint();
   });
   vInput.addEventListener("change", () => {

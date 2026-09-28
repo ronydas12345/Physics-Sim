@@ -4,6 +4,7 @@ import {
   challengeCard,
   labIconToolbar,
   labTablist,
+  planetPresetControls,
   teacherSwitch,
   theoryLink,
   trialSection,
@@ -1358,10 +1359,7 @@ export function sim22Page() {
               </div>
               <div class="control">
                 <div class="control-head"><span>Gravity field</span></div>
-                <div class="presets" role="group" aria-label="Gravity presets">
-                  <button type="button" class="chip" data-g="9.8" data-source="Earth">Earth 9.8</button>
-                  <button type="button" class="chip" data-g="1.62" data-source="Moon">Moon 1.62</button>
-                </div>
+                ${planetPresetControls()}
               </div>
               <div class="control">
                 <div class="control-head"><span>Playback speed</span></div>
@@ -1413,7 +1411,7 @@ export function sim22Page() {
                   <button type="button" class="btn" id="btn-add-force">Add force</button>
                 </div>
               </div>
-              <p class="track-help">Arrows are forces on the box, not velocity. The free-body diagram below uses the same force list. Motion mode is optional: ΣF = ma is shown either way, but the box only moves when Motion mode is on.</p>
+              <p class="track-help">Arrows are forces on the box, not velocity. The camera stays in the ground frame: meter marks and x = 0 stay put, and the box slides past them. The dashed SYSTEM outline travels with the object; the free-body diagram does too. Motion mode is optional: ΣF = ma is shown either way, but the box only accelerates when Motion mode is on.</p>
             </div>
           </section>
 

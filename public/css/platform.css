@@ -708,6 +708,15 @@ html.is-fullscreen #page-root,
   gap: 14px 18px;
 }
 
+.track-controls .planet-bg-switch {
+  margin-top: 8px;
+  color: #d7e3ee;
+}
+
+.planet-chips {
+  flex-wrap: wrap;
+}
+
 .force-table .text-link {
   color: #f0a202;
   background: none;

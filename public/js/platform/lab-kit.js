@@ -4,6 +4,7 @@
  */
 
 import { fileForFormat, triggerDownload } from "/lib/export-trials.js";
+import { PLANET_CHIP_ORDER, planetById } from "/lib/planets.js";
 
 function iconReset() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.5 9A7 7 0 0 1 19 8M18.5 15A7 7 0 0 1 5 16"/></svg>`;
@@ -353,4 +354,22 @@ export function bindDownload(root, { getTable, filename }) {
   return { sync, destroy() {
     document.removeEventListener("click", onDoc);
   } };
+}
+
+export function planetPresetControls({ switchClass = "switch light" } = {}) {
+  const chips = PLANET_CHIP_ORDER.map((id) => {
+    const planet = planetById(id);
+    if (!planet) return "";
+    return `<button type="button" class="chip${id === "earth" ? " active" : ""}" data-planet="${id}">${planet.name}</button>`;
+  }).join("");
+  return `
+    <div class="presets planet-chips" role="group" aria-label="Planetary gravity">
+      ${chips}
+    </div>
+    <label class="${switchClass} planet-bg-switch">
+      <input id="planet-backgrounds" type="checkbox" checked />
+      <span>Planet backgrounds</span>
+    </label>
+    <p class="track-help">A selected world paints its sky and ground. Custom g keeps the gray lab scene.</p>
+  `;
 }
