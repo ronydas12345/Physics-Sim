@@ -161,16 +161,19 @@
         </div>
 
         <section class="lab-bottom">
+          <div class="graph-toggles" role="group" aria-label="Recorded graph overlays">
+            <label><input type="checkbox" id="toggle-identity" /> Show exact identity (solid line)</label>
+          </div>
           <div class="graphs">
             <div class="graph-wrap">
               <h2>Your Trials · Range vs. Angle</h2>
               <canvas id="graph-range" width="640" height="280" aria-label="Recorded range versus launch angle"></canvas>
-              <p class="caption">Each point is a trial you recorded. The dashed curve is a least-squares fit in θ. Compare 30°, 45°, and 60° with the same speed and gravity to the identity R = v₀² sin(2θ) / g.</p>
+              <p class="caption">Dashed: least-squares fit to your points. Solid: R = v₀² sin(2θ) / g when Show exact identity is on. Compare 30°, 45°, and 60° at the same speed and gravity.</p>
             </div>
             <div class="graph-wrap">
               <h2>Your Trials · Height vs. Angle</h2>
               <canvas id="graph-height" width="640" height="280" aria-label="Recorded maximum height versus launch angle"></canvas>
-              <p class="caption">The dashed curve is a fit to your points. Steeper launches usually go higher, even when they do not travel farther. Compare to H = v₀² sin²θ / (2g).</p>
+              <p class="caption">Dashed: fit to your points. Solid: H = v₀² sin²θ / (2g) when the identity overlay is on. Steeper launches usually go higher, even when they do not travel farther.</p>
             </div>
           </div>
           <div class="table-wrap">
@@ -370,6 +373,8 @@
             <p>
               The Theory graphs above plot the exact identities. Your Lab tab graphs are different: they show only the
               trials you recorded, with a dashed least-squares polynomial in the launch angle θ (in degrees) and an R².
+              Turn on <strong>Show exact identity</strong> to overlay the closed-form curve as a solid line, using the
+              speed and gravity from your trials when they all match, or the current sliders otherwise.
               Two points always give a perfect line. Record several angles at the same v<sub>0</sub> and g before you
               trust the curve.
             </p>

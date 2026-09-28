@@ -638,6 +638,89 @@ html.is-fullscreen #page-root,
   height: 320px;
 }
 
+.system-stage #axis-canvas {
+  height: 360px;
+}
+
+.fbd-stage #axis-canvas {
+  height: 340px;
+}
+
+.fbd-diagram canvas {
+  height: 240px;
+}
+
+.force-table-wrap {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.force-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  color: #d7e3ee;
+}
+
+.force-table th,
+.force-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  vertical-align: middle;
+}
+
+.force-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aacbd;
+}
+
+.force-table input[type="number"],
+.force-table select,
+.add-force-row select {
+  background: #2a3b4d;
+  color: #f4efe6;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font: inherit;
+  max-width: 100%;
+}
+
+.force-table .force-mag {
+  width: 5.5rem;
+}
+
+.force-enable {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.force-list-head {
+  margin: 12px 0 6px;
+  font-size: 0.92rem;
+}
+
+.fbd-toggles {
+  gap: 14px 18px;
+}
+
+.force-table .text-link {
+  color: #f0a202;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.system-diagram canvas {
+  height: 200px;
+}
+
 .diagram-wrap canvas {
   display: block;
   width: 100%;
@@ -669,6 +752,10 @@ html.is-fullscreen #page-root,
 
 .sim-nav a:hover {
   text-decoration: underline;
+}
+
+.sim-nav .muted {
+  font-weight: 600;
 }
 
 .metrics-wide {

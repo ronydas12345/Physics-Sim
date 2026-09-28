@@ -1,5 +1,6 @@
 import {
   analyzeLaunch,
+  analytical,
   generateChallenge,
   goalTolerance,
   measuredGoal,
@@ -72,6 +73,7 @@ const els = {
   record: $("btn-record"),
   clear: $("btn-clear"),
   autoRecord: $("auto-record"),
+  identityToggle: $("toggle-identity"),
   trialBody: $("trial-body"),
   challengeToggle: $("challenge-toggle"),
   challengeBody: $("challenge-body"),
@@ -214,12 +216,31 @@ function drawSim() {
   });
 }
 
+function identityLaunch() {
+  if (trials.length) {
+    const { v0, g } = trials[0];
+    if (g > 0 && trials.every((t) => t.v0 === v0 && t.g === g)) return { v0, g };
+  }
+  return { v0: ui.v0, g: ui.g };
+}
+
 function drawCharts() {
   if (activeTab === "lab") {
+    const show = Boolean(els.identityToggle?.checked);
+    const params = identityLaunch();
+    const gOk = params.g > 0;
     renderTrialGraphs({
       rangeCanvas: els.graphRange,
       heightCanvas: els.graphHeight,
       trials,
+      rangeIdentity:
+        show && gOk
+          ? { yOfX: (deg) => analytical(params.v0, deg, params.g).range, label: "R = v₀² sin(2θ) / g" }
+          : null,
+      heightIdentity:
+        show && gOk
+          ? { yOfX: (deg) => analytical(params.v0, deg, params.g).maxHeight, label: "H = v₀² sin²θ / (2g)" }
+          : null,
     });
     return;
   }
@@ -502,6 +523,7 @@ els.clear.addEventListener("click", clearTrials);
 els.autoRecord.addEventListener("change", () => {
   autoRecord = els.autoRecord.checked;
 });
+els.identityToggle?.addEventListener("change", () => drawCharts());
 els.challengeToggle.addEventListener("change", () => setChallenge(els.challengeToggle.checked));
 els.reveal.addEventListener("click", () => {
   if (!challenge.attempted) return;

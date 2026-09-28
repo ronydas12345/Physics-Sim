@@ -20,6 +20,7 @@ import {
   bindChallenge,
   bindDownload,
   bindFullscreen,
+  bindIdentityToggle,
   bindLabTabs,
   bindTeacher,
   createTrialBook,
@@ -202,6 +203,8 @@ export function mountVectors1D(root) {
     };
   }
 
+  let identityOn = () => false;
+
   function drawCharts() {
     if (activeTab !== "lab") return;
     const list = trials.list();
@@ -215,6 +218,9 @@ export function mountVectors1D(root) {
       xMax: 12,
       fitYName: "D",
       fitXName: "Δx",
+      identity: identityOn()
+        ? { yOfX: (dx) => Math.abs(dx), label: "D = |Δx|", xMin: -12, xMax: 12 }
+        : null,
     });
     renderXYScatter(graphHeight, list, {
       xKey: "distance",
@@ -238,6 +244,7 @@ export function mountVectors1D(root) {
     line.hidden = false;
     line.textContent = teacherReport(state);
   });
+  identityOn = bindIdentityToggle(root, () => drawCharts());
 
   function describeCard(host, spec) {
     host.querySelector("#challenge-q").textContent = spec.prompt;

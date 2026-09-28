@@ -17,6 +17,7 @@ function trialFitTheory(compareHtml) {
               After you record at least two trials with different x-values, each “Your Trials” graph draws a dashed
               least-squares curve and prints the fitted equation with R². Two points always give a perfect line
               (R² = 1). Record several different runs, then compare the fitted shape to the identities derived on this tab.
+              Turn on <strong>Show exact identity</strong> to overlay the closed-form curve as a solid line.
             </p>
             ${compareHtml}
           </section>`;
@@ -83,7 +84,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1–1.5, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.5 and 2.1–2.2, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -207,7 +208,7 @@ export function aboutPage() {
     </header>
     <article class="prose card">
       <h2>Navigation</h2>
-      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1 Scalars and Vectors, 1.2 Displacement, Velocity, and Acceleration, 1.3 Representing Motion, 1.4 Reference Frames and Relative Motion, and 1.5 Vectors and Motion in Two Dimensions (the projectile lab).</p>
+      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1–1.5. Unit 2 currently includes 2.1 Systems and Center of Mass and 2.2 Forces and Free-Body Diagrams.</p>
       <h2>Lab, Theory, Challenge, Teacher view</h2>
       <p>Every available lab uses the same shell. Theory holds equations and examples. Challenge randomizes a target and hides the answer until you check or launch. Teacher view compares live values with the identities the course uses. Record and auto-record fill a trial table and graphs.</p>
       <h2>Reset</h2>
@@ -307,7 +308,7 @@ export function sim11Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Distance vs. Displacement",
           heightTitle: "Your Trials · Position vs. Distance",
-          rangeCaption: "The dashed curve is a least-squares fit. Distance should never fall below |displacement|.",
+          rangeCaption: "Dashed is a least-squares fit. Turn on Show exact identity to overlay D = |Δx| as a solid V.",
           heightCaption: "Each point is a snapshot you recorded. Compare the fitted line to several paths from the same origin.",
           columns: ["Trial", "Position", "Displacement", "Distance", "+ direction"],
           emptyCols: 5,
@@ -536,8 +537,8 @@ export function sim12Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Distance vs. Displacement",
           heightTitle: "Your Trials · Average Velocity vs. Time",
-          rangeCaption: "The dashed curve is a least-squares fit. If the object reverses, distance keeps growing while displacement can shrink.",
-          heightCaption: "Average velocity is Δx / Δt for that run. For constant acceleration the points should lie near a straight line.",
+          rangeCaption: "Dashed is a least-squares fit. Turn on Show exact identity to overlay D = |Δx|. If the object reverses, distance keeps growing while displacement can shrink.",
+          heightCaption: "Average velocity is Δx / Δt. The solid identity is v_avg = v₀ + ½ a t for the current settings (constant a, no bounce).",
           columns: ["Trial", "t", "Position", "Displacement", "Distance", "v", "a", "v_avg"],
           emptyCols: 8,
         })}
@@ -798,8 +799,8 @@ export function sim13Page() {
         ${trialSection({
           rangeTitle: "Your Trials · Distance vs. Displacement",
           heightTitle: "Your Trials · Average Velocity vs. Time",
-          rangeCaption: "The dashed curve is a least-squares fit. If the object reverses or bounces, distance keeps growing while displacement can shrink.",
-          heightCaption: "Average velocity is Δx / Δt for that run. Compare the fitted slope to (v₀ + v) / 2 when acceleration is constant.",
+          rangeCaption: "Dashed is a least-squares fit. Turn on Show exact identity to overlay D = |Δx|. If the object reverses or bounces, distance keeps growing while displacement can shrink.",
+          heightCaption: "Average velocity is Δx / Δt. The solid identity is v_avg = v₀ + ½ a t for the current settings; a bounce takes the points off that line.",
           columns: ["Trial", "t", "Position", "Displacement", "Distance", "v", "a", "v_avg"],
           emptyCols: 8,
         })}
@@ -1041,7 +1042,7 @@ export function sim14Page() {
           rangeTitle: "Your Trials · Relative Position vs. Relative Velocity",
           heightTitle: "Your Trials · Separation vs. Time",
           rangeCaption: "A snapshot of x_A/B is not determined by v_A/B alone. When v_A/B = 0 the gap stays constant even if both still move relative to the ground.",
-          heightCaption: "The dashed curve is a least-squares fit. Separation is |x_A/B|, so a straight line only holds until they meet.",
+          heightCaption: "Turn on Show exact identity to overlay s = |x_A/B(0) + v_A/B t| as a solid V. A straight fit only holds until they meet.",
           columns: ["Trial", "Frame", "t", "x_A", "v_A", "x_B", "v_B", "v_A/B"],
           emptyCols: 8,
         })}
@@ -1090,6 +1091,455 @@ export function sim14Page() {
           </section>
           ${trialFitTheory(`
             <p>x<sub>A/B</sub> vs. v<sub>A/B</sub> at mixed times is not a required line: relative position also depends on the starting gap and on t. A near-zero slope is common if you change speed without changing the snapshot time much. Separation vs. time should fit a line while they close or recede without meeting; after they pass, s starts increasing and a single straight fit will look worse (lower R²).</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim21Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.1</p>
+          <h1>Systems and Center of Mass</h1>
+          <p class="objective">Learning objective: Define a system, locate its center of mass, and contrast the motion of individual objects with the motion of the system as a whole.</p>
+          <p class="sim-nav"><a href="/simulations/module-1" data-link>← Module 1</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-2" data-link>2.2 →</a></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage system-stage" aria-label="Two objects and their center of mass">
+            <canvas id="axis-canvas" width="960" height="360" aria-label="Objects A and B with a center-of-mass marker on a one-dimensional axis"></canvas>
+            <div class="transport">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-21">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control">
+                <div class="control-head"><span>System</span></div>
+                <div class="presets" role="radiogroup" aria-label="Selected system">
+                  <button type="button" class="chip" data-system="A">A only</button>
+                  <button type="button" class="chip active" data-system="AB">A + B</button>
+                  <button type="button" class="chip" data-system="B">B only</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Presets</span></div>
+                <div class="presets" role="group" aria-label="Center of mass presets">
+                  <button type="button" class="chip" data-preset="equal-mass">Equal masses</button>
+                  <button type="button" class="chip" data-preset="unequal-mass">Unequal masses</button>
+                  <button type="button" class="chip" data-preset="opposite">Opposite velocities</button>
+                  <button type="button" class="chip" data-preset="zero-cm-v">Zero CM velocity</button>
+                  <button type="button" class="chip" data-preset="moving-system">Moving system</button>
+                  <button type="button" class="chip" data-preset="external-force">External force</button>
+                  <button type="button" class="chip" data-preset="push-apart">Internal push-apart</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">m of A<input id="ma-input" type="number" min="0.1" max="20" step="0.1" value="2" aria-label="Mass of A in kilograms" /><span>kg</span></label>
+                <label class="pos-input">x₀ of A<input id="xa-input" type="number" step="0.5" value="-10" aria-label="Initial position of A in meters" /><span>m</span></label>
+                <label class="pos-input">v of A<input id="va-input" type="number" step="0.5" value="2" aria-label="Initial velocity of A in meters per second" /><span>m/s</span></label>
+                <label class="pos-input">m of B<input id="mb-input" type="number" min="0.1" max="20" step="0.1" value="2" aria-label="Mass of B in kilograms" /><span>kg</span></label>
+                <label class="pos-input">x₀ of B<input id="xb-input" type="number" step="0.5" value="10" aria-label="Initial position of B in meters" /><span>m</span></label>
+                <label class="pos-input">v of B<input id="vb-input" type="number" step="0.5" value="2" aria-label="Initial velocity of B in meters per second" /><span>m/s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">F_ext<input id="fext-input" type="number" step="0.5" value="0" aria-label="External force on the selected system in newtons" /><span>N</span></label>
+                <label class="pos-input">A↔B force<input id="fint-input" type="number" step="0.5" value="0" aria-label="Internal force of A on B in newtons" /><span>N</span></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <p class="track-help">The diamond is the center of mass, not a third object. Drag A or B at t = 0. Increase B’s mass and watch the diamond slide toward B. A↔B is internal for A + B and external if the system is only A or only B.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="values-panel">
+              <div class="card-head">
+                <h2>System</h2>
+                ${teacherSwitch()}
+              </div>
+              <p class="caption" id="force-note">A↔B is internal to A + B, so it cannot change a_CM. F_ext is external and a_CM = F_ext / M.</p>
+              <dl class="metrics metrics-wide">
+                <div><dt>Selected system</dt><dd id="read-system">A + B</dd></div>
+                <div><dt>Time</dt><dd id="read-t">0.00 s</dd></div>
+                <div><dt>Total mass</dt><dd id="read-m">4.00 kg</dd></div>
+                <div><dt>Center of mass</dt><dd id="read-xcm">0.00 m</dd></div>
+                <div><dt>CM velocity</dt><dd id="read-vcm">+2.00 m/s</dd></div>
+                <div><dt>CM acceleration</dt><dd id="read-acm">0.00 m/s²</dd></div>
+                <div><dt>Total momentum</dt><dd id="read-p">+8.00 kg·m/s</dd></div>
+                <div><dt>External force</dt><dd id="read-fext">0.00 N</dd></div>
+                <div><dt>A mass</dt><dd id="read-ma">2.00 kg</dd></div>
+                <div><dt>B mass</dt><dd id="read-mb">2.00 kg</dd></div>
+                <div><dt>A position</dt><dd id="read-xa">−10.00 m</dd></div>
+                <div><dt>B position</dt><dd id="read-xb">+10.00 m</dd></div>
+                <div><dt>A velocity</dt><dd id="read-va">+2.00 m/s</dd></div>
+                <div><dt>B velocity</dt><dd id="read-vb">+2.00 m/s</dd></div>
+              </dl>
+              <p class="eq-block">x<sub>CM</sub> = Σ m<sub>i</sub> x<sub>i</sub> / M<br />v<sub>CM</sub> = Σ m<sub>i</sub> v<sub>i</sub> / M<br />F<sub>ext</sub> = M a<sub>CM</sub></p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap system-diagram">
+            <h2>Motion diagram</h2>
+            <canvas id="diagram-canvas" width="960" height="200" aria-label="Motion diagrams for A, the center of mass, and B"></canvas>
+            <p class="caption">Equal time steps. The CM row is computed from the same object histories, not drawn independently.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graph-toggles" role="group" aria-label="Graph visibility">
+            <label><input type="checkbox" data-graph="x" checked /> Position vs. time</label>
+            <label><input type="checkbox" data-graph="v" checked /> Velocity vs. time</label>
+          </div>
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Positions of A, B, and the center of mass versus time"></canvas>
+              <p class="caption">A, B, and CM share the same clock. Click while paused to jump to that time.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Velocities of A, B, and the center of mass versus time"></canvas>
+              <p class="caption">If F_ext = 0, v_CM is a horizontal line even when A and B move differently.</p>
+            </div>
+          </div>
+        </section>
+
+        ${trialSection({
+          rangeTitle: "Your Trials · Center of Mass vs. Mass of B",
+          heightTitle: "Your Trials · Center of Mass vs. Time",
+          rangeCaption: "Increase m_B with A fixed and watch x_CM move toward B. The solid identity uses the current positions.",
+          heightCaption: "For constant a_CM the solid line is x_CM0 + v_CM t + ½ a_CM t² for the current settings.",
+          columns: ["Trial", "Sys", "t", "m_A", "m_B", "x_CM", "v_CM", "M", "p", "F_ext"],
+          emptyCols: 10,
+        })}
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Many objects, one system</h2>
+            <p>
+              Dynamics starts by choosing what counts as the system. Once that choice is made, the center of mass
+              describes the system's overall translational motion, even when the pieces inside it move differently.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Defining the system</h3>
+            <p>A system is the collection of objects you have decided to analyze together. Everything else is the environment. The dashed box in the lab is that choice made visible. Switching from A + B to A only does not change the objects; it changes which forces count as internal.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Center-of-mass position</h3>
+            <p>The center of mass is the mass-weighted average position. For any number of particles:</p>
+            <p class="eq-block">x<sub>CM</sub> = Σ m<sub>i</sub> x<sub>i</sub> / Σ m<sub>i</sub></p>
+            <p>For two objects that is x<sub>CM</sub> = (m<sub>A</sub> x<sub>A</sub> + m<sub>B</sub> x<sub>B</sub>) / (m<sub>A</sub> + m<sub>B</sub>). If the masses are equal, x<sub>CM</sub> sits halfway between them. If m<sub>B</sub> &gt; m<sub>A</sub>, the center of mass lies closer to B. It is not a third physical object; it is a derived location.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Center-of-mass velocity</h3>
+            <p>Differentiate the position identity, or average the velocities the same way:</p>
+            <p class="eq-block">v<sub>CM</sub> = Σ m<sub>i</sub> v<sub>i</sub> / Σ m<sub>i</sub></p>
+            <p>Total momentum of the selected system is p = Σ m<sub>i</sub> v<sub>i</sub>, so p = M v<sub>CM</sub>. Equal-and-opposite momenta give v<sub>CM</sub> = 0: the objects can rush apart while the diamond stays put.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Internal forces do not move the CM</h3>
+            <p>Newton’s third law pairs inside the system cancel in the sum of forces. If A pushes B to the right, B pushes A to the left with the same magnitude. Those two forces change a<sub>A</sub> and a<sub>B</sub> but not a<sub>CM</sub> of A + B. The Internal push-apart preset starts both objects at rest; they accelerate oppositely and the diamond does not move.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. External forces do move the CM</h3>
+            <p>The net force from outside the boundary accelerates the center of mass as if the total mass sat there:</p>
+            <p class="eq-block">F<sub>ext</sub> = M a<sub>CM</sub><br />a<sub>CM</sub> = F<sub>ext</sub> / M</p>
+            <p>This lab applies F_ext to the selected system and shares it in proportion to mass, so every member gets that same a<sub>CM</sub>. Rearranging A and B without changing M or F_ext leaves a<sub>CM</sub> unchanged. Later Newton’s-law labs will draw the individual forces; the identity is the same.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. The same force, two stories</h3>
+            <p>The A↔B interaction is internal when the system is A + B and external when the system is A only (or B only). Select A only with a nonzero A↔B force: a<sub>CM</sub> of that smaller system is no longer zero, because the force from B now comes from outside the boundary.</p>
+          </section>
+          <section class="theory-block">
+            <h3>7. Motion in time</h3>
+            <p>With constant accelerations,</p>
+            <p class="eq-block">
+              x<sub>i</sub>(t) = x<sub>i0</sub> + v<sub>i0</sub> t + ½ a<sub>i</sub> t²<br />
+              x<sub>CM</sub>(t) = x<sub>CM0</sub> + v<sub>CM0</sub> t + ½ a<sub>CM</sub> t²
+            </p>
+            <p>The marker is always recalculated from the current object states. It is never interpolated on its own.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>Center of mass vs. mass of B should follow the two-body identity if you keep x_A, x_B, and m_A fixed. Center of mass vs. time should match x_CM0 + v_CM t + ½ a_CM t² for the current F_ext. Two points always give R² = 1; record several runs before you trust the fit.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim22Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.2</p>
+          <h1>Forces and Free-Body Diagrams</h1>
+          <p class="objective">Learning objective: Identify the external forces on a selected object, represent them as vectors on a free-body diagram, and determine the net force.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-1" data-link>← 2.1</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.3 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage fbd-stage" aria-label="Physical scene with force vectors">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Box in a physical scene with force arrows drawn from its center"></canvas>
+            <div class="transport">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-22">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Force scenarios">
+                  <button type="button" class="chip" data-scenario="box-on-surface">Box on surface</button>
+                  <button type="button" class="chip" data-scenario="pushed-box">Pushed box</button>
+                  <button type="button" class="chip" data-scenario="box-with-friction">Box with friction</button>
+                  <button type="button" class="chip" data-scenario="pulled-box">Pulled box</button>
+                  <button type="button" class="chip" data-scenario="hanging">Hanging object</button>
+                  <button type="button" class="chip" data-scenario="balanced-horizontal">Balanced horizontal</button>
+                  <button type="button" class="chip" data-scenario="unbalanced-horizontal">Unbalanced horizontal</button>
+                  <button type="button" class="chip" data-scenario="coasting">Moving, F_net = 0</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Gravity field</span></div>
+                <div class="presets" role="group" aria-label="Gravity presets">
+                  <button type="button" class="chip" data-g="9.8" data-source="Earth">Earth 9.8</button>
+                  <button type="button" class="chip" data-g="1.62" data-source="Moon">Moon 1.62</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.1" max="20" step="0.1" value="5" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input">g<input id="g-input" type="number" min="0.1" max="30" step="0.1" value="9.8" aria-label="Gravitational field strength in meters per second squared" /><span>m/s²</span></label>
+                <label class="pos-input">v₀<input id="v-input" type="number" step="0.5" value="0" aria-label="Initial velocity in meters per second" /><span>m/s</span></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light"><input id="toggle-dynamic" type="checkbox" /> Motion mode</label>
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light"><input id="toggle-components" type="checkbox" /> Show components</label>
+                <label class="switch light"><input id="toggle-sources" type="checkbox" /> Show force sources</label>
+              </div>
+              <div class="force-table-wrap">
+                <table class="force-table">
+                  <thead>
+                    <tr><th>Force</th><th>Magnitude</th><th>Direction</th><th>Source</th><th></th></tr>
+                  </thead>
+                  <tbody id="force-body"></tbody>
+                </table>
+                <div class="nudge-row motion-inputs add-force-row">
+                  <label class="pos-input">Add
+                    <select id="add-type" aria-label="Force type to add">
+                      <option value="applied">Applied</option>
+                      <option value="friction">Friction</option>
+                      <option value="tension">Tension</option>
+                      <option value="normal">Normal</option>
+                    </select>
+                  </label>
+                  <label class="pos-input">Magnitude<input id="add-mag" type="number" min="0" max="200" step="0.5" value="10" aria-label="New force magnitude in newtons" /><span>N</span></label>
+                  <label class="pos-input">Direction
+                    <select id="add-dir" aria-label="New force direction">
+                      <option value="0">→ right</option>
+                      <option value="90">↑ up</option>
+                      <option value="180">← left</option>
+                      <option value="270">↓ down</option>
+                    </select>
+                  </label>
+                  <button type="button" class="btn" id="btn-add-force">Add force</button>
+                </div>
+              </div>
+              <p class="track-help">Arrows are forces on the box, not velocity. The free-body diagram below uses the same force list. Motion mode is optional: ΣF = ma is shown either way, but the box only moves when Motion mode is on.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="values-panel">
+              <div class="card-head">
+                <h2>Object</h2>
+                ${teacherSwitch()}
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Time</dt><dd id="read-t">0.00 s</dd></div>
+                <div><dt>Force state</dt><dd id="read-state">Balanced</dd></div>
+                <div><dt>Mass</dt><dd id="read-m">5.00 kg</dd></div>
+                <div><dt>g</dt><dd id="read-g">9.80 m/s²</dd></div>
+                <div><dt>Velocity</dt><dd id="read-v">0.00 m/s</dd></div>
+                <div><dt>Acceleration a_x</dt><dd id="read-a">0.00 m/s²</dd></div>
+                <div><dt>Gravity F_g</dt><dd id="read-fg">49.00 N ↓</dd></div>
+                <div><dt>Net force</dt><dd id="read-fnet">0.00 N</dd></div>
+                <div><dt>F_net,x</dt><dd id="read-fnetx">0.00 N</dd></div>
+                <div><dt>F_net,y</dt><dd id="read-fnety">0.00 N</dd></div>
+              </dl>
+              <h3 class="force-list-head">Forces on the box</h3>
+              <dl class="metrics" id="force-readout"></dl>
+              <p class="eq-block">F<sub>g</sub> = mg<br />F<sub>net</sub> = ΣF<br />ΣF = ma</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of the same forces acting on the box"></canvas>
+            <p class="caption">Only forces acting on the selected object. The surface and rope are not drawn here. F_net is dashed when shown.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap">
+            <h2>Motion diagram</h2>
+            <canvas id="diagram-canvas" width="960" height="160" aria-label="Motion diagram of the box"></canvas>
+            <p class="caption">Equal time steps of the box’s position when Motion mode is on. Balanced forces can still have constant velocity.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graph-toggles" role="group" aria-label="Graph visibility">
+            <label><input type="checkbox" data-graph="x" checked /> Net force vs. time</label>
+            <label><input type="checkbox" data-graph="v" checked /> Acceleration vs. time</label>
+          </div>
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Net force vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Net force components versus time"></canvas>
+              <p class="caption">F_net,x and F_net,y share the simulation clock. Click while paused to jump to that time.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Acceleration components versus time"></canvas>
+              <p class="caption">a = F_net / m even in static mode. The box moves only if Motion mode is on.</p>
+            </div>
+          </div>
+        </section>
+
+        ${trialSection({
+          rangeTitle: "Your Trials · Weight vs. Mass",
+          heightTitle: "Your Trials · a_x vs. |F_net|",
+          rangeCaption: "Change mass or g and record. The solid identity is F_g = m g for the current g.",
+          heightCaption: "The solid identity is a = F_net / m for the current mass. Record both static and motion-mode runs.",
+          columns: ["Trial", "Scenario", "t", "m", "F_g", "F_net", "a_x", "State"],
+          emptyCols: 8,
+        })}
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Forces on one selected object</h2>
+            <p>
+              A free-body diagram is a simplified picture of every external force acting on the object you chose to analyze.
+              The scene, the FBD, and the force list are three views of the same list.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. What a force is</h3>
+            <p>A force is an interaction that can change an object’s motion. It has magnitude (newtons) and direction. Velocity and acceleration are not forces, so they never appear as arrows on the FBD.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. The free-body diagram rule</h3>
+            <p>Draw only forces acting <em>on</em> the selected object. Do not draw the floor, the rope, or the force the box exerts back on the table. Simulation 2.1’s dashed system box is the same idea: anything from outside the boundary is external.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Common forces</h3>
+            <p class="eq-block">
+              F<sub>g</sub> = mg, downward (Earth or other planet → box)<br />
+              F<sub>N</sub> perpendicular to the surface (surface → box)<br />
+              F<sub>f</sub> opposes sliding or attempted sliding (surface → box)<br />
+              F<sub>T</sub> along the rope, away from the box (rope → box)<br />
+              F<sub>app</sub> depends on the push or pull
+            </p>
+            <p>On a horizontal table at rest, F<sub>N</sub> often equals F<sub>g</sub>, but this lab lets you unbalance them so you can see they are not the same force.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Net force</h3>
+            <p>Add the vectors:</p>
+            <p class="eq-block">
+              F<sub>net,x</sub> = Σ F<sub>x</sub><br />
+              F<sub>net,y</sub> = Σ F<sub>y</sub><br />
+              |F<sub>net</sub>| = √(F<sub>net,x</sub>² + F<sub>net,y</sub>²)
+            </p>
+            <p>0° is right, 90° is up, 180° is left, 270° is down. If |F<sub>net</sub>| is zero, the forces are balanced. That does not mean the object is at rest — it can coast at constant velocity.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Force is not motion</h3>
+            <p>A box on a table has gravity and a normal force even when it is not moving. A box with F<sub>net</sub> = 0 and v = 5 m/s keeps moving. Force is related to <em>changes</em> in motion. Newton’s second law, ΣF = ma, is the compact statement; Simulation 2.5 will make it the main lesson. Motion mode here is optional practice.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Mistakes to avoid</h3>
+            <p>Do not draw velocity or acceleration as forces. Do not put both sides of a Newton’s-third-law pair on the same FBD (that is Simulation 2.3). Do not treat the table itself as a force — the normal force is the force from the table.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>Weight vs. mass should follow F<sub>g</sub> = mg for the current g. a<sub>x</sub> vs. |F<sub>net</sub>| should follow a = F<sub>net</sub>/m if you keep mass fixed and change the horizontal forces. Two points always give R² = 1; record several runs before you trust the fit.</p>
           `)}
         </article>
       </div>

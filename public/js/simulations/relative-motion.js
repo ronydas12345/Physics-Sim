@@ -24,6 +24,7 @@ import {
   bindChallenge,
   bindDownload,
   bindFullscreen,
+  bindIdentityToggle,
   bindLabTabs,
   bindTeacher,
   createTrialBook,
@@ -322,6 +323,8 @@ export function mountRelativeMotion(root) {
     });
   }
 
+  let identityOn = () => false;
+
   function drawCharts() {
     if (activeTab !== "lab") return;
     const list = trials.list();
@@ -342,6 +345,14 @@ export function mountRelativeMotion(root) {
       color: "#1c6b73",
       fitYName: "s",
       fitXName: "t",
+      identity: identityOn()
+        ? {
+            yOfX: (t) => Math.abs(state.xA0 - state.xB0 + (state.vA - state.vB) * t),
+            label: "s = |x_A/B(0) + v_A/B t|",
+            xMin: 0,
+            xMax: state.duration,
+          }
+        : null,
     });
     drawLiveGraphs();
   }
@@ -354,6 +365,7 @@ export function mountRelativeMotion(root) {
     line.hidden = false;
     line.textContent = teacherReport(state);
   });
+  identityOn = bindIdentityToggle(root, () => drawCharts());
 
   function describeCard(host, spec) {
     host.querySelector("#challenge-q").textContent = spec.prompt;

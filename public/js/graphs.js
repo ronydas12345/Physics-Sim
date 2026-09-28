@@ -6,6 +6,7 @@ const CURVE = "#c45c26";
 const HEIGHT = "#1c6b73";
 const POINT = "#1b2430";
 const NOW = "#2c6e49";
+const IDENTITY = "#1b2430";
 
 function setup(canvas) {
   if (!canvas) return null;
@@ -105,9 +106,17 @@ export function renderTheoryGraphs({ rangeCanvas, heightCanvas, curve }) {
   drawCurve(heightCanvas, curve, "maxHeight", yMaxH, "Launch angle", "Max height (m)", HEIGHT);
 }
 
-export function renderTrialGraphs({ rangeCanvas, heightCanvas, trials }) {
-  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", CURVE, { yName: "R", xName: "θ" });
-  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", HEIGHT, { yName: "H", xName: "θ" });
+export function renderTrialGraphs({ rangeCanvas, heightCanvas, trials, rangeIdentity = null, heightIdentity = null }) {
+  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", CURVE, {
+    yName: "R",
+    xName: "θ",
+    identity: rangeIdentity,
+  });
+  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", HEIGHT, {
+    yName: "H",
+    xName: "θ",
+    identity: heightIdentity,
+  });
 }
 
 function drawCurve(canvas, curve, key, yMax, xLabel, yLabel, color) {
@@ -143,24 +152,31 @@ export function renderXYScatter(canvas, points, options = {}) {
     fitYName = "y",
     fitXName = "x",
     showFit = true,
+    identity = null,
   } = options;
   const surface = setup(canvas);
   if (!surface) return;
   const { ctx, cssW, cssH, pad } = surface;
-  if (!points.length) {
+  const list = points || [];
+  if (!list.length && !identity) {
     emptyMessage(ctx, cssW, cssH, "Record a trial to plot your data.");
     return;
   }
 
-  const xs = points.map((p) => p[xKey]);
-  const ys = points.map((p) => p[yKey]);
-  const lo = xMin ?? Math.min(0, ...xs);
-  const hi = xMax ?? Math.max(1, ...xs);
-  let yLo = yMin ?? Math.min(0, ...ys);
-  let yHi = yMax ?? Math.max(1, ...ys);
-  const pairs = points.map((p) => ({ x: p[xKey], y: p[yKey] }));
+  const xs = list.map((p) => p[xKey]);
+  const ys = list.map((p) => p[yKey]);
+  const lo = xMin ?? (xs.length ? Math.min(0, ...xs) : (identity?.xMin ?? 0));
+  const hi = xMax ?? (xs.length ? Math.max(1, ...xs) : (identity?.xMax ?? 1));
+  let yLo = yMin ?? (ys.length ? Math.min(0, ...ys) : 0);
+  let yHi = yMax ?? (ys.length ? Math.max(1, ...ys) : 1);
+  const identitySamples = sampleIdentity(identity, lo, hi);
+  const pairs = list.map((p) => ({ x: p[xKey], y: p[yKey] }));
   const xScale = Math.max(Math.abs(lo), Math.abs(hi), 1);
-  const fit = showFit ? polynomialFit(pairs, { maxDegree: fitDegree, xScale }) : null;
+  const fit = showFit && list.length ? polynomialFit(pairs, { maxDegree: fitDegree, xScale }) : null;
+  for (const sample of identitySamples) {
+    yLo = Math.min(yLo, sample.y);
+    yHi = Math.max(yHi, sample.y);
+  }
   if (fit) {
     for (const sample of sampleFit(fit, { start: lo, end: hi, steps: 48 })) {
       yLo = Math.min(yLo, sample.y);
@@ -172,15 +188,22 @@ export function renderXYScatter(canvas, points, options = {}) {
     yHi += 1;
   }
   const box = drawLinearFrame(ctx, pad, cssW, cssH, xLabel, yLabel, lo, hi, yLo, yHi);
-  if (showFit) {
-    drawFitOverlay(ctx, box, fit, lo, hi, yLo, yHi, color, fitYName, fitXName);
+  strokeSampledCurve(ctx, box, identitySamples, lo, hi, yLo, yHi, { color: IDENTITY, width: 2.4 });
+  if (showFit && fit) {
+    strokeSampledCurve(ctx, box, sampleFit(fit, { start: lo, end: hi, steps: 64 }), lo, hi, yLo, yHi, {
+      color,
+      dash: [5, 4],
+      width: 2,
+      alpha: 0.9,
+    });
   }
-  const last = points[points.length - 1];
+  drawOverlayLabels(ctx, box, overlayLabelLines({ fit, showFit, hasPoints: list.length > 0, fitYName, fitXName, identity }));
+  const last = list[list.length - 1];
 
   ctx.font = "600 10px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
-  for (const point of points) {
+  for (const point of list) {
     const x = mapPlotX(point[xKey], lo, hi, box);
     const y = mapPlotY(point[yKey], yLo, yHi, box);
     const latest = point === last;
@@ -351,32 +374,45 @@ function drawLinearFrame(ctx, pad, w, h, xLabel, yLabel, xMin, xMax, yMin, yMax)
   return { left, right, top, bottom };
 }
 
-function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = "y", xName = "θ", maxDegree = 2 } = {}) {
+function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = "y", xName = "θ", maxDegree = 2, identity = null } = {}) {
   const surface = setup(canvas);
   if (!surface) return;
   const { ctx, cssW, cssH, pad } = surface;
-  if (!trials.length) {
+  const list = trials || [];
+  if (!list.length && !identity) {
     emptyMessage(ctx, cssW, cssH, "Record a trial to plot your data.");
     return;
   }
 
-  const fit = polynomialFit(
-    trials.map((trial) => ({ x: trial.angleDeg, y: trial[key] })),
-    { maxDegree, xScale: 90 },
-  );
-  let yMax = Math.max(1, ...trials.map((t) => t[key]));
+  const fit = list.length
+    ? polynomialFit(
+        list.map((trial) => ({ x: trial.angleDeg, y: trial[key] })),
+        { maxDegree, xScale: 90 },
+      )
+    : null;
+  const identitySamples = sampleIdentity(identity, 0, 90);
+  let yMax = Math.max(1, ...list.map((t) => t[key]), ...identitySamples.map((p) => p.y));
   if (fit) {
     yMax = Math.max(yMax, ...sampleFit(fit, { start: 0, end: 90, steps: 90 }).map((p) => p.y));
   }
   const box = drawFrame(ctx, pad, cssW, cssH, xLabel, yLabel, yMax);
-  drawFitOverlay(ctx, box, fit, 0, 90, 0, yMax, color, yName, xName);
-  const last = trials[trials.length - 1];
+  strokeSampledCurve(ctx, box, identitySamples, 0, 90, 0, yMax, { color: IDENTITY, width: 2.4 });
+  if (fit) {
+    strokeSampledCurve(ctx, box, sampleFit(fit, { start: 0, end: 90, steps: 90 }), 0, 90, 0, yMax, {
+      color,
+      dash: [5, 4],
+      width: 2,
+      alpha: 0.9,
+    });
+  }
+  drawOverlayLabels(ctx, box, overlayLabelLines({ fit, showFit: true, hasPoints: list.length > 0, fitYName: yName, fitXName: xName, identity }));
+  const last = list[list.length - 1];
 
   ctx.fillStyle = POINT;
   ctx.font = "600 10px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
-  for (const trial of trials) {
+  for (const trial of list) {
     const x = xOf(trial.angleDeg, box);
     const y = yOf(trial[key], yMax, box);
     const latest = trial === last;
@@ -396,38 +432,74 @@ function mapPlotY(y, yMin, yMax, box) {
   return box.bottom - ((y - yMin) / Math.max(yMax - yMin, 1e-6)) * (box.bottom - box.top);
 }
 
-function drawFitOverlay(ctx, box, fit, xMin, xMax, yMin, yMax, color, yName, xName) {
+function sampleIdentity(identity, xMin, xMax) {
+  if (!identity) return [];
+  if (Array.isArray(identity.samples) && identity.samples.length) return identity.samples;
+  if (typeof identity.yOfX !== "function") return [];
+  const start = Number.isFinite(identity.xMin) ? identity.xMin : xMin;
+  const end = Number.isFinite(identity.xMax) ? identity.xMax : xMax;
+  const steps = identity.steps ?? 96;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start === end) return [];
+  const out = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const x = start + ((end - start) * i) / steps;
+    const y = identity.yOfX(x);
+    if (Number.isFinite(y)) out.push({ x, y });
+  }
+  return out;
+}
+
+function strokeSampledCurve(ctx, box, samples, xMin, xMax, yMin, yMax, { color, dash = [], width = 2, alpha = 1 } = {}) {
+  if (!samples.length) return;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(box.left, box.top, box.right - box.left, box.bottom - box.top);
+  ctx.clip();
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dash);
+  ctx.beginPath();
+  samples.forEach((p, i) => {
+    const x = mapPlotX(p.x, xMin, xMax, box);
+    const y = mapPlotY(p.y, yMin, yMax, box);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function overlayLabelLines({ fit, showFit, hasPoints, fitYName, fitXName, identity }) {
+  const lines = [];
+  if (showFit) {
+    if (fit) {
+      lines.push({ text: `${formatFitEquation(fit, fitYName, fitXName)}   R² = ${formatR2(fit.r2)}`, color: AXIS });
+    } else if (hasPoints) {
+      lines.push({ text: "Record two trials with different x-values to fit a curve.", color: AXIS });
+    }
+  }
+  if (identity?.label) {
+    lines.push({ text: identity.label, color: IDENTITY });
+  }
+  return lines;
+}
+
+function drawOverlayLabels(ctx, box, lines) {
+  const usable = (lines || []).filter((line) => line?.text);
+  if (!usable.length) return;
   ctx.save();
   ctx.font = "600 11px IBM Plex Mono, monospace";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  const label = fit
-    ? `${formatFitEquation(fit, yName, xName)}   R² = ${formatR2(fit.r2)}`
-    : "Record two trials with different x-values to fit a curve.";
   const maxW = Math.max(40, box.right - box.left - 12);
-  const textW = Math.min(ctx.measureText(label).width + 10, maxW);
-  ctx.fillStyle = "rgba(251, 247, 239, 0.92)";
-  ctx.fillRect(box.left + 4, box.top + 4, textW, 18);
-  ctx.fillStyle = AXIS;
-  ctx.fillText(label, box.left + 8, box.top + 13, maxW - 8);
-
-  if (fit) {
-    const samples = sampleFit(fit, { start: xMin, end: xMax, steps: 64 });
-    ctx.beginPath();
-    ctx.rect(box.left, box.top, box.right - box.left, box.bottom - box.top);
-    ctx.clip();
-    ctx.strokeStyle = color;
-    ctx.globalAlpha = 0.9;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 4]);
-    ctx.beginPath();
-    samples.forEach((p, i) => {
-      const x = mapPlotX(p.x, xMin, xMax, box);
-      const y = mapPlotY(p.y, yMin, yMax, box);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-  }
+  usable.forEach((line, i) => {
+    const y = box.top + 13 + i * 18;
+    const textW = Math.min(ctx.measureText(line.text).width + 10, maxW);
+    ctx.fillStyle = "rgba(251, 247, 239, 0.92)";
+    ctx.fillRect(box.left + 4, box.top + 4 + i * 18, textW, 18);
+    ctx.fillStyle = line.color || AXIS;
+    ctx.fillText(line.text, box.left + 8, y, maxW - 8);
+  });
   ctx.restore();
 }

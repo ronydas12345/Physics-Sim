@@ -19,6 +19,7 @@ import {
   bindChallenge,
   bindDownload,
   bindFullscreen,
+  bindIdentityToggle,
   bindLabTabs,
   bindTeacher,
   createTrialBook,
@@ -289,6 +290,8 @@ export function mountMotion1D(root) {
     }
   }
 
+  let identityOn = () => false;
+
   function drawCharts() {
     if (activeTab !== "lab") return;
     const list = trials.list();
@@ -300,6 +303,9 @@ export function mountMotion1D(root) {
       color: "#c45c26",
       fitYName: "D",
       fitXName: "Δx",
+      identity: identityOn()
+        ? { yOfX: (dx) => Math.abs(dx), label: "D = |Δx|", xMin: -20, xMax: 20 }
+        : null,
     });
     renderXYScatter(graphHeight, list, {
       xKey: "time",
@@ -309,6 +315,14 @@ export function mountMotion1D(root) {
       color: "#1c6b73",
       fitYName: "v_avg",
       fitXName: "t",
+      identity: identityOn()
+        ? {
+            yOfX: (t) => state.initialVelocity + 0.5 * state.acceleration * t,
+            label: "v_avg = v₀ + ½ a t",
+            xMin: 0,
+            xMax: state.duration,
+          }
+        : null,
     });
     drawLiveGraphs();
   }
@@ -321,6 +335,7 @@ export function mountMotion1D(root) {
     line.hidden = false;
     line.textContent = teacherReport(state);
   });
+  identityOn = bindIdentityToggle(root, () => drawCharts());
 
   function describeCard(host, spec) {
     host.querySelector("#challenge-q").textContent = spec.prompt;

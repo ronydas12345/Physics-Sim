@@ -89,6 +89,9 @@ export function trialSection({ rangeTitle, heightTitle, rangeCaption, heightCapt
   const heads = columns.map((c) => `<th>${c}</th>`).join("");
   return `
     <section class="lab-bottom">
+      <div class="graph-toggles" role="group" aria-label="Recorded graph overlays">
+        <label><input type="checkbox" id="toggle-identity" /> Show exact identity (solid line)</label>
+      </div>
       <div class="graphs">
         <div class="graph-wrap">
           <h2>${rangeTitle}</h2>
@@ -200,6 +203,12 @@ export function bindChallenge(root, { generate, apply, describeCard, describeFee
       describeFeedback(root, state);
     },
   };
+}
+
+export function bindIdentityToggle(root, onChange) {
+  const toggle = root.querySelector("#toggle-identity");
+  toggle?.addEventListener("change", () => onChange?.(toggle.checked));
+  return () => Boolean(toggle?.checked);
 }
 
 export function bindTeacher(root, renderDebug) {
