@@ -1,12 +1,17 @@
-:root {
-  color-scheme: only light;
+:root,
+[data-theme="beige"] {
+  color-scheme: light;
   --ink: #1b2430;
   --ink-soft: #4d5a68;
   --paper: #efe6d6;
   --panel: #fbf7ef;
+  --header-bg: #fbf7ef;
+  --raised: #ffffff;
+  --raised-hover: #f4efe6;
   --line: #d7ccb8;
   --accent: #c45c26;
   --accent-dark: #9a3f12;
+  --on-accent: #fff7ef;
   --teal: #1c6b73;
   --ok: #2c6e49;
   --sky-0: #8ec4e6;
@@ -18,10 +23,78 @@
   --v0: #c9a227;
   --g: #b42318;
   --shadow: 0 1px 0 rgba(27, 36, 48, 0.06);
+  --paper-wash: radial-gradient(1200px 400px at 10% -10%, #f7efe0, transparent);
+  --spot: #c45c26;
+  --spot-dim: rgba(27, 36, 48, 0.28);
+  --control-border-width: 1px;
   --radius: 14px;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --sans: "Figtree", "Segoe UI", sans-serif;
   --serif: "Fraunces", Georgia, serif;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --ink: #1a1f26;
+  --ink-soft: #4a5563;
+  --paper: #f3f5f8;
+  --panel: #ffffff;
+  --header-bg: #ffffff;
+  --raised: #ffffff;
+  --raised-hover: #e8edf3;
+  --line: #cfd6df;
+  --accent: #b44b1c;
+  --accent-dark: #8a3410;
+  --on-accent: #fff7ef;
+  --teal: #0f5f68;
+  --ok: #1f6b3a;
+  --shadow: 0 1px 0 rgba(26, 31, 38, 0.06);
+  --paper-wash: none;
+  --spot: #b44b1c;
+  --spot-dim: rgba(26, 31, 38, 0.32);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e8eef4;
+  --ink-soft: #a8b4c0;
+  --paper: #12171e;
+  --panel: #1c2430;
+  --header-bg: #1c2430;
+  --raised: #243041;
+  --raised-hover: #2e3d52;
+  --line: #3a4a5c;
+  --accent: #e07a3d;
+  --accent-dark: #f0a202;
+  --on-accent: #1b2430;
+  --teal: #7ec8d0;
+  --ok: #7dca9a;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  --paper-wash: none;
+  --spot: #f0a202;
+  --spot-dim: rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="contrast"] {
+  color-scheme: dark;
+  --ink: #ffffff;
+  --ink-soft: #ffffff;
+  --paper: #000000;
+  --panel: #000000;
+  --header-bg: #000000;
+  --raised: #000000;
+  --raised-hover: #1a1a1a;
+  --line: #ffffff;
+  --accent: #ffff00;
+  --accent-dark: #ffff00;
+  --on-accent: #000000;
+  --teal: #ffff00;
+  --ok: #00ff00;
+  --shadow: none;
+  --paper-wash: none;
+  --spot: #ffff00;
+  --spot-dim: rgba(0, 0, 0, 0.72);
+  --control-border-width: 2px;
 }
 
 * {
@@ -37,7 +110,7 @@ body {
   margin: 0;
   min-height: 100%;
   background-color: var(--paper);
-  background-image: radial-gradient(1200px 400px at 10% -10%, #f7efe0, transparent);
+  background-image: var(--paper-wash);
   color: var(--ink);
   font-family: var(--sans);
 }
@@ -50,9 +123,8 @@ html.is-fullscreen,
 body:fullscreen,
 body:-webkit-full-screen,
 body.is-fullscreen {
-  color-scheme: only light;
   background-color: var(--paper) !important;
-  background-image: radial-gradient(1200px 400px at 10% -10%, #f7efe0, transparent);
+  background-image: var(--paper-wash);
   color: var(--ink) !important;
   overflow: auto !important;
   height: auto !important;
@@ -143,7 +215,7 @@ h2 {
 
 .tab.active {
   background: var(--ink);
-  color: #fbf7ef;
+  color: var(--panel);
   border-color: var(--ink);
 }
 
@@ -314,7 +386,7 @@ h2 {
 
 .btn.primary {
   background: var(--accent);
-  color: #fff7ef;
+  color: var(--on-accent);
 }
 
 .btn.primary:hover {
@@ -392,14 +464,30 @@ input[type="range"] {
 }
 
 .chip {
-  border: 1px solid var(--line);
-  background: #fff;
+  border: var(--control-border-width, 1px) solid var(--line);
+  background: var(--raised);
   color: var(--ink);
   border-radius: 999px;
   padding: 0.2rem 0.6rem;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+.stage .chip,
+.track-controls .chip,
+.transport .chip {
+  background: #fff;
+  color: #1b2430;
+  border-color: #d7ccb8;
+}
+
+[data-theme="contrast"] .stage .chip,
+[data-theme="contrast"] .track-controls .chip,
+[data-theme="contrast"] .transport .chip {
+  background: #000;
+  color: #fff;
+  border-color: #fff;
 }
 
 .chip:hover,
@@ -685,4 +773,14 @@ tbody tr.best td {
   .transport .btn {
     padding: 0.7rem 0.9rem;
   }
+}
+
+[data-theme="contrast"] a,
+[data-theme="contrast"] .text-link {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+[data-theme="contrast"] .site-nav a.is-active {
+  text-decoration: underline;
 }

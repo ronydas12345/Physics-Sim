@@ -1,4 +1,5 @@
 import { modules } from "./curriculum.js";
+import { bindThemePicker, THEMES } from "./theme.js";
 
 export function currentPath() {
   return window.location.pathname.replace(/\/+$/, "") || "/";
@@ -17,11 +18,19 @@ export function renderHeader(pathname = currentPath()) {
           <span class="kicker">AP Physics 1</span>
           <strong>Simulation Platform</strong>
         </a>
-        <nav class="site-nav" aria-label="Primary">
-          ${navLink("/", "Home", pathname)}
-          ${navLink("/simulations", "Simulations", pathname)}
-          ${navLink("/about", "Help", pathname)}
-        </nav>
+        <div class="site-header-tools">
+          <nav class="site-nav" aria-label="Primary">
+            ${navLink("/", "Home", pathname)}
+            ${navLink("/simulations", "Simulations", pathname)}
+            ${navLink("/about", "Help", pathname)}
+          </nav>
+          <label class="theme-picker">
+            <span>Appearance</span>
+            <select id="theme-select" aria-label="Color appearance">
+              ${THEMES.map((theme) => `<option value="${theme.id}">${theme.label}</option>`).join("")}
+            </select>
+          </label>
+        </div>
       </div>
     </header>
   `;
@@ -74,6 +83,9 @@ export function moduleCards(options = {}) {
 }
 
 export function mountChrome(rootHeader, rootFooter, pathname = currentPath()) {
-  if (rootHeader) rootHeader.innerHTML = renderHeader(pathname);
+  if (rootHeader) {
+    rootHeader.innerHTML = renderHeader(pathname);
+    bindThemePicker(rootHeader);
+  }
   if (rootFooter) rootFooter.innerHTML = renderFooter();
 }

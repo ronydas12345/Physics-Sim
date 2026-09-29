@@ -10,6 +10,22 @@
   margin-right: auto;
 }
 
+.tutorial-launch .btn {
+  background: var(--raised);
+  color: var(--ink);
+  border: var(--control-border-width, 1px) solid var(--line);
+}
+
+.tutorial-launch .btn:hover {
+  background: var(--raised-hover);
+}
+
+.tutorial-launch .btn[aria-expanded="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
 .tutorial-root {
   position: relative;
   z-index: 40;
@@ -19,9 +35,9 @@
   position: fixed;
   z-index: 45;
   pointer-events: none;
-  border: 2px solid #f0a202;
+  border: 2px solid var(--spot);
   border-radius: 12px;
-  box-shadow: 0 0 0 4px rgba(240, 162, 2, 0.22), 0 0 0 9999px rgba(27, 36, 48, 0.28);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--spot) 22%, transparent), 0 0 0 9999px var(--spot-dim);
 }
 
 .tutorial-panel {
@@ -30,8 +46,8 @@
   max-height: min(72vh, 560px);
   overflow: auto;
   padding: 14px 16px 12px;
-  background: #fbf7ef;
-  border: 1px solid var(--line);
+  background: var(--panel);
+  border: var(--control-border-width, 1px) solid var(--line);
   border-radius: 14px;
   box-shadow: 0 16px 40px rgba(27, 36, 48, 0.18);
   color: var(--ink);
@@ -83,7 +99,7 @@
 
 .tutorial-toc .is-done::after {
   content: " ✓";
-  color: #2c6e49;
+  color: var(--ok);
 }
 
 .tutorial-jumps {
@@ -116,9 +132,10 @@
   margin-top: 6px;
   padding: 0.45rem 0.55rem;
   border-radius: 8px;
-  border: 1px solid var(--line);
+  border: var(--control-border-width, 1px) solid var(--line);
   font: inherit;
-  background: #fff;
+  background: var(--raised);
+  color: var(--ink);
 }
 
 .tutorial-hint {
@@ -147,13 +164,13 @@
 }
 
 .tutorial-done {
-  color: #2c6e49;
+  color: var(--ok);
   font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tutorial-spot {
-    box-shadow: 0 0 0 9999px rgba(27, 36, 48, 0.28);
+    box-shadow: 0 0 0 9999px var(--spot-dim);
   }
 }
 

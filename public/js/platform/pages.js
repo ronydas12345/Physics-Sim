@@ -212,6 +212,8 @@ export function aboutPage() {
       <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1–1.5. Unit 2 currently includes 2.1 Systems and Center of Mass, 2.2 Forces and Free-Body Diagrams, and 2.3 Newton’s Third Law.</p>
       <h2>Lab, Theory, Challenge, Teacher view</h2>
       <p>Every available lab uses the same shell. Theory holds equations and examples. Challenge randomizes a target and hides the answer until you check or launch. Teacher view compares live values with the identities the course uses. Record and auto-record fill a trial table and graphs.</p>
+      <h2>Appearance</h2>
+      <p>Use <strong>Appearance</strong> in the header to switch the current beige paper theme, a cooler light theme, dark mode, or high contrast. The choice is saved in this browser and applies on every page, including How to Use This Lab and Guided Lab.</p>
       <h2>Reset</h2>
       <p>Reset returns the system to its initial condition and clears running totals such as distance traveled. Recorded trials stay until you clear them.</p>
       <h2>Accuracy</h2>

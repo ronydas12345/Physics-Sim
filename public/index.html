@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AP Physics 1 Simulation Platform</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("ap1-theme");
+          if (theme === "beige" || theme === "light" || theme === "dark" || theme === "contrast") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

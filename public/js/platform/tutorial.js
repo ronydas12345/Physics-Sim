@@ -75,8 +75,8 @@ export function bindTutorial(root, { simulationId }) {
     launch.setAttribute("role", "group");
     launch.setAttribute("aria-label", "Lab tutorials");
     launch.innerHTML = `
-      <button type="button" class="btn ghost" id="btn-howto" aria-expanded="false">How to Use This Lab</button>
-      <button type="button" class="btn ghost" id="btn-guided" aria-expanded="false">Guided Lab</button>
+      <button type="button" class="btn ghost-paper" id="btn-howto" aria-expanded="false">How to Use This Lab</button>
+      <button type="button" class="btn ghost-paper" id="btn-guided" aria-expanded="false">Guided Lab</button>
     `;
     toolbar.prepend(launch);
     createdLaunch = true;
@@ -103,7 +103,7 @@ export function bindTutorial(root, { simulationId }) {
       </details>
       <div class="tutorial-body" id="tutorial-body"></div>
       <footer class="tutorial-nav">
-        <button type="button" class="btn ghost" id="tutorial-prev">← Previous</button>
+        <button type="button" class="btn ghost-paper" id="tutorial-prev">← Previous</button>
         <button type="button" class="btn primary" id="tutorial-next">Next →</button>
       </footer>
       <div class="tutorial-tools">
