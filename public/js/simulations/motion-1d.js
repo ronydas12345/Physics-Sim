@@ -24,6 +24,7 @@ import {
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
+import { bindTutorial } from "../platform/tutorial.js";
 
 function worldToX(world, view) {
   return view.originX + world * view.scale;
@@ -592,6 +593,7 @@ export function mountMotion1D(root) {
     },
   });
   const unbindFullscreen = bindFullscreen(root.querySelector("#btn-fullscreen"));
+  const unbindTutorial = bindTutorial(root, { simulationId: "1-2" });
 
   const onKey = (event) => {
     if (event.target.matches("input, textarea, select")) return;
@@ -688,6 +690,7 @@ export function mountMotion1D(root) {
     stopLoop();
     download.destroy();
     unbindFullscreen?.();
+    unbindTutorial?.();
     resize.disconnect();
     window.removeEventListener("keydown", onKey);
     canvas.removeEventListener("pointerdown", onPointerDown);

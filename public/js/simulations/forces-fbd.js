@@ -37,6 +37,7 @@ import {
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
+import { bindTutorial } from "../platform/tutorial.js";
 
 const FORCE_COLOR = {
   gravity: "#c45c26",
@@ -845,6 +846,7 @@ export function mountForcesFbd(root) {
     },
   });
   const unbindFullscreen = bindFullscreen(root.querySelector("#btn-fullscreen"));
+  const unbindTutorial = bindTutorial(root, { simulationId: "2-2" });
 
   const onKey = (event) => {
     if (event.target.matches("input, textarea, select")) return;
@@ -1003,6 +1005,7 @@ export function mountForcesFbd(root) {
     stopLoop();
     download.destroy();
     unbindFullscreen?.();
+    unbindTutorial?.();
     resize.disconnect();
     window.removeEventListener("keydown", onKey);
   };

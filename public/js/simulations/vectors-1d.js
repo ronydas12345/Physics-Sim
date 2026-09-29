@@ -25,6 +25,7 @@ import {
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
+import { bindTutorial } from "../platform/tutorial.js";
 
 const MIN_X = AXIS_MIN;
 const MAX_X = AXIS_MAX;
@@ -357,6 +358,7 @@ export function mountVectors1D(root) {
     },
   });
   const unbindFullscreen = bindFullscreen(root.querySelector("#btn-fullscreen"));
+  const unbindTutorial = bindTutorial(root, { simulationId: "1-1" });
   const onReset = () => {
     if (autoRecord && state.distanceTraveled > 0) trials.record(snapshot());
     state = resetState(state);
@@ -437,6 +439,7 @@ export function mountVectors1D(root) {
   return () => {
     download.destroy();
     unbindFullscreen?.();
+    unbindTutorial?.();
     resize.disconnect();
     window.removeEventListener("keydown", onKey);
     canvas.removeEventListener("pointerdown", onPointerDown);

@@ -35,6 +35,7 @@ import {
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
+import { bindTutorial } from "../platform/tutorial.js";
 
 const COLOR_A = "#c45c26";
 const COLOR_B = "#1c6b73";
@@ -679,6 +680,7 @@ export function mountThirdLaw(root) {
     },
   });
   const unbindFullscreen = bindFullscreen(root.querySelector("#btn-fullscreen"));
+  const unbindTutorial = bindTutorial(root, { simulationId: "2-3" });
 
   const onKey = (event) => {
     if (event.target.matches("input, textarea, select")) return;
@@ -817,6 +819,7 @@ export function mountThirdLaw(root) {
     stopLoop();
     download.destroy();
     unbindFullscreen?.();
+    unbindTutorial?.();
     resize.disconnect();
     window.removeEventListener("keydown", onKey);
   };
