@@ -1,5 +1,5 @@
 import { mountChrome } from "./chrome.js";
-import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page } from "./pages.js";
+import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page, sim23Page } from "./pages.js";
 import { fullPagePaths } from "./curriculum.js";
 import { mountVectors1D } from "../simulations/vectors-1d.js";
 import { mountMotion1D } from "../simulations/motion-1d.js";
@@ -7,6 +7,7 @@ import { mountRepresentingMotion } from "../simulations/representing-motion.js";
 import { mountRelativeMotion } from "../simulations/relative-motion.js";
 import { mountSystemsCM } from "../simulations/systems-cm.js";
 import { mountForcesFbd } from "../simulations/forces-fbd.js";
+import { mountThirdLaw } from "../simulations/third-law.js";
 import { mountHeroReel } from "./hero-reel.js";
 
 const outlet = document.getElementById("outlet");
@@ -31,6 +32,7 @@ function resolve(pathname) {
   if (pathname === "/simulations/module-1/1-4") return { name: "sim-1-4" };
   if (pathname === "/simulations/module-2/2-1") return { name: "sim-2-1" };
   if (pathname === "/simulations/module-2/2-2") return { name: "sim-2-2" };
+  if (pathname === "/simulations/module-2/2-3") return { name: "sim-2-3" };
   return { name: "notfound" };
 }
 
@@ -52,6 +54,7 @@ function render() {
     "sim-1-4": "1.4 Reference Frames and Relative Motion · AP Physics 1",
     "sim-2-1": "2.1 Systems and Center of Mass · AP Physics 1",
     "sim-2-2": "2.2 Forces and Free-Body Diagrams · AP Physics 1",
+    "sim-2-3": "2.3 Newton's Third Law · AP Physics 1",
     notfound: "Not found · AP Physics 1",
   };
   if (route.name === "home") {
@@ -81,6 +84,9 @@ function render() {
   } else if (route.name === "sim-2-2") {
     outlet.innerHTML = sim22Page();
     unmount = mountForcesFbd(outlet);
+  } else if (route.name === "sim-2-3") {
+    outlet.innerHTML = sim23Page();
+    unmount = mountThirdLaw(outlet);
   } else outlet.innerHTML = notFoundPage();
 
   if (route.name !== "module") document.title = titles[route.name] || titles.home;

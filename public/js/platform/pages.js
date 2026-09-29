@@ -85,7 +85,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1–1.5 and 2.1–2.2, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.5 and 2.1–2.3, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -209,7 +209,7 @@ export function aboutPage() {
     </header>
     <article class="prose card">
       <h2>Navigation</h2>
-      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1–1.5. Unit 2 currently includes 2.1 Systems and Center of Mass and 2.2 Forces and Free-Body Diagrams.</p>
+      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1–1.5. Unit 2 currently includes 2.1 Systems and Center of Mass, 2.2 Forces and Free-Body Diagrams, and 2.3 Newton’s Third Law.</p>
       <h2>Lab, Theory, Challenge, Teacher view</h2>
       <p>Every available lab uses the same shell. Theory holds equations and examples. Challenge randomizes a target and hides the answer until you check or launch. Teacher view compares live values with the identities the course uses. Record and auto-record fill a trial table and graphs.</p>
       <h2>Reset</h2>
@@ -1316,7 +1316,7 @@ export function sim22Page() {
           <p class="kicker">Unit 2 · Simulation 2.2</p>
           <h1>Forces and Free-Body Diagrams</h1>
           <p class="objective">Learning objective: Identify the external forces on a selected object, represent them as vectors on a free-body diagram, and determine the net force.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-1" data-link>← 2.1</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.3 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-1" data-link>← 2.1</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-3" data-link>2.3 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -1538,6 +1538,249 @@ export function sim22Page() {
           </section>
           ${trialFitTheory(`
             <p>Weight vs. mass should follow F<sub>g</sub> = mg for the current g. a<sub>x</sub> vs. |F<sub>net</sub>| should follow a = F<sub>net</sub>/m if you keep mass fixed and change the horizontal forces. Two points always give R² = 1; record several runs before you trust the fit.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim23Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.3</p>
+          <h1>Newton's Third Law</h1>
+          <p class="objective">Learning objective: Show that an interaction produces a pair of forces that are equal in magnitude, opposite in direction, and exerted on two different objects.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-2" data-link>← 2.2</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.4 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage thirdlaw-stage" aria-label="Two-object interaction scene">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Two objects with Newton's third-law force arrows drawn on the object that experiences each force"></canvas>
+            <div class="transport">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-23">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Third-law scenarios">
+                  <button type="button" class="chip" data-scenario="two-boxes">Two boxes push</button>
+                  <button type="button" class="chip" data-scenario="unequal-mass">Unequal masses</button>
+                  <button type="button" class="chip" data-scenario="hand-box">Hand and box</button>
+                  <button type="button" class="chip" data-scenario="tug-of-war">Tug of war</button>
+                  <button type="button" class="chip" data-scenario="hanging-earth">Object and Earth</button>
+                  <button type="button" class="chip" data-scenario="gravity-pair">Gravitational pair</button>
+                  <button type="button" class="chip" data-scenario="rope-tension">Rope tension</button>
+                  <button type="button" class="chip" data-scenario="magnet-attract">Magnet attract</button>
+                  <button type="button" class="chip" data-scenario="magnet-repel">Magnet repel</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">m<sub>A</sub><input id="mass-a" type="number" min="0.1" max="100" step="0.1" value="5" aria-label="Mass of object A in kilograms" /><span>kg</span></label>
+                <label class="pos-input">m<sub>B</sub><input id="mass-b" type="number" min="0.1" max="100" step="0.1" value="5" aria-label="Mass of object B in kilograms" /><span>kg</span></label>
+                <label class="pos-input">Interaction F<input id="force-input" type="number" min="0" max="200" step="0.5" value="20" aria-label="Interaction force magnitude in newtons" /><span>N</span></label>
+                <label class="pos-input">A on B
+                  <select id="dir-input" aria-label="Direction of A on B">
+                    <option value="0">→ right</option>
+                    <option value="90">↑ up</option>
+                    <option value="180">← left</option>
+                    <option value="270">↓ down</option>
+                  </select>
+                </label>
+                <label class="pos-input">Distance<input id="dist-input" type="number" min="0.5" max="20" step="0.1" value="6" aria-label="Separation used for gravitational pairs" /><span>m</span></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light"><input id="toggle-dynamic" type="checkbox" /> Motion mode</label>
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+              </div>
+              <div class="nudge-row motion-inputs add-force-row">
+                <label class="pos-input">Extra on
+                  <select id="extra-target" aria-label="Object that receives an extra applied force">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                  </select>
+                </label>
+                <label class="pos-input">Magnitude<input id="extra-mag" type="number" min="0" max="200" step="0.5" value="30" aria-label="Extra force magnitude in newtons" /><span>N</span></label>
+                <label class="pos-input">Direction
+                  <select id="extra-dir" aria-label="Extra force direction">
+                    <option value="0">→ right</option>
+                    <option value="90">↑ up</option>
+                    <option value="180">← left</option>
+                    <option value="270">↓ down</option>
+                  </select>
+                </label>
+                <button type="button" class="btn" id="btn-add-extra">Add extra force</button>
+                <button type="button" class="btn" id="btn-clear-extra">Clear extras</button>
+              </div>
+              <p class="track-help">One interaction writes both arrows. Changing F updates A on B and B on A together. They never cancel on one object: each arrow lives on a different free-body diagram. Motion mode is optional; equal force does not mean equal acceleration.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="values-panel">
+              <div class="card-head">
+                <h2>Interaction pair</h2>
+                ${teacherSwitch()}
+              </div>
+              <p class="eq-block">F(A on B) = −F(B on A)</p>
+              <dl class="metrics metrics-wide">
+                <div><dt>Time</dt><dd id="read-t">0.00 s</dd></div>
+                <div><dt>Pair difference</dt><dd id="read-diff">0.00 N</dd></div>
+                <div><dt>A on B</dt><dd id="read-faonb">20.00 N →</dd></div>
+                <div><dt>Target of A on B</dt><dd id="read-target-aonb">Object B</dd></div>
+                <div><dt>B on A</dt><dd id="read-fbona">20.00 N ←</dd></div>
+                <div><dt>Target of B on A</dt><dd id="read-target-bona">Object A</dd></div>
+                <div><dt>F_net on A</dt><dd id="read-neta">20.00 N ←</dd></div>
+                <div><dt>F_net on B</dt><dd id="read-netb">20.00 N →</dd></div>
+                <div><dt>|a_A|</dt><dd id="read-aa">4.00 m/s²</dd></div>
+                <div><dt>|a_B|</dt><dd id="read-ab">4.00 m/s²</dd></div>
+              </dl>
+              <h3 class="force-list-head">Third-law checklist</h3>
+              <dl class="metrics">
+                <div><dt>Same interaction</dt><dd id="crit-same">yes</dd></div>
+                <div><dt>Equal magnitude</dt><dd id="crit-equal">yes</dd></div>
+                <div><dt>Opposite direction</dt><dd id="crit-opp">yes</dd></div>
+                <div><dt>Different objects</dt><dd id="crit-diff">yes</dd></div>
+              </dl>
+              <details class="why-cancel">
+                <summary>Why don’t the forces cancel?</summary>
+                <p>They are equal and opposite, but they act on different objects. Only forces acting on the same object add to that object’s net force.</p>
+              </details>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="fbd-pair">
+            <div class="graph-wrap diagram-wrap fbd-diagram">
+              <h2>Free-body diagram · A</h2>
+              <canvas id="fbd-a" width="480" height="240" aria-label="Free-body diagram of forces acting on object A"></canvas>
+              <p class="caption">Only forces on A. B on A belongs here. A on B does not.</p>
+            </div>
+            <div class="graph-wrap diagram-wrap fbd-diagram">
+              <h2>Free-body diagram · B</h2>
+              <canvas id="fbd-b" width="480" height="240" aria-label="Free-body diagram of forces acting on object B"></canvas>
+              <p class="caption">Only forces on B. A on B belongs here. B on A does not.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap">
+            <h2>Motion diagram</h2>
+            <canvas id="diagram-canvas" width="960" height="160" aria-label="Motion diagram of both objects"></canvas>
+            <p class="caption">Equal time steps when Motion mode is on. The lighter object covers more ground for the same interaction force.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graph-toggles" role="group" aria-label="Graph visibility">
+            <label><input type="checkbox" data-graph="x" checked /> Pair force vs. time</label>
+            <label><input type="checkbox" data-graph="v" checked /> Acceleration vs. time</label>
+          </div>
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Pair force vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Signed interaction forces versus time"></canvas>
+              <p class="caption">A on B and B on A are opposite in sign and equal in magnitude. Click while paused to jump to that time.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Acceleration of A and B versus time"></canvas>
+              <p class="caption">a = F_net / m for each object. Equal forces can produce different accelerations.</p>
+            </div>
+          </div>
+        </section>
+
+        ${trialSection({
+          rangeTitle: "Your Trials · |a_A| vs. 1/m_A",
+          heightTitle: "Your Trials · B on A vs. A on B",
+          rangeCaption: "Keep F fixed and change m_A. The solid identity is |a_A| = F / m_A.",
+          heightCaption: "Every recorded pair should sit on F_BonA = F_AonB. That line is Newton’s third law.",
+          columns: ["Trial", "Scenario", "A on B", "B on A", "m_A", "m_B", "|a_A|", "|a_B|"],
+          emptyCols: 8,
+        })}
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Forces come in interaction pairs</h2>
+            <p>
+              When two objects interact, they exert forces on each other that are equal in magnitude and opposite in direction.
+              Those two forces never appear on the same free-body diagram.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. The pair identity</h3>
+            <p class="eq-block">F(A on B) = −F(B on A)</p>
+            <p>The minus sign is opposite direction, not “they cancel.” A on B acts on B. B on A acts on A. Simulation 2.2 taught you to draw only forces on the selected object; this lab shows the missing partner on the other object.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Four checks</h3>
+            <p>A Newton’s third-law pair must:</p>
+            <p class="eq-block">same interaction · equal |F| · opposite direction · different objects</p>
+            <p>Gravity on a box and the normal force on that box fail the last two checks that matter most: they are not the same interaction, and they both act on the box. The partner of “Earth on box” is “box on Earth.”</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Equal force is not equal acceleration</h3>
+            <p>If the pair is isolated,</p>
+            <p class="eq-block">
+              |a_A| = F / m_A<br />
+              |a_B| = F / m_B
+            </p>
+            <p>For m_A = 2 kg, m_B = 8 kg, and F = 24 N, a_A = 12 m/s² and a_B = 3 m/s². The forces stay 24 N and 24 N. Simulation 2.5 will make ΣF = ma the main story; here it only explains why the lighter object moves more.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Extra forces change net force, not the pair</h3>
+            <p>Add 30 N right on A while B on A is 20 N left. Then F_net,A = 10 N right and F_net,B is still 20 N right. The interaction pair remains 20 N / 20 N. Net force is a sum on one object; the third-law pair is an interaction between two objects.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Gravity as a pair</h3>
+            <p>This lab uses an educational constant G = 10 N·m²/kg² so F = G m_A m_B / r² is readable. Changing either mass or the distance updates both forces together. Earth is drawn with a scaled mass so you can see a_Earth ≪ a_object without using 10<sup>24</sup> kg.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Mistakes to avoid</h3>
+            <p>Do not put both members of the pair on one FBD. Do not say the forces cancel. Do not assume the heavier object exerts a larger force. Do not treat gravity and the normal force as a third-law pair.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>|a_A| vs. 1/m_A should follow |a_A| = F / m_A if you keep the interaction force fixed. B on A vs. A on B should be the identity y = x. Two points always give R² = 1; record several mass and force combinations before you trust the fit.</p>
           `)}
         </article>
       </div>
