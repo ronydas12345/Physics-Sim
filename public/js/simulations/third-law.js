@@ -72,10 +72,14 @@ function sizeCanvas(canvas) {
   return { cssW, cssH, dpr };
 }
 
-function panRange(focus, span, edge, preferredLo) {
+function panRange(positions, span, edge, preferredLo) {
+  const xs = positions.filter((x) => Number.isFinite(x));
+  const minP = xs.length ? Math.min(...xs) : 0;
+  const maxP = xs.length ? Math.max(...xs) : 0;
   let lo = preferredLo;
-  if (focus < lo + edge) lo = focus - edge;
-  if (focus > lo + span - edge) lo = focus + edge - span;
+  if (minP < lo + edge) lo = minP - edge;
+  if (maxP > lo + span - edge) lo = Math.max(lo, maxP + edge - span);
+  if (maxP - minP + 2 * edge > span) lo = (minP + maxP) / 2 - span / 2;
   return { lo, hi: lo + span };
 }
 
@@ -87,15 +91,13 @@ function worldView(canvas, live) {
   const plotH = Math.max(1, cssH - pad.t - pad.b);
   if (vertical) {
     const span = 12;
-    const mid = (live.A.y + live.B.y) / 2;
-    const { lo, hi } = panRange(mid, span, 3, mid - span / 2);
+    const { lo, hi } = panRange([live.A.y, live.B.y], span, 3, -6);
     const scale = plotH / span;
     const originX = cssW / 2;
     const originY = pad.t + hi * scale;
     return { cssW, cssH, dpr, pad, scale, originX, originY, lo, hi, vertical, groundY: cssH - pad.b };
   }
-  const mid = (live.A.x + live.B.x) / 2;
-  const { lo, hi } = panRange(mid, VIEW_SPAN_M, 3.5, -6);
+  const { lo, hi } = panRange([live.A.x, live.B.x], VIEW_SPAN_M, 3.5, -6);
   const scale = plotW / VIEW_SPAN_M;
   const originX = pad.l + (0 - lo) * scale;
   const groundY = cssH - pad.b;
@@ -627,6 +629,10 @@ export function mountThirdLaw(root) {
 
   function play() {
     if (running) return;
+    if (!state.dynamicMode) {
+      state.dynamicMode = true;
+      if (state.time > 1e-9) state = resetState(state);
+    }
     if (state.time >= state.duration - 1e-9) state = resetState(state);
     running = true;
     lastStamp = 0;

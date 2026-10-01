@@ -158,10 +158,14 @@ const VIEW_EDGE_M = 3.5;
 const GROUND_POST_X = 10;
 const CEILING_Y = 5;
 
-function panRange(focus, span, edge, preferredLo) {
+function panRange(positions, span, edge, preferredLo) {
+  const xs = positions.filter((x) => Number.isFinite(x));
+  const minP = xs.length ? Math.min(...xs) : 0;
+  const maxP = xs.length ? Math.max(...xs) : 0;
   let lo = preferredLo;
-  if (focus < lo + edge) lo = focus - edge;
-  if (focus > lo + span - edge) lo = focus + edge - span;
+  if (minP < lo + edge) lo = minP - edge;
+  if (maxP > lo + span - edge) lo = Math.max(lo, maxP + edge - span);
+  if (maxP - minP + 2 * edge > span) lo = (minP + maxP) / 2 - span / 2;
   return { lo, hi: lo + span };
 }
 
@@ -173,7 +177,7 @@ function worldView(canvas, state, live) {
   const plotH = Math.max(1, cssH - pad.t - pad.b);
   if (hanging) {
     const scale = plotH / HANG_SPAN_M;
-    const { lo, hi } = panRange(live.y, HANG_SPAN_M, VIEW_EDGE_M, -6);
+    const { lo, hi } = panRange([live.y], HANG_SPAN_M, VIEW_EDGE_M, -6);
     const originX = cssW / 2;
     const originY = pad.t + hi * scale;
     return {
@@ -193,7 +197,7 @@ function worldView(canvas, state, live) {
     };
   }
   const scale = plotW / VIEW_SPAN_M;
-  const { lo, hi } = panRange(live.x, VIEW_SPAN_M, VIEW_EDGE_M, -6);
+  const { lo, hi } = panRange([live.x], VIEW_SPAN_M, VIEW_EDGE_M, -6);
   const originX = pad.l + (0 - lo) * scale;
   const groundY = cssH - pad.b;
   return {
@@ -786,6 +790,10 @@ export function mountForcesFbd(root) {
 
   function play() {
     if (running) return;
+    if (!state.dynamicMode) {
+      state.dynamicMode = true;
+      if (state.time > 1e-9) state = resetState(state);
+    }
     if (state.time >= state.duration - 1e-9) state = resetState(state);
     running = true;
     lastStamp = 0;
