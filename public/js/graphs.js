@@ -1,12 +1,21 @@
 import { formatFitEquation, formatR2, polynomialFit, sampleFit } from "/lib/regression.js";
+import { themeCanvas } from "./platform/theme.js";
 
-const AXIS = "rgba(27, 36, 48, 0.7)";
-const GRID = "rgba(27, 36, 48, 0.1)";
 const CURVE = "#c45c26";
 const HEIGHT = "#1c6b73";
-const POINT = "#1b2430";
 const NOW = "#2c6e49";
-const IDENTITY = "#1b2430";
+
+function axisColor() {
+  return themeCanvas().muted;
+}
+
+function gridColor() {
+  return themeCanvas().line;
+}
+
+function pointColor() {
+  return themeCanvas().ink;
+}
 
 function setup(canvas) {
   if (!canvas) return null;
@@ -21,7 +30,7 @@ function setup(canvas) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
-  ctx.fillStyle = "#fbf7ef";
+  ctx.fillStyle = themeCanvas().fill;
   ctx.fillRect(0, 0, cssW, cssH);
   return { ctx, cssW, cssH, pad: { l: 44, r: 16, t: 16, b: 32 } };
 }
@@ -32,8 +41,8 @@ function drawFrame(ctx, pad, w, h, xLabel, yLabel, yMax) {
   const top = pad.t;
   const bottom = h - pad.b;
 
-  ctx.strokeStyle = GRID;
-  ctx.fillStyle = AXIS;
+  ctx.strokeStyle = gridColor();
+  ctx.fillStyle = axisColor();
   ctx.font = "11px IBM Plex Mono, monospace";
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
@@ -61,7 +70,7 @@ function drawFrame(ctx, pad, w, h, xLabel, yLabel, yMax) {
     ctx.fillText(`${ang}°`, x, bottom + 6);
   }
 
-  ctx.strokeStyle = AXIS;
+  ctx.strokeStyle = axisColor();
   ctx.lineWidth = 1.4;
   ctx.beginPath();
   ctx.moveTo(left, top);
@@ -70,7 +79,7 @@ function drawFrame(ctx, pad, w, h, xLabel, yLabel, yMax) {
   ctx.stroke();
 
   ctx.font = "600 11px Figtree, sans-serif";
-  ctx.fillStyle = AXIS;
+  ctx.fillStyle = axisColor();
   ctx.textAlign = "center";
   ctx.fillText(xLabel, (left + right) / 2, h - 14);
   ctx.save();
@@ -92,7 +101,7 @@ function yOf(value, yMax, box) {
 }
 
 function emptyMessage(ctx, cssW, cssH, text) {
-  ctx.fillStyle = AXIS;
+  ctx.fillStyle = axisColor();
   ctx.font = "500 13px Figtree, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -188,7 +197,7 @@ export function renderXYScatter(canvas, points, options = {}) {
     yHi += 1;
   }
   const box = drawLinearFrame(ctx, pad, cssW, cssH, xLabel, yLabel, lo, hi, yLo, yHi);
-  strokeSampledCurve(ctx, box, identitySamples, lo, hi, yLo, yHi, { color: IDENTITY, width: 2.4 });
+  strokeSampledCurve(ctx, box, identitySamples, lo, hi, yLo, yHi, { color: pointColor(), width: 2.4 });
   if (showFit && fit) {
     strokeSampledCurve(ctx, box, sampleFit(fit, { start: lo, end: hi, steps: 64 }), lo, hi, yLo, yHi, {
       color,
@@ -211,7 +220,7 @@ export function renderXYScatter(canvas, points, options = {}) {
     ctx.beginPath();
     ctx.arc(x, y, latest ? 5.6 : 4.2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = POINT;
+    ctx.fillStyle = pointColor();
     ctx.fillText(`#${point.id}`, x + 6, y - 4);
   }
 }
@@ -320,8 +329,8 @@ function drawLinearFrame(ctx, pad, w, h, xLabel, yLabel, xMin, xMax, yMin, yMax)
   const top = pad.t;
   const bottom = h - pad.b;
 
-  ctx.strokeStyle = GRID;
-  ctx.fillStyle = AXIS;
+  ctx.strokeStyle = gridColor();
+  ctx.fillStyle = axisColor();
   ctx.font = "11px IBM Plex Mono, monospace";
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
@@ -353,7 +362,7 @@ function drawLinearFrame(ctx, pad, w, h, xLabel, yLabel, xMin, xMax, yMin, yMax)
     ctx.fillText(Number.isInteger(value) ? String(value) : value.toFixed(1), x, bottom + 6);
   }
 
-  ctx.strokeStyle = AXIS;
+  ctx.strokeStyle = axisColor();
   ctx.lineWidth = 1.4;
   ctx.beginPath();
   ctx.moveTo(left, top);
@@ -362,7 +371,7 @@ function drawLinearFrame(ctx, pad, w, h, xLabel, yLabel, xMin, xMax, yMin, yMax)
   ctx.stroke();
 
   ctx.font = "600 11px Figtree, sans-serif";
-  ctx.fillStyle = AXIS;
+  ctx.fillStyle = axisColor();
   ctx.textAlign = "center";
   ctx.fillText(xLabel, (left + right) / 2, h - 14);
   ctx.save();
@@ -396,7 +405,7 @@ function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = 
     yMax = Math.max(yMax, ...sampleFit(fit, { start: 0, end: 90, steps: 90 }).map((p) => p.y));
   }
   const box = drawFrame(ctx, pad, cssW, cssH, xLabel, yLabel, yMax);
-  strokeSampledCurve(ctx, box, identitySamples, 0, 90, 0, yMax, { color: IDENTITY, width: 2.4 });
+  strokeSampledCurve(ctx, box, identitySamples, 0, 90, 0, yMax, { color: pointColor(), width: 2.4 });
   if (fit) {
     strokeSampledCurve(ctx, box, sampleFit(fit, { start: 0, end: 90, steps: 90 }), 0, 90, 0, yMax, {
       color,
@@ -408,7 +417,7 @@ function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = 
   drawOverlayLabels(ctx, box, overlayLabelLines({ fit, showFit: true, hasPoints: list.length > 0, fitYName: yName, fitXName: xName, identity }));
   const last = list[list.length - 1];
 
-  ctx.fillStyle = POINT;
+  ctx.fillStyle = pointColor();
   ctx.font = "600 10px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
@@ -474,13 +483,13 @@ function overlayLabelLines({ fit, showFit, hasPoints, fitYName, fitXName, identi
   const lines = [];
   if (showFit) {
     if (fit) {
-      lines.push({ text: `${formatFitEquation(fit, fitYName, fitXName)}   R² = ${formatR2(fit.r2)}`, color: AXIS });
+      lines.push({ text: `${formatFitEquation(fit, fitYName, fitXName)}   R² = ${formatR2(fit.r2)}`, color: axisColor() });
     } else if (hasPoints) {
-      lines.push({ text: "Record two trials with different x-values to fit a curve.", color: AXIS });
+      lines.push({ text: "Record two trials with different x-values to fit a curve.", color: axisColor() });
     }
   }
   if (identity?.label) {
-    lines.push({ text: identity.label, color: IDENTITY });
+    lines.push({ text: identity.label, color: pointColor() });
   }
   return lines;
 }
@@ -493,12 +502,13 @@ function drawOverlayLabels(ctx, box, lines) {
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   const maxW = Math.max(40, box.right - box.left - 12);
+  const paper = themeCanvas().fill;
   usable.forEach((line, i) => {
     const y = box.top + 13 + i * 18;
     const textW = Math.min(ctx.measureText(line.text).width + 10, maxW);
-    ctx.fillStyle = "rgba(251, 247, 239, 0.92)";
+    ctx.fillStyle = paper;
     ctx.fillRect(box.left + 4, box.top + 4 + i * 18, textW, 18);
-    ctx.fillStyle = line.color || AXIS;
+    ctx.fillStyle = line.color || axisColor();
     ctx.fillText(line.text, box.left + 8, y, maxW - 8);
   });
   ctx.restore();

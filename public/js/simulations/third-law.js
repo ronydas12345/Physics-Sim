@@ -36,6 +36,7 @@ import {
   createTrialBook,
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
+import { themeCanvas } from "../platform/theme.js";
 
 const COLOR_A = "#c45c26";
 const COLOR_B = "#1c6b73";
@@ -250,15 +251,16 @@ function renderScene(canvas, state) {
 function renderObjectFbd(canvas, state, objectId, color) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const ctx = canvas.getContext("2d");
+  const theme = themeCanvas();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
-  ctx.fillStyle = "#fbf7ef";
+  ctx.fillStyle = theme.fill;
   ctx.fillRect(0, 0, cssW, cssH);
   const live = liveState(state);
   const obj = live[objectId];
   const cx = cssW / 2;
   const cy = cssH / 2 + 8;
-  ctx.strokeStyle = "rgba(27,36,48,0.45)";
+  ctx.strokeStyle = theme.line;
   ctx.beginPath();
   ctx.moveTo(24, cy);
   ctx.lineTo(cssW - 24, cy);
@@ -269,7 +271,7 @@ function renderObjectFbd(canvas, state, objectId, color) {
   ctx.beginPath();
   ctx.arc(cx, cy, 8, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#1b2430";
+  ctx.fillStyle = theme.ink;
   ctx.font = "700 12px Figtree, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
@@ -283,9 +285,9 @@ function renderObjectFbd(canvas, state, objectId, color) {
     const rad = (obj.net.direction * Math.PI) / 180;
     ctx.save();
     ctx.setLineDash([5, 4]);
-    drawArrow(ctx, cx, cy, cx + len * Math.cos(rad), cy - len * Math.sin(rad), "#1b2430", 2);
+    drawArrow(ctx, cx, cy, cx + len * Math.cos(rad), cy - len * Math.sin(rad), theme.ink, 2);
     ctx.restore();
-    ctx.fillStyle = "#1b2430";
+    ctx.fillStyle = theme.ink;
     ctx.font = "600 10px IBM Plex Mono, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
@@ -297,9 +299,10 @@ function renderObjectFbd(canvas, state, objectId, color) {
 function renderDiagram(canvas, state) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const ctx = canvas.getContext("2d");
+  const theme = themeCanvas();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
-  ctx.fillStyle = "#fbf7ef";
+  ctx.fillStyle = theme.fill;
   ctx.fillRect(0, 0, cssW, cssH);
   const live = liveState(state);
   const dots = motionDiagramSamples(state, DIAGRAM_DT);
@@ -312,7 +315,7 @@ function renderDiagram(canvas, state) {
   const xAt = (x) => pad + (x - min) * scale;
   const yA = cssH * 0.38;
   const yB = cssH * 0.68;
-  ctx.strokeStyle = "#1b2430";
+  ctx.strokeStyle = theme.ink;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(pad, yA);
@@ -331,7 +334,7 @@ function renderDiagram(canvas, state) {
     ctx.arc(xAt(dot.xB), yB, last ? 7 : 5, 0, Math.PI * 2);
     ctx.fill();
   });
-  ctx.fillStyle = "#4d5a68";
+  ctx.fillStyle = theme.muted;
   ctx.font = "600 12px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.fillText(`Motion diagram  ·  Δt = ${DIAGRAM_DT.toFixed(2)} s`, pad, 16);

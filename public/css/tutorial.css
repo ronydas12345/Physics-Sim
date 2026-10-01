@@ -1,16 +1,19 @@
 .sim-toolbar {
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
 }
 
 .tutorial-launch {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
   margin-right: auto;
 }
 
 .tutorial-launch .btn {
+  height: var(--control-h);
   background: var(--raised);
   color: var(--ink);
   border: var(--control-border-width, 1px) solid var(--line);
@@ -134,8 +137,8 @@
   border-radius: 8px;
   border: var(--control-border-width, 1px) solid var(--line);
   font: inherit;
-  background: var(--raised);
-  color: var(--ink);
+  background: var(--field-bg);
+  color: var(--field-ink);
 }
 
 .tutorial-hint {
@@ -155,6 +158,7 @@
 .tutorial-nav {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
   margin-top: 8px;
 }

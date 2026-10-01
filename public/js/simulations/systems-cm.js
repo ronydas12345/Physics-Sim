@@ -30,6 +30,7 @@ import {
   createTrialBook,
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
+import { themeCanvas } from "../platform/theme.js";
 
 const COLOR_A = "#c45c26";
 const COLOR_B = "#1c6b73";
@@ -96,14 +97,15 @@ function fillSky(ctx, w, h) {
 }
 
 function drawAxis(ctx, view, y) {
-  ctx.strokeStyle = "#1b2430";
+  const theme = themeCanvas();
+  ctx.strokeStyle = theme.ink;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(view.pad.l, y);
   ctx.lineTo(view.cssW - view.pad.r, y);
   ctx.stroke();
   drawArrow(ctx, view.originX, y, view.cssW - view.pad.r, y, "#1c6b73");
-  ctx.fillStyle = "#4d5a68";
+  ctx.fillStyle = theme.muted;
   ctx.font = "600 12px Figtree, sans-serif";
   ctx.textAlign = "right";
   ctx.fillText("positive →", view.cssW - 18, y - 16);
@@ -116,14 +118,14 @@ function drawAxis(ctx, view, y) {
   for (let world = view.min; world <= view.max; world += 1) {
     const x = worldToX(world, view);
     const major = world % step === 0;
-    ctx.strokeStyle = "rgba(27,36,48,0.55)";
+    ctx.strokeStyle = theme.line;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(x, y - (major ? 10 : 5));
     ctx.lineTo(x, y + (major ? 10 : 5));
     ctx.stroke();
     if (major) {
-      ctx.fillStyle = "#1b2430";
+      ctx.fillStyle = theme.ink;
       ctx.fillText(String(world), x, y + 12);
     }
   }
@@ -265,7 +267,7 @@ function renderDiagram(canvas, state) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
-  ctx.fillStyle = "#fbf7ef";
+  ctx.fillStyle = themeCanvas().fill;
   ctx.fillRect(0, 0, view.cssW, view.cssH);
   const yA = view.cssH * 0.28;
   const yCM = view.cssH * 0.52;
@@ -289,7 +291,7 @@ function renderDiagram(canvas, state) {
   paintRow((d) => objectById(d.objects, "A")?.x ?? 0, yA, COLOR_A);
   paintRow((d) => d.xCM, yCM, "#f0a202");
   paintRow((d) => objectById(d.objects, "B")?.x ?? 0, yB, COLOR_B);
-  ctx.fillStyle = "#4d5a68";
+  ctx.fillStyle = themeCanvas().muted;
   ctx.font = "600 12px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.fillText(`A  ·  Δt = ${DIAGRAM_DT.toFixed(2)} s`, view.pad.l, 14);

@@ -44,12 +44,14 @@
 
 .theme-picker select {
   appearance: none;
+  box-sizing: border-box;
+  height: var(--control-h);
   font: inherit;
   color: var(--ink);
   background: var(--raised);
   border: var(--control-border-width, 1px) solid var(--line);
   border-radius: 999px;
-  padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+  padding: 0 1.8rem 0 0.75rem;
   background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%),
     linear-gradient(135deg, var(--ink) 50%, transparent 50%);
   background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
@@ -362,8 +364,8 @@
 
 .badge-available {
   color: var(--ok);
-  border-color: #b7d4c3;
-  background: #e7f4ec;
+  border-color: var(--ok);
+  background: var(--inset-ok);
 }
 
 .badge-planned,
@@ -404,12 +406,19 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  height: var(--control-h);
+}
+
+.download-menu {
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
 .icon-btn {
   appearance: none;
-  width: 40px;
-  height: 40px;
+  width: var(--control-h);
+  height: var(--control-h);
   padding: 0;
   border-radius: 10px;
   border: var(--control-border-width, 1px) solid var(--line);
@@ -437,10 +446,6 @@
 .icon-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.download-menu {
-  position: relative;
 }
 
 .download-pop {
@@ -566,6 +571,12 @@ html.is-fullscreen #page-root,
   margin-top: 10px;
 }
 
+.nudge-row .switch {
+  min-height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+}
+
 .pos-input {
   display: flex;
   gap: 6px;
@@ -574,12 +585,10 @@ html.is-fullscreen #page-root,
 }
 
 .pos-input input {
+  box-sizing: border-box;
   width: 5.2rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #4a5d70;
-  background: #1d2d3c;
-  color: #f4efe6;
+  height: var(--control-h);
+  padding: 0 0.5rem;
 }
 
 .panel-toggles .switch {
@@ -742,10 +751,7 @@ html.is-fullscreen #page-root,
 .force-table input[type="number"],
 .force-table select,
 .add-force-row select {
-  background: #2a3b4d;
-  color: #f4efe6;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
+  width: auto;
   padding: 4px 8px;
   font: inherit;
   max-width: 100%;

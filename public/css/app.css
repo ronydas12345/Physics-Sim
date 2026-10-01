@@ -8,6 +8,15 @@
   --header-bg: #fbf7ef;
   --raised: #ffffff;
   --raised-hover: #f4efe6;
+  --field-bg: #ffffff;
+  --field-ink: #1b2430;
+  --inset: #ffffff;
+  --control-h: 40px;
+  --inset-ok: #dcefe3;
+  --inset-miss: #f6e4d8;
+  --well-bg: #1d2d3c;
+  --well-ink: #f4efe6;
+  --well-line: #4a5d70;
   --line: #d7ccb8;
   --accent: #c45c26;
   --accent-dark: #9a3f12;
@@ -42,6 +51,14 @@
   --header-bg: #ffffff;
   --raised: #ffffff;
   --raised-hover: #e8edf3;
+  --field-bg: #ffffff;
+  --field-ink: #1a1f26;
+  --inset: #e7ebf0;
+  --inset-ok: #d5eee0;
+  --inset-miss: #f3ddd4;
+  --well-bg: #1d2d3c;
+  --well-ink: #f4efe6;
+  --well-line: #4a5d70;
   --line: #cfd6df;
   --accent: #b44b1c;
   --accent-dark: #8a3410;
@@ -63,6 +80,14 @@
   --header-bg: #1c2430;
   --raised: #243041;
   --raised-hover: #2e3d52;
+  --field-bg: #12171e;
+  --field-ink: #e8eef4;
+  --inset: #12171e;
+  --inset-ok: #143024;
+  --inset-miss: #3a1c14;
+  --well-bg: #12171e;
+  --well-ink: #e8eef4;
+  --well-line: #3a4a5c;
   --line: #3a4a5c;
   --accent: #e07a3d;
   --accent-dark: #f0a202;
@@ -84,6 +109,14 @@
   --header-bg: #000000;
   --raised: #000000;
   --raised-hover: #1a1a1a;
+  --field-bg: #000000;
+  --field-ink: #ffffff;
+  --inset: #000000;
+  --inset-ok: #000000;
+  --inset-miss: #000000;
+  --well-bg: #000000;
+  --well-ink: #ffffff;
+  --well-line: #ffffff;
   --line: #ffffff;
   --accent: #ffff00;
   --accent-dark: #ffff00;
@@ -143,8 +176,30 @@ body:-webkit-full-screen::backdrop {
 
 button,
 input,
-label {
+label,
+select,
+textarea {
   font-family: inherit;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]),
+textarea,
+select {
+  background-color: var(--field-bg);
+  color: var(--field-ink);
+  border: var(--control-border-width, 1px) solid var(--line);
+  border-radius: 8px;
+  color-scheme: inherit;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--field-ink);
+  caret-color: var(--field-ink);
+  box-shadow: 0 0 0 1000px var(--field-bg) inset;
+  transition: background-color 99999s ease-out;
 }
 
 .app {
@@ -198,16 +253,22 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
   margin: 0 0 16px;
 }
 
 .tab {
   appearance: none;
+  box-sizing: border-box;
+  height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
   border-radius: 999px;
-  padding: 0.45rem 1.05rem;
+  padding: 0 1.05rem;
   font-weight: 650;
   font-size: 0.95rem;
   cursor: pointer;
@@ -358,6 +419,21 @@ h2 {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.transport .switch {
+  min-height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+}
+
+.transport .chip {
+  box-sizing: border-box;
+  height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.85rem;
+}
+
 .transport-gap {
   flex: 1;
   min-width: 8px;
@@ -365,13 +441,20 @@ h2 {
 
 .btn {
   appearance: none;
+  box-sizing: border-box;
+  height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid transparent;
   background: #2a3b4d;
   color: #f4efe6;
   border-radius: 999px;
-  padding: 0.55rem 0.95rem;
+  padding: 0 0.95rem;
   font-weight: 600;
   font-size: 0.92rem;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -395,7 +478,7 @@ h2 {
 
 .btn.ghost {
   background: transparent;
-  border-color: rgba(244, 239, 230, 0.2);
+  border-color: var(--line);
 }
 
 .btn:disabled {
@@ -583,30 +666,34 @@ input[type="range"] {
 .feedback {
   margin: 10px 0 0;
   padding: 8px 10px;
-  background: #efe6d2;
+  background: var(--inset);
+  color: var(--ink);
+  border: var(--control-border-width, 1px) solid var(--line);
   border-radius: 8px;
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
 .feedback.hit {
-  background: #dcefe3;
+  background: var(--inset-ok);
 }
 
 .feedback.miss {
-  background: #f6e4d8;
+  background: var(--inset-miss);
 }
 
 .challenge-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
   margin-top: 10px;
 }
 
 .challenge-actions .btn {
-  background: #ece4d4;
+  background: var(--raised);
   color: var(--ink);
+  border: var(--control-border-width, 1px) solid var(--line);
 }
 
 .notes-toggle {
@@ -661,7 +748,9 @@ input[type="range"] {
 .eq-block {
   margin: 8px 0;
   padding: 8px 10px;
-  background: #efe6d2;
+  background: var(--field-bg);
+  color: var(--field-ink);
+  border: var(--control-border-width, 1px) solid var(--line);
   border-radius: 8px;
 }
 
@@ -771,7 +860,7 @@ tbody tr.best td {
   }
 
   .transport .btn {
-    padding: 0.7rem 0.9rem;
+    padding-inline: 0.9rem;
   }
 }
 

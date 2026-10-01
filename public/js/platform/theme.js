@@ -32,6 +32,27 @@ export function applyTheme(id) {
   return theme;
 }
 
+export function themeVar(name, fallback = "") {
+  if (typeof document === "undefined" || !document.documentElement) {
+    return fallback;
+  }
+  try {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function themeCanvas() {
+  return {
+    fill: themeVar("--field-bg", "#ffffff"),
+    ink: themeVar("--ink", "#1b2430"),
+    muted: themeVar("--ink-soft", "#4d5a68"),
+    line: themeVar("--line", "#d7ccb8"),
+  };
+}
+
 export function bindThemePicker(root) {
   const theme = applyTheme(currentTheme());
   const select = root?.querySelector("#theme-select");

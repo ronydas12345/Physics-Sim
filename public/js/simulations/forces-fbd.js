@@ -38,6 +38,7 @@ import {
   createTrialBook,
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
+import { themeCanvas } from "../platform/theme.js";
 
 const FORCE_COLOR = {
   gravity: "#c45c26",
@@ -380,14 +381,15 @@ function renderScene(canvas, state, scene) {
 function renderFbd(canvas, state) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const ctx = canvas.getContext("2d");
+  const theme = themeCanvas();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
-  ctx.fillStyle = "#fbf7ef";
+  ctx.fillStyle = theme.fill;
   ctx.fillRect(0, 0, cssW, cssH);
   const cx = cssW / 2;
   const cy = cssH / 2 + 6;
-  drawAxes(ctx, 44, cssH - 28);
-  ctx.fillStyle = "#1b2430";
+  drawAxes(ctx, 44, cssH - 28, theme.muted);
+  ctx.fillStyle = theme.ink;
   ctx.beginPath();
   ctx.arc(cx, cy, 8, 0, Math.PI * 2);
   ctx.fill();
@@ -405,9 +407,10 @@ function renderFbd(canvas, state) {
 function renderDiagram(canvas, state) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const ctx = canvas.getContext("2d");
+  const theme = themeCanvas();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
-  ctx.fillStyle = "#fbf7ef";
+  ctx.fillStyle = theme.fill;
   ctx.fillRect(0, 0, cssW, cssH);
   const live = liveState(state);
   const dots = motionDiagramSamples(state, DIAGRAM_DT);
@@ -419,7 +422,7 @@ function renderDiagram(canvas, state) {
   const scale = (cssW - pad * 2) / Math.max(max - min, 1);
   const xOf = (x) => pad + (x - min) * scale;
   const y = cssH * 0.55;
-  ctx.strokeStyle = "#1b2430";
+  ctx.strokeStyle = theme.ink;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(pad, y);
@@ -432,7 +435,7 @@ function renderDiagram(canvas, state) {
     ctx.arc(xOf(dot.x), y, last ? 7 : 5, 0, Math.PI * 2);
     ctx.fill();
   });
-  ctx.fillStyle = "#4d5a68";
+  ctx.fillStyle = theme.muted;
   ctx.font = "600 12px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.fillText(`Motion diagram  ·  Δt = ${DIAGRAM_DT.toFixed(2)} s`, pad, 16);
