@@ -34,6 +34,9 @@ export const tutorials = {
         text("Live Measurements split vector quantities (position, displacement) from the scalar distance traveled."),
         explain("Distance never carries a sign. Displacement does."),
       ]),
+      section("camera", "Camera", "camera", [
+        text("Origin keeps x = 0 in view and zooms out as the object recedes. Follow tracks the object. Stationary freezes the current window."),
+      ]),
       section("reset", "Reset and recording", "reset", [
         text("Reset returns the object to the origin and clears running distance. Record Trial stores a snapshot for the graphs below."),
       ]),

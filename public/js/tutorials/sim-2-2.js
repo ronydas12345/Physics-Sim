@@ -29,7 +29,10 @@ export const tutorials = {
         text("F_net is the vector sum. Balanced means |F_net| ≈ 0, not “the object must be at rest.”"),
       ]),
       section("motion", "Motion mode", "toggle-dynamic", [
-        text("ΣF = ma is shown either way. The box only accelerates across the ground when Motion mode is on. The camera stays in the ground frame."),
+        text("ΣF = ma is shown either way. The box only accelerates across the ground when Motion mode is on."),
+      ]),
+      section("camera", "Camera", "camera-controls", [
+        text("Origin keeps the origin in view and zooms out as the box recedes. Follow tracks the box. Stationary freezes the current window."),
       ]),
       section("graphs", "Graphs", "graphs", [
         text("Net force and acceleration share the lab clock. Planet chips change g and the sky."),

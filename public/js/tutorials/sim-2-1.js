@@ -34,6 +34,9 @@ export const tutorials = {
       section("graphs", "Graphs", "graphs", [
         text("Live graphs follow the clock. Recorded trials let you test x_CM vs m_B or vs time."),
       ]),
+      section("camera", "Camera", "camera", [
+        text("Fit objects keeps A, B, and the center-of-mass diamond on screen. Origin also holds x = 0. Stationary freezes the current window."),
+      ]),
       section("play", "Playback and reset", "play", [
         text("Play moves both objects with constant accelerations from F_ext and A↔B. Reset keeps the current sliders."),
       ]),

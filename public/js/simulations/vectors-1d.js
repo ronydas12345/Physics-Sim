@@ -17,6 +17,7 @@ import {
 } from "/lib/vectors1d.js";
 import { renderXYScatter } from "../graphs.js";
 import {
+  bindCameraMode,
   bindChallenge,
   bindDownload,
   bindFullscreen,
@@ -26,6 +27,7 @@ import {
   createTrialBook,
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
+import { CAMERA, cameraRange } from "/lib/camera.js";
 
 const MIN_X = AXIS_MIN;
 const MAX_X = AXIS_MAX;
@@ -38,7 +40,7 @@ function xToWorld(px, view) {
   return (px - view.originX) / view.scale;
 }
 
-function createView(canvas) {
+function createView(canvas, state, cameraOpts = {}) {
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, canvas.clientWidth);
   const cssH = Math.max(1, canvas.clientHeight);
@@ -47,11 +49,21 @@ function createView(canvas) {
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
   const pad = { l: 36, r: 36, t: 28, b: 42 };
+  const range = cameraRange([state.currentPosition], {
+    mode: CAMERA.ORIGIN,
+    pad: 1.5,
+    minSpan: MAX_X - MIN_X,
+    followSpan: 16,
+    followEdge: 2,
+    ...cameraOpts,
+  });
+  const min = range.lo;
+  const max = range.hi;
   const plotW = cssW - pad.l - pad.r;
-  const scale = plotW / (MAX_X - MIN_X);
-  const originX = pad.l + (0 - MIN_X) * scale;
+  const scale = plotW / Math.max(max - min, 1);
+  const originX = pad.l + (0 - min) * scale;
   const axisY = cssH * 0.55;
-  return { cssW, cssH, dpr, pad, scale, originX, axisY };
+  return { cssW, cssH, dpr, pad, scale, originX, axisY, min, max };
 }
 
 function drawArrow(ctx, x1, y1, x2, y2, color) {
@@ -72,8 +84,8 @@ function drawArrow(ctx, x1, y1, x2, y2, color) {
   ctx.fill();
 }
 
-function renderAxis(canvas, state, showVectors) {
-  const view = createView(canvas);
+function renderAxis(canvas, state, showVectors, cameraOpts) {
+  const view = createView(canvas, state, cameraOpts);
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
@@ -111,7 +123,7 @@ function renderAxis(canvas, state, showVectors) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.font = "12px IBM Plex Mono, monospace";
-  for (let world = MIN_X; world <= MAX_X; world += 1) {
+  for (let world = Math.floor(view.min); world <= Math.ceil(view.max); world += 1) {
     const x = worldToX(world, view);
     const major = world % 5 === 0;
     ctx.strokeStyle = "rgba(27,36,48,0.55)";
@@ -175,6 +187,8 @@ export function mountVectors1D(root) {
   let state = createState();
   let showVectors = true;
   let view = null;
+  let lastCameraRange = { lo: MIN_X, hi: MAX_X };
+  let camera;
   let dragging = false;
   let autoRecord = false;
   let activeTab = "lab";
@@ -290,7 +304,18 @@ export function mountVectors1D(root) {
   });
 
   function paint() {
-    view = renderAxis(canvas, state, showVectors);
+    view = renderAxis(
+      canvas,
+      state,
+      showVectors,
+      camera?.options({
+        pad: 1.5,
+        minSpan: MAX_X - MIN_X,
+        followSpan: 16,
+        followEdge: 2,
+      }),
+    );
+    lastCameraRange = { lo: view.min, hi: view.max };
     const x = displayedPosition(state);
     const dx = displacement(state);
     readX.textContent = formatSignedMeters(x);
@@ -396,6 +421,12 @@ export function mountVectors1D(root) {
       paint();
       drawCharts();
     });
+  });
+
+  camera = bindCameraMode(root, {
+    objectCount: 1,
+    rangeForLock: () => lastCameraRange,
+    onChange: () => paint(),
   });
 
   root.querySelector("#btn-reset").addEventListener("click", onReset);

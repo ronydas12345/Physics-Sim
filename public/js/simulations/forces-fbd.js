@@ -29,6 +29,7 @@ import {
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import { planetById, sceneForGravity } from "/lib/planets.js";
 import {
+  bindCameraMode,
   bindChallenge,
   bindDownload,
   bindFullscreen,
@@ -39,6 +40,7 @@ import {
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
 import { themeCanvas } from "../platform/theme.js";
+import { CAMERA, cameraRange, cameraScale } from "/lib/camera.js";
 
 const FORCE_COLOR = {
   gravity: "#c45c26",
@@ -158,27 +160,33 @@ const HANG_SPAN_M = 12;
 const VIEW_EDGE_M = 3.5;
 const GROUND_POST_X = 10;
 const CEILING_Y = 5;
+const CAMERA_EXTRA = {
+  pad: VIEW_EDGE_M,
+  minSpan: VIEW_SPAN_M,
+  followSpan: VIEW_SPAN_M,
+  followEdge: VIEW_EDGE_M,
+};
+const HANG_CAMERA_EXTRA = {
+  pad: VIEW_EDGE_M,
+  minSpan: HANG_SPAN_M,
+  followSpan: HANG_SPAN_M,
+  followEdge: VIEW_EDGE_M,
+};
 
-function panRange(positions, span, edge, preferredLo) {
-  const xs = positions.filter((x) => Number.isFinite(x));
-  const minP = xs.length ? Math.min(...xs) : 0;
-  const maxP = xs.length ? Math.max(...xs) : 0;
-  let lo = preferredLo;
-  if (minP < lo + edge) lo = minP - edge;
-  if (maxP > lo + span - edge) lo = Math.max(lo, maxP + edge - span);
-  if (maxP - minP + 2 * edge > span) lo = (minP + maxP) / 2 - span / 2;
-  return { lo, hi: lo + span };
-}
-
-function worldView(canvas, state, live) {
+function worldView(canvas, state, live, cameraOpts = {}) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const hanging = state.environment === "hanging";
   const pad = { l: 48, r: 28, t: 36, b: hanging ? 24 : 34 };
   const plotW = Math.max(1, cssW - pad.l - pad.r);
   const plotH = Math.max(1, cssH - pad.t - pad.b);
   if (hanging) {
-    const scale = plotH / HANG_SPAN_M;
-    const { lo, hi } = panRange([live.y], HANG_SPAN_M, VIEW_EDGE_M, -6);
+    const { lo, hi, span } = cameraRange([live.y], {
+      mode: CAMERA.ORIGIN,
+      ...HANG_CAMERA_EXTRA,
+      plotPx: plotH,
+      ...cameraOpts,
+    });
+    const scale = cameraScale(span, plotH);
     const originX = cssW / 2;
     const originY = pad.t + hi * scale;
     return {
@@ -197,8 +205,13 @@ function worldView(canvas, state, live) {
       boxY: originY - live.y * scale,
     };
   }
-  const scale = plotW / VIEW_SPAN_M;
-  const { lo, hi } = panRange([live.x], VIEW_SPAN_M, VIEW_EDGE_M, -6);
+  const { lo, hi, span } = cameraRange([live.x], {
+    mode: CAMERA.ORIGIN,
+    ...CAMERA_EXTRA,
+    plotPx: plotW,
+    ...cameraOpts,
+  });
+  const scale = cameraScale(span, plotW);
   const originX = pad.l + (0 - lo) * scale;
   const groundY = cssH - pad.b;
   return {
@@ -226,9 +239,9 @@ function yOf(world, view) {
   return view.originY - world * view.scale;
 }
 
-function renderScene(canvas, state, scene) {
+function renderScene(canvas, state, scene, cameraOpts = {}) {
   const live = liveState(state);
-  const view = worldView(canvas, state, live);
+  const view = worldView(canvas, state, live, cameraOpts);
   const { cssW, cssH, dpr, hanging, lo, hi, scale, originX, originY, groundY, boxX, boxY } = view;
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -486,6 +499,7 @@ export function mountForcesFbd(root) {
   let carry = 0;
   let playback = 1;
   let autoRecord = false;
+  let camera;
   let activeTab = "lab";
   let graphs = { x: true, v: true };
   let identityOn = () => false;
@@ -722,7 +736,8 @@ export function mountForcesFbd(root) {
 
   function paint() {
     const scene = sceneForGravity({ planetId, backgroundsOn: planetBackgrounds });
-    renderScene(canvas, state, scene);
+    const extra = state.environment === "hanging" ? HANG_CAMERA_EXTRA : CAMERA_EXTRA;
+    renderScene(canvas, state, scene, camera?.options(extra) || { mode: CAMERA.ORIGIN, ...extra });
     renderFbd(fbd, state);
     renderDiagram(diagram, state);
     const snap = snapshot(state);
@@ -938,6 +953,17 @@ export function mountForcesFbd(root) {
     state.dynamicMode = event.target.checked;
     state = resetState(state);
     paint();
+  });
+  camera = bindCameraMode(root, {
+    objectCount: 1,
+    rangeForLock: () => {
+      const live = liveState(state);
+      const hanging = state.environment === "hanging";
+      const extra = hanging ? HANG_CAMERA_EXTRA : CAMERA_EXTRA;
+      const mode = camera.mode === CAMERA.STATIONARY ? CAMERA.ORIGIN : camera.mode;
+      return cameraRange(hanging ? [live.y] : [live.x], { ...extra, mode });
+    },
+    onChange: () => paint(),
   });
   root.querySelector("#toggle-net").addEventListener("change", (event) => {
     state.showNetForce = event.target.checked;

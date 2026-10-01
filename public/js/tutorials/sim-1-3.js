@@ -30,6 +30,9 @@ export const tutorials = {
       section("connect", "Connecting representations", "scene", [
         text("Toggles let you hide the object, the diagram, or the arrows so you can force yourself to read a graph first."),
       ]),
+      section("camera", "Camera", "camera", [
+        text("Origin keeps x = 0 in view and zooms out as the object recedes. Follow tracks the object. Stationary freezes the current window."),
+      ]),
       section("play", "Playback and reset", "play", [
         text("Play, Pause, Step, and Reset share the simulation clock with every graph."),
       ]),

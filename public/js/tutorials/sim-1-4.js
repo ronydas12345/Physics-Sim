@@ -28,6 +28,9 @@ export const tutorials = {
       section("rel-v", "Relative velocity", "values", [
         text("v_B/A is how fast B’s position changes according to A."),
       ]),
+      section("camera", "Camera", "camera", [
+        text("Fit objects zooms so both stay on screen. Origin also keeps x = 0 in view. Stationary freezes the current window."),
+      ]),
       section("play", "Playback", "play", [
         text("Play runs the shared clock. Switch frames while paused to compare descriptions of the same instant."),
       ]),

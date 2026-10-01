@@ -21,6 +21,7 @@ import {
 } from "/lib/relative1d.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import {
+  bindCameraMode,
   bindChallenge,
   bindDownload,
   bindFullscreen,
@@ -31,6 +32,7 @@ import {
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
 import { themeCanvas } from "../platform/theme.js";
+import { CAMERA, cameraRange } from "/lib/camera.js";
 
 function worldToX(world, view) {
   return view.originX + world * view.scale;
@@ -40,17 +42,7 @@ function xToWorld(px, view) {
   return (px - view.originX) / view.scale;
 }
 
-function axisBounds(viewState) {
-  const xs = [viewState.xA, viewState.xB, 0];
-  const lo = Math.min(-20, ...xs) - AXIS_PAD;
-  const hi = Math.max(20, ...xs) + AXIS_PAD;
-  return {
-    min: Math.floor(lo / 5) * 5,
-    max: Math.ceil(hi / 5) * 5,
-  };
-}
-
-function createView(canvas, viewState) {
+function createView(canvas, viewState, cameraOpts = {}) {
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, canvas.clientWidth);
   const cssH = Math.max(1, canvas.clientHeight);
@@ -59,7 +51,16 @@ function createView(canvas, viewState) {
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
   const pad = { l: 36, r: 36, t: 40, b: 36 };
-  const { min, max } = axisBounds(viewState);
+  const range = cameraRange([viewState.xA, viewState.xB], {
+    mode: CAMERA.FIT,
+    pad: AXIS_PAD,
+    minSpan: 40,
+    followSpan: 28,
+    followEdge: AXIS_PAD,
+    ...cameraOpts,
+  });
+  const min = range.lo;
+  const max = range.hi;
   const plotW = cssW - pad.l - pad.r;
   const scale = plotW / Math.max(max - min, 1);
   const originX = pad.l + (0 - min) * scale;
@@ -111,7 +112,7 @@ function drawAxis(ctx, view, y) {
   ctx.textBaseline = "top";
   ctx.font = "12px IBM Plex Mono, monospace";
   const step = view.max - view.min > 60 ? 10 : 5;
-  for (let world = view.min; world <= view.max; world += 1) {
+  for (let world = Math.floor(view.min); world <= Math.ceil(view.max); world += 1) {
     const x = worldToX(world, view);
     const major = world % step === 0;
     ctx.strokeStyle = theme.line;
@@ -146,9 +147,9 @@ function drawBody(ctx, x, y, color, label) {
   ctx.fillText(label, x, y);
 }
 
-function renderTrack(canvas, state) {
+function renderTrack(canvas, state, cameraOpts) {
   const viewWorld = viewInFrame(state, state.frame);
-  const view = createView(canvas, viewWorld);
+  const view = createView(canvas, viewWorld, cameraOpts);
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
@@ -212,9 +213,9 @@ function renderTrack(canvas, state) {
   return view;
 }
 
-function renderDiagram(canvas, state) {
+function renderDiagram(canvas, state, cameraOpts) {
   const viewWorld = viewInFrame(state, state.frame);
-  const view = createView(canvas, viewWorld);
+  const view = createView(canvas, viewWorld, cameraOpts);
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
@@ -270,6 +271,8 @@ export function mountRelativeMotion(root) {
   let autoRecord = false;
   let activeTab = "lab";
   let view = null;
+  let lastCameraRange = { lo: -20, hi: 20 };
+  let camera;
   let dragging = null;
 
   const trials = createTrialBook({
@@ -449,8 +452,15 @@ export function mountRelativeMotion(root) {
   }
 
   function paint() {
-    view = renderTrack(canvas, state);
-    renderDiagram(diagram, state);
+    const cameraOpts = camera?.options({
+      pad: AXIS_PAD,
+      minSpan: 40,
+      followSpan: 28,
+      followEdge: AXIS_PAD,
+    });
+    view = renderTrack(canvas, state, cameraOpts);
+    lastCameraRange = { lo: view.min, hi: view.max };
+    renderDiagram(diagram, state, cameraOpts);
     const snap = snapshot(state);
     const shown = viewInFrame(state, state.frame);
     const frameLabel = FRAMES.find((f) => f.id === state.frame)?.label ?? "Ground";
@@ -654,6 +664,12 @@ export function mountRelativeMotion(root) {
       paint();
       drawCharts();
     });
+  });
+
+  camera = bindCameraMode(root, {
+    objectCount: 2,
+    rangeForLock: () => lastCameraRange,
+    onChange: () => paint(),
   });
 
   root.querySelector("#btn-reset").addEventListener("click", onReset);

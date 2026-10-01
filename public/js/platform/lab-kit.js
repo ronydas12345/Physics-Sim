@@ -3,6 +3,13 @@
  * Lab/Theory tabs, teacher view, challenge card, trial table, icon toolbar.
  */
 
+import {
+  CAMERA,
+  CAMERA_LABELS,
+  cameraModesFor,
+  defaultCameraMode,
+  normalizeCameraMode,
+} from "/lib/camera.js";
 import { fileForFormat, triggerDownload } from "/lib/export-trials.js";
 import { PLANET_CHIP_ORDER, planetById } from "/lib/planets.js";
 
@@ -372,4 +379,73 @@ export function planetPresetControls({ switchClass = "switch light" } = {}) {
     </label>
     <p class="track-help">A selected world paints its sky and ground. Custom g keeps the gray lab scene.</p>
   `;
+}
+
+/** Chip row for current and future labs. Pass the number of objects, not markers. */
+export function cameraModeControls(objectCount) {
+  const modes = cameraModesFor(objectCount);
+  const selected = defaultCameraMode(objectCount);
+  const buttons = modes
+    .map((mode) => {
+      const active = mode === selected ? " active" : "";
+      return `<button type="button" class="chip${active}" data-camera="${mode}">${CAMERA_LABELS[mode]}</button>`;
+    })
+    .join("");
+  return `
+    <div class="control" id="camera-controls">
+      <div class="control-head"><span>Camera</span></div>
+      <div class="presets" role="group" aria-label="Camera">
+        ${buttons}
+      </div>
+    </div>
+  `;
+}
+
+export function bindCameraMode(root, { objectCount, rangeForLock, onChange } = {}) {
+  const count = Math.max(1, Number(objectCount) || 1);
+  let mode = defaultCameraMode(count);
+  let lock = null;
+
+  function syncChips() {
+    root.querySelectorAll("[data-camera]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.camera === mode);
+    });
+  }
+
+  function setMode(next) {
+    const allowed = normalizeCameraMode(next, count);
+    if (allowed === CAMERA.STATIONARY && mode !== CAMERA.STATIONARY) {
+      const range = rangeForLock?.();
+      if (range && Number.isFinite(range.lo) && Number.isFinite(range.hi) && range.hi > range.lo) {
+        lock = { lo: range.lo, hi: range.hi };
+      } else {
+        lock = null;
+      }
+    } else if (allowed !== CAMERA.STATIONARY) {
+      lock = null;
+    }
+    mode = allowed;
+    syncChips();
+    onChange?.(mode);
+    return mode;
+  }
+
+  root.querySelectorAll("[data-camera]").forEach((btn) => {
+    btn.addEventListener("click", () => setMode(btn.dataset.camera));
+  });
+  syncChips();
+
+  return {
+    get mode() {
+      return mode;
+    },
+    options(extra = {}) {
+      return {
+        mode,
+        lockLo: lock?.lo,
+        lockHi: lock?.hi,
+        ...extra,
+      };
+    },
+  };
 }

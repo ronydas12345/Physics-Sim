@@ -34,6 +34,9 @@ export const tutorials = {
       section("motion", "Dynamic mode", "toggle-dynamic", [
         text("Motion mode lets each object accelerate as a = F_net / m. Equal force does not mean equal acceleration."),
       ]),
+      section("camera", "Camera", "camera-controls", [
+        text("Fit objects zooms so both stay on screen. Origin also keeps x = 0 in view. Stationary freezes the current window."),
+      ]),
       section("graphs", "Graphs", "graphs", [
         text("Signed pair forces overlap in magnitude and oppose in sign. Extra forces change net force, not the pair."),
       ]),

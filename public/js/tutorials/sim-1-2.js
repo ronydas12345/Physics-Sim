@@ -30,6 +30,9 @@ export const tutorials = {
         text("Play advances the shared clock. Pause and Step +0.1 s let you inspect a single instant."),
         action("Try Play, then Pause, then Reset from the header."),
       ]),
+      section("camera", "Camera", "camera", [
+        text("Origin keeps x = 0 in view and zooms out as the object recedes. Follow tracks the object. Stationary freezes the current window."),
+      ]),
       section("graphs", "Graphs", "graphs", [
         text("x–t, v–t, and a–t are three views of the same motion. Click a paused graph to jump the clock."),
       ]),

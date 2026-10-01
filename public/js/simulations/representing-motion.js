@@ -19,6 +19,7 @@ import {
 } from "/lib/kinematics1d.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import {
+  bindCameraMode,
   bindChallenge,
   bindDownload,
   bindFullscreen,
@@ -29,6 +30,7 @@ import {
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
 import { themeCanvas } from "../platform/theme.js";
+import { CAMERA, cameraRange } from "/lib/camera.js";
 
 function worldToX(world, view) {
   return view.originX + world * view.scale;
@@ -38,19 +40,7 @@ function xToWorld(px, view) {
   return (px - view.originX) / view.scale;
 }
 
-function axisBounds(state) {
-  if (state.collide) return { min: AXIS_MIN, max: AXIS_MAX };
-  const xs = state.history.map((s) => s.position);
-  xs.push(state.position, state.initialPosition);
-  const lo = Math.min(AXIS_MIN, ...xs);
-  const hi = Math.max(AXIS_MAX, ...xs);
-  return {
-    min: Math.floor((lo - 1) / 5) * 5,
-    max: Math.ceil((hi + 1) / 5) * 5,
-  };
-}
-
-function createView(canvas, state, axisYFrac = 0.58) {
+function createView(canvas, state, axisYFrac = 0.58, cameraOpts = {}) {
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, canvas.clientWidth);
   const cssH = Math.max(1, canvas.clientHeight);
@@ -59,7 +49,16 @@ function createView(canvas, state, axisYFrac = 0.58) {
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
   const pad = { l: 36, r: 36, t: 36, b: 40 };
-  const { min, max } = axisBounds(state);
+  const range = cameraRange([state.position], {
+    mode: CAMERA.ORIGIN,
+    pad: 2,
+    minSpan: AXIS_MAX - AXIS_MIN,
+    followSpan: 24,
+    followEdge: 3,
+    ...cameraOpts,
+  });
+  const min = range.lo;
+  const max = range.hi;
   const plotW = cssW - pad.l - pad.r;
   const scale = plotW / Math.max(max - min, 1);
   const originX = pad.l + (0 - min) * scale;
@@ -105,7 +104,7 @@ function drawAxis(ctx, view) {
   ctx.textBaseline = "top";
   ctx.font = "12px IBM Plex Mono, monospace";
   const step = view.max - view.min > 50 ? 10 : 5;
-  for (let world = view.min; world <= view.max; world += 1) {
+  for (let world = Math.floor(view.min); world <= Math.ceil(view.max); world += 1) {
     const x = worldToX(world, view);
     const major = world % step === 0;
     ctx.strokeStyle = theme.line;
@@ -139,8 +138,8 @@ function drawWalls(ctx, view) {
   ctx.fillText("wall", worldToX(AXIS_MAX, view), view.axisY - 40);
 }
 
-function renderTrack(canvas, state, { showObject, showVectors, collide }) {
-  const view = createView(canvas, state, 0.58);
+function renderTrack(canvas, state, { showObject, showVectors, collide, cameraOpts }) {
+  const view = createView(canvas, state, 0.58, cameraOpts);
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
@@ -204,8 +203,8 @@ function renderTrack(canvas, state, { showObject, showVectors, collide }) {
   return view;
 }
 
-function renderDiagram(canvas, state) {
-  const view = createView(canvas, state, 0.48);
+function renderDiagram(canvas, state, cameraOpts) {
+  const view = createView(canvas, state, 0.48, cameraOpts);
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
   ctx.clearRect(0, 0, view.cssW, view.cssH);
@@ -277,6 +276,8 @@ export function mountRepresentingMotion(root) {
   let autoRecord = false;
   let activeTab = "lab";
   let view = null;
+  let lastCameraRange = { lo: AXIS_MIN, hi: AXIS_MAX };
+  let camera;
   let dragging = false;
   let graphs = { x: true, v: true, a: true };
 
@@ -477,8 +478,15 @@ export function mountRepresentingMotion(root) {
   }
 
   function paint() {
-    view = renderTrack(canvas, state, { showObject, showVectors, collide: state.collide });
-    if (showDiagram) renderDiagram(diagram, state);
+    const cameraOpts = camera?.options({
+      pad: 2,
+      minSpan: AXIS_MAX - AXIS_MIN,
+      followSpan: 24,
+      followEdge: 3,
+    });
+    view = renderTrack(canvas, state, { showObject, showVectors, collide: state.collide, cameraOpts });
+    lastCameraRange = { lo: view.min, hi: view.max };
+    if (showDiagram) renderDiagram(diagram, state, cameraOpts);
     const snap = snapshot(state);
     root.querySelector("#read-t").textContent = formatUnsigned(snap.time, "s");
     root.querySelector("#read-x").textContent = formatSigned(snap.position, "m");
@@ -654,6 +662,12 @@ export function mountRepresentingMotion(root) {
       paint();
       drawCharts();
     });
+  });
+
+  camera = bindCameraMode(root, {
+    objectCount: 1,
+    rangeForLock: () => lastCameraRange,
+    onChange: () => paint(),
   });
 
   root.querySelector("#btn-reset").addEventListener("click", onReset);

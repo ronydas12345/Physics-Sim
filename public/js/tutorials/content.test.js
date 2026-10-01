@@ -28,6 +28,7 @@ const TARGET_ALIASES = {
   play: "btn-play",
   pause: "btn-pause",
   reset: "btn-reset",
+  camera: "camera-controls",
   xt: "graph-xt",
   vt: "graph-vt",
   at: "graph-at",

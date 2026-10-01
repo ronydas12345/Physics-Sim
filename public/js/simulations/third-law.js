@@ -27,6 +27,7 @@ import {
 import { scaleForceMagnitude } from "/lib/forces.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import {
+  bindCameraMode,
   bindChallenge,
   bindDownload,
   bindFullscreen,
@@ -37,10 +38,23 @@ import {
 } from "../platform/lab-kit.js";
 import { bindTutorial } from "../platform/tutorial.js";
 import { themeCanvas } from "../platform/theme.js";
+import { CAMERA, cameraRange, cameraScale } from "/lib/camera.js";
 
 const COLOR_A = "#c45c26";
 const COLOR_B = "#1c6b73";
 const VIEW_SPAN_M = 16;
+const CAMERA_EXTRA = {
+  pad: 3.5,
+  minSpan: VIEW_SPAN_M,
+  followSpan: VIEW_SPAN_M,
+  followEdge: 3.5,
+};
+const VERTICAL_CAMERA_EXTRA = {
+  pad: 3,
+  minSpan: 12,
+  followSpan: 12,
+  followEdge: 3,
+};
 
 function drawArrow(ctx, x1, y1, x2, y2, color, width = 3) {
   const ang = Math.atan2(y2 - y1, x2 - x1);
@@ -73,33 +87,33 @@ function sizeCanvas(canvas) {
   return { cssW, cssH, dpr };
 }
 
-function panRange(positions, span, edge, preferredLo) {
-  const xs = positions.filter((x) => Number.isFinite(x));
-  const minP = xs.length ? Math.min(...xs) : 0;
-  const maxP = xs.length ? Math.max(...xs) : 0;
-  let lo = preferredLo;
-  if (minP < lo + edge) lo = minP - edge;
-  if (maxP > lo + span - edge) lo = Math.max(lo, maxP + edge - span);
-  if (maxP - minP + 2 * edge > span) lo = (minP + maxP) / 2 - span / 2;
-  return { lo, hi: lo + span };
-}
-
-function worldView(canvas, live) {
+function worldView(canvas, live, cameraOpts = {}) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const vertical = Math.abs(live.A.y - live.B.y) > Math.abs(live.A.x - live.B.x);
   const pad = { l: 48, r: 28, t: 40, b: 34 };
   const plotW = Math.max(1, cssW - pad.l - pad.r);
   const plotH = Math.max(1, cssH - pad.t - pad.b);
   if (vertical) {
-    const span = 12;
-    const { lo, hi } = panRange([live.A.y, live.B.y], span, 3, -6);
-    const scale = plotH / span;
+    const { lo, hi, span } = cameraRange([live.A.y, live.B.y], {
+      mode: CAMERA.FIT,
+      pad: 3,
+      minSpan: 12,
+      plotPx: plotH,
+      ...cameraOpts,
+    });
+    const scale = cameraScale(span, plotH);
     const originX = cssW / 2;
     const originY = pad.t + hi * scale;
     return { cssW, cssH, dpr, pad, scale, originX, originY, lo, hi, vertical, groundY: cssH - pad.b };
   }
-  const { lo, hi } = panRange([live.A.x, live.B.x], VIEW_SPAN_M, 3.5, -6);
-  const scale = plotW / VIEW_SPAN_M;
+  const { lo, hi, span } = cameraRange([live.A.x, live.B.x], {
+    mode: CAMERA.FIT,
+    pad: 3.5,
+    minSpan: VIEW_SPAN_M,
+    plotPx: plotW,
+    ...cameraOpts,
+  });
+  const scale = cameraScale(span, plotW);
   const originX = pad.l + (0 - lo) * scale;
   const groundY = cssH - pad.b;
   return {
@@ -156,9 +170,9 @@ function drawForceOn(ctx, ox, oy, force, color) {
   ctx.fillText(`${force.label} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, x2 + (x2 >= ox ? 6 : -6), y2);
 }
 
-function renderScene(canvas, state) {
+function renderScene(canvas, state, cameraOpts = {}) {
   const live = liveState(state);
-  const view = worldView(canvas, live);
+  const view = worldView(canvas, live, cameraOpts);
   const { cssW, cssH, dpr, originX, groundY, lo, hi, scale, vertical } = view;
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -367,6 +381,7 @@ export function mountThirdLaw(root) {
   let carry = 0;
   let playback = 1;
   let autoRecord = false;
+  let camera;
   let activeTab = "lab";
   let graphs = { x: true, v: true };
   let identityOn = () => false;
@@ -569,7 +584,10 @@ export function mountThirdLaw(root) {
   }
 
   function paint() {
-    renderScene(canvas, state);
+    const live = liveState(state);
+    const vertical = Math.abs(live.A.y - live.B.y) > Math.abs(live.A.x - live.B.x);
+    const extra = vertical ? VERTICAL_CAMERA_EXTRA : CAMERA_EXTRA;
+    renderScene(canvas, state, camera?.options(extra) || { mode: CAMERA.FIT, ...extra });
     renderObjectFbd(fbdA, state, "A", COLOR_A);
     renderObjectFbd(fbdB, state, "B", COLOR_B);
     renderDiagram(diagram, state);
@@ -770,6 +788,17 @@ export function mountThirdLaw(root) {
     state.dynamicMode = event.target.checked;
     state = resetState(state);
     paint();
+  });
+  camera = bindCameraMode(root, {
+    objectCount: 2,
+    rangeForLock: () => {
+      const live = liveState(state);
+      const vertical = Math.abs(live.A.y - live.B.y) > Math.abs(live.A.x - live.B.x);
+      const extra = vertical ? VERTICAL_CAMERA_EXTRA : CAMERA_EXTRA;
+      const mode = camera.mode === CAMERA.STATIONARY ? CAMERA.FIT : camera.mode;
+      return cameraRange(vertical ? [live.A.y, live.B.y] : [live.A.x, live.B.x], { ...extra, mode });
+    },
+    onChange: () => paint(),
   });
   root.querySelector("#toggle-net").addEventListener("change", (event) => {
     state.showNetForce = event.target.checked;

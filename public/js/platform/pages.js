@@ -2,6 +2,7 @@ import { LAB_FEATURES, availableCount, getModule, modules, projectileSim } from 
 import { moduleCards, statusBadge } from "./chrome.js";
 import {
   challengeCard,
+  cameraModeControls,
   labIconToolbar,
   labTablist,
   planetPresetControls,
@@ -267,6 +268,7 @@ export function sim11Page() {
                   <button type="button" class="chip" id="dir-left">+ left</button>
                 </div>
               </div>
+              ${cameraModeControls(1)}
               <div class="nudge-row">
                 <label class="pos-input">
                   Position
@@ -275,7 +277,7 @@ export function sim11Page() {
                 </label>
                 <label class="switch light"><input id="toggle-vectors" type="checkbox" checked /> Vector arrows</label>
               </div>
-              <p class="track-help">Drag the object. Arrow keys move it by 1 m. Distance adds every segment of the path.</p>
+              <p class="track-help">Drag the object. Arrow keys move it by 1 m. Distance adds every segment of the path. Camera: Origin keeps x = 0 in view, Follow tracks the object, Stationary freezes the window.</p>
             </div>
           </section>
 
@@ -426,6 +428,7 @@ export function sim12Page() {
                   <button type="button" class="chip" data-speed="4">4×</button>
                 </div>
               </div>
+              ${cameraModeControls(1)}
               <div class="nudge-row motion-inputs">
                 <label class="pos-input">
                   Initial position
@@ -459,7 +462,7 @@ export function sim12Page() {
                 <label class="switch light"><input id="toggle-trail" type="checkbox" checked /> Motion trail</label>
                 <label class="switch light"><input id="pause-reverse" type="checkbox" /> Pause at v = 0</label>
               </div>
-              <p class="track-help">Drag the object at t = 0 to set x₀. Space plays or pauses. Negative acceleration is not the same as moving left.</p>
+              <p class="track-help">Drag the object at t = 0 to set x₀. Space plays or pauses. Negative acceleration is not the same as moving left. Camera: Origin keeps x = 0 in view, Follow tracks the object, Stationary freezes the window.</p>
             </div>
           </section>
 
@@ -674,6 +677,7 @@ export function sim13Page() {
                   <button type="button" class="chip" data-speed="4">4×</button>
                 </div>
               </div>
+              ${cameraModeControls(1)}
               <div class="nudge-row motion-inputs">
                 <label class="pos-input">
                   Initial position
@@ -709,7 +713,7 @@ export function sim13Page() {
                 <label class="switch light"><input id="toggle-area" type="checkbox" /> Shade v–t area (Δx)</label>
                 <label class="switch light"><input id="pause-reverse" type="checkbox" /> Pause at v = 0</label>
               </div>
-              <p class="track-help">Dot spacing is speed at equal time steps. Click a graph while paused to jump to that time. Allow collisions to bounce elastically at ±20 m.</p>
+              <p class="track-help">Dot spacing is speed at equal time steps. Click a graph while paused to jump to that time. Allow collisions to bounce elastically at ±20 m. Camera: Origin, Follow, or Stationary.</p>
             </div>
           </section>
 
@@ -920,6 +924,7 @@ export function sim14Page() {
                   <button type="button" class="chip" data-speed="4">4×</button>
                 </div>
               </div>
+              ${cameraModeControls(2)}
               <div class="nudge-row motion-inputs">
                 <label class="pos-input">
                   x₀ of A
@@ -947,7 +952,7 @@ export function sim14Page() {
                   <span>s</span>
                 </label>
               </div>
-              <p class="track-help">Switch frames while the motion runs. A and B pass through each other. Drag either object at t = 0 to set its starting position.</p>
+              <p class="track-help">Switch frames while the motion runs. A and B pass through each other. Drag either object at t = 0 to set its starting position. Camera: Fit objects keeps both on screen; Origin also holds x = 0; Stationary freezes the window.</p>
             </div>
           </section>
 
@@ -1166,6 +1171,7 @@ export function sim21Page() {
                   <button type="button" class="chip" data-speed="4">4×</button>
                 </div>
               </div>
+              ${cameraModeControls(2)}
               <div class="nudge-row motion-inputs">
                 <label class="pos-input">m of A<input id="ma-input" type="number" min="0.1" max="20" step="0.1" value="2" aria-label="Mass of A in kilograms" /><span>kg</span></label>
                 <label class="pos-input">x₀ of A<input id="xa-input" type="number" step="0.5" value="-10" aria-label="Initial position of A in meters" /><span>m</span></label>
@@ -1179,7 +1185,7 @@ export function sim21Page() {
                 <label class="pos-input">A↔B force<input id="fint-input" type="number" step="0.5" value="0" aria-label="Internal force of A on B in newtons" /><span>N</span></label>
                 <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
               </div>
-              <p class="track-help">The diamond is the center of mass, not a third object. Drag A or B at t = 0. Increase B’s mass and watch the diamond slide toward B. A↔B is internal for A + B and external if the system is only A or only B.</p>
+              <p class="track-help">The diamond is the center of mass, not a third object. Drag A or B at t = 0. Increase B’s mass and watch the diamond slide toward B. A↔B is internal for A + B and external if the system is only A or only B. Camera: Fit objects keeps A, B, and the diamond on screen; Origin also holds x = 0; Stationary freezes the window.</p>
             </div>
           </section>
 
@@ -1373,6 +1379,7 @@ export function sim22Page() {
                   <button type="button" class="chip" data-speed="4">4×</button>
                 </div>
               </div>
+              ${cameraModeControls(1)}
               <div class="nudge-row motion-inputs">
                 <label class="pos-input">Mass<input id="mass-input" type="number" min="0.1" max="20" step="0.1" value="5" aria-label="Mass in kilograms" /><span>kg</span></label>
                 <label class="pos-input">g<input id="g-input" type="number" min="0.1" max="30" step="0.1" value="9.8" aria-label="Gravitational field strength in meters per second squared" /><span>m/s²</span></label>
@@ -1413,7 +1420,7 @@ export function sim22Page() {
                   <button type="button" class="btn" id="btn-add-force">Add force</button>
                 </div>
               </div>
-              <p class="track-help">Arrows are forces on the box, not velocity. The camera stays in the ground frame: meter marks and x = 0 stay put, and the box slides past them. The dashed SYSTEM outline travels with the object; the free-body diagram does too. Motion mode is optional: ΣF = ma is shown either way, but the box only accelerates when Motion mode is on.</p>
+              <p class="track-help">Arrows are forces on the box, not velocity. Camera: Origin keeps x = 0 in view and zooms out as the box recedes; Follow tracks the box; Stationary freezes the window. The dashed SYSTEM outline travels with the object; the free-body diagram does too. Motion mode is optional: ΣF = ma is shown either way, but the box only accelerates when Motion mode is on.</p>
             </div>
           </section>
 
@@ -1607,6 +1614,7 @@ export function sim23Page() {
                   <button type="button" class="chip" data-speed="4">4×</button>
                 </div>
               </div>
+              ${cameraModeControls(2)}
               <div class="nudge-row motion-inputs">
                 <label class="pos-input">m<sub>A</sub><input id="mass-a" type="number" min="0.1" max="100" step="0.1" value="5" aria-label="Mass of object A in kilograms" /><span>kg</span></label>
                 <label class="pos-input">m<sub>B</sub><input id="mass-b" type="number" min="0.1" max="100" step="0.1" value="5" aria-label="Mass of object B in kilograms" /><span>kg</span></label>
@@ -1645,7 +1653,7 @@ export function sim23Page() {
                 <button type="button" class="btn" id="btn-add-extra">Add extra force</button>
                 <button type="button" class="btn" id="btn-clear-extra">Clear extras</button>
               </div>
-              <p class="track-help">One interaction writes both arrows. Changing F updates A on B and B on A together. They never cancel on one object: each arrow lives on a different free-body diagram. Motion mode is optional; equal force does not mean equal acceleration.</p>
+              <p class="track-help">One interaction writes both arrows. Changing F updates A on B and B on A together. They never cancel on one object: each arrow lives on a different free-body diagram. Camera: Fit objects keeps both on screen; Origin also holds x = 0; Stationary freezes the window. Motion mode is optional; equal force does not mean equal acceleration.</p>
             </div>
           </section>
 
