@@ -21,6 +21,18 @@ const TARGET_ALIASES = {
   fbda: "#fbd-a",
   fbdb: "#fbd-b",
   diagram: "#diagram-canvas",
+  "force-controls": "#force-controls",
+  "net-force-panel": "#net-force-panel",
+  "motion-state-panel": "#motion-state-panel",
+  "inertia-panel": "#inertia-panel",
+  "scenario-selector": "#scenario-selector",
+  "playback-controls": "#playback-controls",
+  "force-controls": "#force-controls",
+  "net-force-panel": "#net-force-panel",
+  "motion-state-panel": "#motion-state-panel",
+  "inertia-panel": "#inertia-panel",
+  "scenario-selector": "#scenario-selector",
+  playback: ".transport",
 };
 
 function storageKey(simId, type) {

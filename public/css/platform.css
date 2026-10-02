@@ -712,6 +712,50 @@ html.is-fullscreen #page-root,
   margin: 8px 0 0;
 }
 
+.eq-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 0.35rem 0 0.7rem;
+  background: var(--card);
+}
+
+.eq-status strong {
+  letter-spacing: 0.04em;
+}
+
+.eq-status.is-eq {
+  background: color-mix(in srgb, #2c6e49 14%, var(--card));
+}
+
+.eq-status.is-uneq {
+  background: color-mix(in srgb, #c45c26 14%, var(--card));
+}
+
+.conn-cards {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.conn-card {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: var(--field-bg, var(--card));
+}
+
+.graph-hover {
+  margin: 0 0 0.6rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.86rem;
+}
+
 .challenge-choices {
   margin: 10px 0;
   flex-wrap: wrap;

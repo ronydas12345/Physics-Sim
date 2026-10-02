@@ -1562,7 +1562,7 @@ export function sim23Page() {
           <p class="kicker">Unit 2 · Simulation 2.3</p>
           <h1>Newton's Third Law</h1>
           <p class="objective">Learning objective: Show that an interaction produces a pair of forces that are equal in magnitude, opposite in direction, and exerted on two different objects.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-2" data-link>← 2.2</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.4 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-2" data-link>← 2.2</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-4" data-link>2.4 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -1791,6 +1791,276 @@ export function sim23Page() {
           </section>
           ${trialFitTheory(`
             <p>|a_A| vs. 1/m_A should follow |a_A| = F / m_A if you keep the interaction force fixed. B on A vs. A on B should be the identity y = x. Two points always give R² = 1; record several mass and force combinations before you trust the fit.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim24Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.4</p>
+          <h1>Newton's First Law</h1>
+          <p class="objective">Learning objective: If the net external force on an object is zero, its velocity remains constant. Rest is the special case v = 0. Inertia is not a force.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-3" data-link>← 2.3</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.5 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage" aria-label="Horizontal first-law scene">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Object on a horizontal surface with force arrows and a velocity arrow"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-24">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="First-law scenarios">
+                  <button type="button" class="chip" data-scenario="rest">At rest</button>
+                  <button type="button" class="chip" data-scenario="moving-eq">Moving, F_net = 0</button>
+                  <button type="button" class="chip" data-scenario="unbalanced">Unbalanced push</button>
+                  <button type="button" class="chip" data-scenario="left-eq">Moving left, F_net = 0</button>
+                  <button type="button" class="chip" data-scenario="remove-forces">Remove the forces</button>
+                  <button type="button" class="chip" data-scenario="friction">Coast, then friction</button>
+                  <button type="button" class="chip" data-scenario="inertia">Inertia comparison</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs object-only">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.1" max="20" step="0.1" value="5" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input">x₀<input id="x-input" type="number" step="0.5" value="0" aria-label="Initial position in meters" /><span>m</span></label>
+                <label class="pos-input">v₀<input id="v-input" type="number" step="0.5" value="0" aria-label="Initial velocity in meters per second" /><span>m/s</span></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs inertia-only" hidden>
+                <label class="pos-input">m<sub>A</sub><input id="mass-a" type="number" min="0.1" max="20" step="0.1" value="2" aria-label="Mass of object A in kilograms" /><span>kg</span></label>
+                <label class="pos-input">m<sub>B</sub><input id="mass-b" type="number" min="0.1" max="20" step="0.1" value="8" aria-label="Mass of object B in kilograms" /><span>kg</span></label>
+                <label class="pos-input">Same F<input id="inertia-force" type="number" min="0" max="200" step="0.5" value="16" aria-label="Temporary net force applied to both objects in newtons" /><span>N</span></label>
+                <label class="pos-input">Duration<input id="duration-inertia" type="number" step="1" min="1" max="20" value="10" aria-label="Inertia run duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+              </div>
+              <div class="force-table-wrap object-only" id="force-controls">
+                <table class="force-table">
+                  <thead>
+                    <tr><th>Force</th><th>Magnitude</th><th>Direction</th><th>Source</th><th></th></tr>
+                  </thead>
+                  <tbody id="force-body"></tbody>
+                </table>
+                <div class="nudge-row motion-inputs add-force-row">
+                  <label class="pos-input">Add
+                    <select id="add-type" aria-label="Force type to add">
+                      <option value="applied">Applied</option>
+                      <option value="friction">Friction</option>
+                    </select>
+                  </label>
+                  <label class="pos-input">Magnitude<input id="add-mag" type="number" min="0" max="200" step="0.5" value="10" aria-label="New force magnitude in newtons" /><span>N</span></label>
+                  <label class="pos-input">Direction
+                    <select id="add-dir" aria-label="New force direction">
+                      <option value="0">→ right</option>
+                      <option value="180">← left</option>
+                    </select>
+                  </label>
+                  <button type="button" class="btn" id="btn-add-force">Add force</button>
+                  <button type="button" class="btn" id="btn-clear-horiz">Remove horizontal forces</button>
+                  <button type="button" class="btn" id="btn-enable-friction">Enable friction</button>
+                </div>
+              </div>
+              <p class="track-help">Force arrows are interactions on the object. The teal arrow is velocity, not a force. Zero net force does not mean zero velocity: it means acceleration is zero, so velocity stays whatever it already is. Camera: one object uses Origin, Follow, or Stationary; inertia comparison uses Fit objects, Origin, or Stationary.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>Net force</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">EQUILIBRIUM</strong>
+                <span id="eq-net">Net force: 0 N</span>
+                <span id="eq-detail">Acceleration = 0 m/s². Velocity remains constant.</span>
+              </div>
+              <dl class="metrics" id="force-sum"></dl>
+              <p class="eq-block">F<sub>net</sub> = ΣF<br />a = F<sub>net</sub> / m<br />F<sub>net</sub> = 0 ⇒ a = 0 ⇒ v stays the same</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="motion-state-panel">
+              <div class="card-head">
+                <h2>Motion state</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Time</dt><dd id="read-t">0.00 s</dd></div>
+                <div><dt>State</dt><dd id="read-motion">At Rest</dd></div>
+                <div><dt>Position</dt><dd id="read-x">0.00 m</dd></div>
+                <div><dt>Velocity</dt><dd id="read-v">0.00 m/s</dd></div>
+                <div><dt>Acceleration</dt><dd id="read-a">0.00 m/s²</dd></div>
+                <div><dt>Mass</dt><dd id="read-m">5.00 kg</dd></div>
+              </dl>
+              <p class="muted">At rest is constant velocity with v = 0. It is not a separate law.</p>
+            </section>
+
+            <section class="card values-card inertia-only" id="inertia-panel" hidden>
+              <div class="card-head">
+                <h2>Inertia comparison</h2>
+              </div>
+              <p class="muted">Same force on both. Inertia is the tendency of velocity to stay unchanged — not a force you draw on the FBD.</p>
+              <dl class="metrics metrics-wide">
+                <div><dt>F on A and B</dt><dd id="read-if">16.00 N</dd></div>
+                <div><dt>m_A</dt><dd id="read-ma">2.00 kg</dd></div>
+                <div><dt>a_A</dt><dd id="read-aa">8.00 m/s²</dd></div>
+                <div><dt>m_B</dt><dd id="read-mb">8.00 kg</dd></div>
+                <div><dt>a_B</dt><dd id="read-ab">2.00 m/s²</dd></div>
+                <div><dt>Which Δv is larger?</dt><dd id="read-which">A (smaller mass)</dd></div>
+              </dl>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Newton's First Law</summary>
+              <p>An object maintains constant velocity when the net external force on it is zero. That includes v = 0. Individual forces can still be present. A net force is what changes velocity.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-2" data-link>Review 2.2</a> — identify individual forces. Here you ask whether their sum changes velocity.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-3" data-link>Review 2.3</a> — third-law pairs act on different objects. First law asks what happens to one object’s velocity when <em>its</em> net force is zero.</p>
+              <p class="conn-card">Next: Newton’s second law (2.5, coming) investigates F<sub>net</sub> ≠ 0.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram object-only">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of forces on the object"></canvas>
+            <p class="caption">Every enabled force still appears, even when they add to zero. Velocity is not drawn here.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap">
+            <h2>Motion diagram</h2>
+            <canvas id="diagram-canvas" width="960" height="160" aria-label="Motion diagram of equal time steps"></canvas>
+            <p class="caption">Equal spacing means constant velocity. Spreading dots mean speeding up.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <p class="graph-hover" id="graph-hover" role="status">Hover a graph while paused to read t, v, a, and F_net together.</p>
+          <div class="graph-toggles" role="group" aria-label="Graph visibility">
+            <label><input type="checkbox" data-graph="x" checked /> Position vs. time</label>
+            <label><input type="checkbox" data-graph="v" checked /> Velocity vs. time</label>
+            <label><input type="checkbox" data-graph="a" checked /> Acceleration vs. time</label>
+          </div>
+          <div class="graphs graphs-three">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Position versus time"></canvas>
+              <p class="caption">Constant velocity is a straight line. Rest is a horizontal line.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Velocity versus time"></canvas>
+              <p class="caption">Zero net force makes this graph horizontal, even if that height is not zero.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-a">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-at" width="640" height="240" aria-label="Acceleration versus time"></canvas>
+              <p class="caption">Equilibrium is a = 0. Click while paused to jump the clock.</p>
+            </div>
+          </div>
+        </section>
+
+        ${trialSection({
+          rangeTitle: "Your Trials · a vs. F_net",
+          heightTitle: "Your Trials · v vs. t (recorded)",
+          rangeCaption: "Keep mass fixed and change the horizontal net force. The solid identity is a = F_net / m.",
+          heightCaption: "Record coasting and unbalanced runs. Constant velocity should sit on a horizontal line in v–t.",
+          columns: ["Trial", "Scenario", "t", "m", "v", "F_net,x", "a_x", "State"],
+          emptyCols: 8,
+        })}
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Constant velocity when the net force is zero</h2>
+            <p>
+              Newton’s first law is not “objects at rest stay at rest and objects in motion stay in motion” as a slogan.
+              It is a statement about <em>net</em> force: if ΣF = 0, acceleration is zero, so velocity does not change.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. The quantity that matters</h3>
+            <p>Individual forces can exist while the object is in equilibrium. Equilibrium means the vector sum is zero, not that the force list is empty, and not that the object is sitting still.</p>
+            <p class="eq-block">F<sub>net</sub> = ΣF</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. From net force to constant velocity</h3>
+            <p>Use the second-law relation as a tool, not as this lab’s main story:</p>
+            <p class="eq-block">
+              F<sub>net</sub> = 0<br />
+              a = F<sub>net</sub> / m = 0<br />
+              a = Δv / Δt ⇒ Δv = 0<br />
+              v<sub>f</sub> = v<sub>i</sub>
+            </p>
+            <p>If v<sub>i</sub> is already zero, the object remains at rest. If v<sub>i</sub> is +5 m/s, it stays +5 m/s. Those are the same law.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Balanced forces are still forces</h3>
+            <p>20 N right and 20 N left still appear as two arrows. The net is 0 N. Do not erase the arrows because they add to zero. The free-body diagram is the list of interactions, not the leftover after canceling.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Why everyday objects seem to “need a push”</h3>
+            <p>On a rough table, friction is a real external force. When you stop pushing, friction often becomes the unbalanced force that slows the object. The object does not stop because motion is unnatural. It stops because a net force changed its velocity.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Inertia is not a force</h3>
+            <p>Inertia is the tendency of velocity to remain unchanged unless a net external force acts. Mass measures that resistance. The same 16 N on 2 kg and 8 kg gives 8 m/s² and 2 m/s². Nothing in that comparison is an “inertia arrow.”</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Mistakes to avoid</h3>
+            <p>Do not say objects naturally stop. Do not say no force means no motion. Do not say balanced forces mean the object is not moving. Do not draw inertia or velocity as forces. Do not treat gravity and the normal force as a reason the first law fails — they can sum to zero while the object coasts.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>a vs. F_net should follow a = F_net / m if you keep mass fixed. Record both F_net = 0 (a should be 0) and unbalanced runs. Two points always give R² = 1; record several before you trust the fit.</p>
           `)}
         </article>
       </div>

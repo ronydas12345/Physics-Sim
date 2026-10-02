@@ -9,7 +9,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const PAGES = readFileSync(join(ROOT, "public", "js", "platform", "pages.js"), "utf8");
 const LAB_KIT = readFileSync(join(ROOT, "public", "js", "platform", "lab-kit.js"), "utf8");
 
-const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3"];
+const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4"];
 const PAGE_FNS = {
   "1-1": "sim11Page",
   "1-2": "sim12Page",
@@ -18,6 +18,7 @@ const PAGE_FNS = {
   "2-1": "sim21Page",
   "2-2": "sim22Page",
   "2-3": "sim23Page",
+  "2-4": "sim24Page",
 };
 const TARGET_ALIASES = {
   scene: "axis-canvas",
@@ -36,6 +37,11 @@ const TARGET_ALIASES = {
   fbda: "fbd-a",
   fbdb: "fbd-b",
   diagram: "diagram-canvas",
+  "force-controls": "force-controls",
+  "net-force-panel": "net-force-panel",
+  "motion-state-panel": "motion-state-panel",
+  "inertia-panel": "inertia-panel",
+  "scenario-selector": "scenario-selector",
 };
 const BLOCK_TYPES = new Set([
   "heading",
