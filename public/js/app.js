@@ -16,7 +16,7 @@ import {
 import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
 import { renderSimulation } from "./render.js";
 import { bindDownload, bindFullscreen, labIconToolbar } from "./platform/lab-kit.js";
-import { planetById, sceneForGravity } from "/lib/planets.js";
+import { planetById, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
 if (toolbarSlot && !toolbarSlot.querySelector("#btn-reset")) {
@@ -124,6 +124,16 @@ function flightLocked() {
 function planetChips() {
   return document.querySelectorAll(".chip[data-planet]");
 }
+
+function decoratePlanetChips() {
+  for (const chip of planetChips()) {
+    const id = chip.dataset.planet;
+    if (!id || chip.querySelector(".planet-icon")) continue;
+    chip.insertAdjacentHTML("afterbegin", planetIcon(id));
+  }
+}
+
+decoratePlanetChips();
 
 function currentScene() {
   return sceneForGravity({ planetId, backgroundsOn: planetBackgrounds });

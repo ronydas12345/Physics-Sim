@@ -23,6 +23,15 @@
   --on-accent: #fff7ef;
   --teal: #1c6b73;
   --ok: #2c6e49;
+  --card: var(--panel);
+  --muted: var(--ink-soft);
+  --stage-bg: #0f1a24;
+  --stage-canvas: #132230;
+  --well-btn: #2a3b4d;
+  --well-btn-hover: #33485e;
+  --well-soft: #c9d6e2;
+  --chip-active-bg: color-mix(in srgb, var(--accent) 16%, var(--raised));
+  --hero-visual: #eaf4fb;
   --sky-0: #8ec4e6;
   --sky-1: #e7f3fb;
   --ground: #6f8f63;
@@ -69,6 +78,13 @@
   --paper-wash: none;
   --spot: #b44b1c;
   --spot-dim: rgba(26, 31, 38, 0.32);
+  --stage-bg: #101820;
+  --stage-canvas: #15202b;
+  --well-btn: #2a3b4d;
+  --well-btn-hover: #33485e;
+  --well-soft: #c9d6e2;
+  --chip-active-bg: color-mix(in srgb, var(--accent) 14%, var(--raised));
+  --hero-visual: #e8eef4;
 }
 
 [data-theme="dark"] {
@@ -98,6 +114,13 @@
   --paper-wash: none;
   --spot: #f0a202;
   --spot-dim: rgba(0, 0, 0, 0.55);
+  --stage-bg: #0d1218;
+  --stage-canvas: #12171e;
+  --well-btn: #243041;
+  --well-btn-hover: #2e3d52;
+  --well-soft: #a8b4c0;
+  --chip-active-bg: color-mix(in srgb, var(--accent) 20%, var(--raised));
+  --hero-visual: #12171e;
 }
 
 [data-theme="contrast"] {
@@ -128,6 +151,13 @@
   --spot: #ffff00;
   --spot-dim: rgba(0, 0, 0, 0.72);
   --control-border-width: 2px;
+  --stage-bg: #000000;
+  --stage-canvas: #000000;
+  --well-btn: #000000;
+  --well-btn-hover: #1a1a1a;
+  --well-soft: #ffffff;
+  --chip-active-bg: #000000;
+  --hero-visual: #000000;
 }
 
 * {
@@ -264,7 +294,7 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
+  border: var(--control-border-width, 1px) solid var(--line);
   background: var(--panel);
   color: var(--ink);
   border-radius: 999px;
@@ -275,9 +305,9 @@ h2 {
 }
 
 .tab.active {
-  background: var(--ink);
-  color: var(--panel);
-  border-color: var(--ink);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
 }
 
 .tab:focus-visible {
@@ -286,7 +316,7 @@ h2 {
 }
 
 .switch.light {
-  color: #d7e3ee;
+  color: var(--well-ink);
   white-space: nowrap;
 }
 
@@ -389,7 +419,7 @@ h2 {
 }
 
 .stage {
-  background: #0f1a24;
+  background: var(--stage-bg);
   border-radius: 18px;
   overflow: hidden;
   min-width: 0;
@@ -406,7 +436,7 @@ h2 {
   flex: 1 1 auto;
   min-height: 0;
   height: auto;
-  background: #132230;
+  background: var(--stage-canvas);
 }
 
 .transport {
@@ -415,8 +445,8 @@ h2 {
   gap: 8px;
   align-items: center;
   padding: 12px;
-  background: #172433;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--well-bg);
+  border-top: var(--control-border-width, 1px) solid var(--well-line);
 }
 
 .transport .switch {
@@ -446,9 +476,9 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
-  background: #2a3b4d;
-  color: #f4efe6;
+  border: var(--control-border-width, 1px) solid var(--line);
+  background: var(--raised);
+  color: var(--ink);
   border-radius: 999px;
   padding: 0 0.95rem;
   font-weight: 600;
@@ -459,26 +489,33 @@ h2 {
 }
 
 .btn:hover {
-  background: #33485e;
+  background: var(--raised-hover);
 }
 
 .btn:focus-visible {
-  outline: 2px solid #8ec4e6;
+  outline: 2px solid var(--teal);
   outline-offset: 2px;
 }
 
 .btn.primary {
   background: var(--accent);
   color: var(--on-accent);
+  border-color: var(--accent);
 }
 
 .btn.primary:hover {
   background: var(--accent-dark);
+  border-color: var(--accent-dark);
 }
 
 .btn.ghost {
   background: transparent;
+  color: var(--ink);
   border-color: var(--line);
+}
+
+.btn.ghost:hover {
+  background: var(--raised-hover);
 }
 
 .btn:disabled {
@@ -547,6 +584,9 @@ input[type="range"] {
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   border: var(--control-border-width, 1px) solid var(--line);
   background: var(--raised);
   color: var(--ink);
@@ -557,24 +597,53 @@ input[type="range"] {
   cursor: pointer;
 }
 
+.chip:has(.chip-icon) {
+  padding-left: 0.45rem;
+  padding-right: 0.65rem;
+}
+
+.chip-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  display: block;
+}
+
+.planet-icon {
+  overflow: visible;
+}
+
 .stage .chip,
 .track-controls .chip,
 .transport .chip {
-  background: #fff;
-  color: #1b2430;
-  border-color: #d7ccb8;
+  background: var(--well-btn);
+  color: var(--well-ink);
+  border-color: var(--well-line);
 }
 
-[data-theme="contrast"] .stage .chip,
-[data-theme="contrast"] .track-controls .chip,
-[data-theme="contrast"] .transport .chip {
-  background: #000;
-  color: #fff;
-  border-color: #fff;
+.stage .chip:hover,
+.track-controls .chip:hover,
+.transport .chip:hover {
+  background: var(--well-btn-hover);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
-.chip:hover,
+.stage .chip.active,
+.track-controls .chip.active,
+.transport .chip.active {
+  background: color-mix(in srgb, var(--accent) 22%, var(--well-bg));
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
 .chip.active {
+  background: var(--chip-active-bg);
   border-color: var(--accent);
   color: var(--accent-dark);
 }
@@ -690,10 +759,41 @@ input[type="range"] {
   margin-top: 10px;
 }
 
-.challenge-actions .btn {
-  background: var(--raised);
-  color: var(--ink);
-  border: var(--control-border-width, 1px) solid var(--line);
+.transport .btn,
+.track-controls .btn {
+  background: var(--well-btn);
+  color: var(--well-ink);
+  border-color: var(--well-line);
+}
+
+.transport .btn:hover,
+.track-controls .btn:hover {
+  background: var(--well-btn-hover);
+}
+
+.transport .btn.primary,
+.track-controls .btn.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+.transport .btn.primary:hover,
+.track-controls .btn.primary:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.transport .btn.ghost,
+.track-controls .btn.ghost {
+  background: transparent;
+  color: var(--well-ink);
+  border-color: var(--well-line);
+}
+
+.transport .btn.ghost:hover,
+.track-controls .btn.ghost:hover {
+  background: var(--well-btn);
 }
 
 .notes-toggle {

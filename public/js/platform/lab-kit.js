@@ -11,7 +11,7 @@ import {
   normalizeCameraMode,
 } from "/lib/camera.js";
 import { fileForFormat, triggerDownload } from "/lib/export-trials.js";
-import { PLANET_CHIP_ORDER, planetById } from "/lib/planets.js";
+import { PLANET_CHIP_ORDER, planetById, planetIcon } from "/lib/planets.js";
 
 function iconReset() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.5 9A7 7 0 0 1 19 8M18.5 15A7 7 0 0 1 5 16"/></svg>`;
@@ -367,7 +367,7 @@ export function planetPresetControls({ switchClass = "switch light" } = {}) {
   const chips = PLANET_CHIP_ORDER.map((id) => {
     const planet = planetById(id);
     if (!planet) return "";
-    return `<button type="button" class="chip${id === "earth" ? " active" : ""}" data-planet="${id}">${planet.name}</button>`;
+    return `<button type="button" class="chip${id === "earth" ? " active" : ""}" data-planet="${id}">${planetIcon(id)}${planet.name}</button>`;
   }).join("");
   return `
     <div class="presets planet-chips" role="group" aria-label="Planetary gravity">
@@ -381,6 +381,18 @@ export function planetPresetControls({ switchClass = "switch light" } = {}) {
   `;
 }
 
+function cameraIcon(mode) {
+  const marks = {
+    fit: `<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3"/>`,
+    origin: `<path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M8 2v12M2 8h12"/><circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/>`,
+    follow: `<circle cx="6.1" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M9.1 8h4.3m0 0-1.6-1.6M13.4 8l-1.6 1.6"/>`,
+    stationary: `<rect x="4.2" y="7" width="7.6" height="6" rx="1.1" fill="none" stroke="currentColor" stroke-width="1.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" d="M5.8 7V5.4a2.2 2.2 0 0 1 4.4 0V7"/>`,
+  };
+  const inner = marks[mode];
+  if (!inner) return "";
+  return `<svg class="chip-icon cam-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">${inner}</svg>`;
+}
+
 /** Chip row for current and future labs. Pass the number of objects, not markers. */
 export function cameraModeControls(objectCount) {
   const modes = cameraModesFor(objectCount);
@@ -388,7 +400,7 @@ export function cameraModeControls(objectCount) {
   const buttons = modes
     .map((mode) => {
       const active = mode === selected ? " active" : "";
-      return `<button type="button" class="chip${active}" data-camera="${mode}">${CAMERA_LABELS[mode]}</button>`;
+      return `<button type="button" class="chip${active}" data-camera="${mode}">${cameraIcon(mode)}${CAMERA_LABELS[mode]}</button>`;
     })
     .join("");
   return `

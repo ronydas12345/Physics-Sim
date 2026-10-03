@@ -27,19 +27,17 @@
     <div id="page-root">
     <div id="site-header"></div>
     <div class="app">
-      <header class="topbar">
-        <div class="brand">
-          <div class="brand-tools">
-            <p class="kicker">Unit 1 · Simulation 1.5</p>
-            <div id="lab-icon-toolbar"></div>
-          </div>
+      <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 1 · Simulation 1.5</p>
           <h1>Launch Angle vs. Range</h1>
+          <p class="objective">Launch and landing heights are equal, air resistance is off, and gravity is constant. Change a variable, collect data, and discover which launch produces the greatest horizontal range.</p>
+          <p class="sim-nav"><a href="/simulations/module-1/1-4">← 1.4</a> · <a href="/simulations/module-1">Module 1</a> · <a href="/simulations/module-2">Module 2 →</a></p>
         </div>
-        <p class="guiding">
-          Launch and landing heights are equal, air resistance is off, and
-          gravity is constant. Change a variable, collect data, and discover
-          which launch produces the greatest horizontal range.
-        </p>
+        <div class="sim-toolbar">
+          <div id="lab-icon-toolbar"></div>
+        </div>
       </header>
 
       <nav class="tabs" role="tablist" aria-label="Lab sections">
@@ -101,7 +99,7 @@
                   <span id="gravity-readout" class="readout">9.8 m/s²</span>
                 </div>
                 <input id="gravity" type="range" min="0.6" max="25" step="0.1" value="9.8" />
-                <div class="presets" role="group" aria-label="Planetary gravity">
+                <div class="presets planet-chips" role="group" aria-label="Planetary gravity">
                   <button type="button" class="chip" data-planet="moon">Moon</button>
                   <button type="button" class="chip" data-planet="mercury">Mercury</button>
                   <button type="button" class="chip" data-planet="venus">Venus</button>
@@ -404,6 +402,7 @@
           </section>
         </article>
       </div>
+      </section>
     </div>
     <div id="site-footer"></div>
     </div>

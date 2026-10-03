@@ -145,7 +145,7 @@
   position: relative;
   aspect-ratio: 320 / 180;
   min-height: 180px;
-  background: #eaf4fb;
+  background: var(--hero-visual);
   border-radius: 18px;
   border: 1px solid var(--line);
   overflow: hidden;
@@ -164,7 +164,7 @@
   z-index: 1;
   text-decoration: none;
   color: inherit;
-  text-shadow: 0 1px 0 rgba(251, 247, 239, 0.7);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--paper) 70%, transparent);
   transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
@@ -436,6 +436,7 @@
 
 .icon-btn:hover {
   background: var(--raised-hover);
+  border-color: var(--accent);
 }
 
 .icon-btn:focus-visible {
@@ -535,7 +536,7 @@ html.is-fullscreen #page-root,
 }
 
 .track-card {
-  background: #132230;
+  background: var(--stage-bg);
   border-radius: 18px;
   overflow: hidden;
 }
@@ -550,16 +551,16 @@ html.is-fullscreen #page-root,
 .track-help,
 .track-controls {
   padding: 10px 14px;
-  color: #f4efe6;
+  color: var(--well-ink);
 }
 
 .track-help {
   font-size: 0.86rem;
-  color: #c9d6e2;
+  color: var(--well-soft);
 }
 
 .track-controls .control-head {
-  color: #f4efe6;
+  color: var(--well-ink);
 }
 
 .nudge-row,
@@ -592,7 +593,7 @@ html.is-fullscreen #page-root,
 }
 
 .panel-toggles .switch {
-  color: #d7e3ee;
+  color: var(--well-ink);
 }
 
 .tag,
@@ -720,7 +721,7 @@ html.is-fullscreen #page-root,
   border: 1px solid var(--line);
   border-radius: 10px;
   margin: 0.35rem 0 0.7rem;
-  background: var(--card);
+  background: var(--panel);
 }
 
 .eq-status strong {
@@ -728,11 +729,11 @@ html.is-fullscreen #page-root,
 }
 
 .eq-status.is-eq {
-  background: color-mix(in srgb, #2c6e49 14%, var(--card));
+  background: color-mix(in srgb, var(--ok) 14%, var(--panel));
 }
 
 .eq-status.is-uneq {
-  background: color-mix(in srgb, #c45c26 14%, var(--card));
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
 }
 
 .conn-cards {
@@ -747,7 +748,7 @@ html.is-fullscreen #page-root,
   border: 1px solid var(--line);
   border-radius: 10px;
   font-size: 0.9rem;
-  background: var(--field-bg, var(--card));
+  background: var(--field-bg);
 }
 
 .graph-hover {
@@ -774,14 +775,14 @@ html.is-fullscreen #page-root,
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
-  color: #d7e3ee;
+  color: var(--well-ink);
 }
 
 .force-table th,
 .force-table td {
   text-align: left;
   padding: 6px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--control-border-width, 1px) solid var(--well-line);
   vertical-align: middle;
 }
 
@@ -789,7 +790,7 @@ html.is-fullscreen #page-root,
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #9aacbd;
+  color: var(--well-soft);
 }
 
 .force-table input[type="number"],
@@ -822,7 +823,7 @@ html.is-fullscreen #page-root,
 
 .track-controls .planet-bg-switch {
   margin-top: 8px;
-  color: #d7e3ee;
+  color: var(--well-ink);
 }
 
 .planet-chips {
@@ -830,7 +831,7 @@ html.is-fullscreen #page-root,
 }
 
 .force-table .text-link {
-  color: #f0a202;
+  color: var(--accent);
   background: none;
   border: 0;
   padding: 0;
@@ -850,14 +851,9 @@ html.is-fullscreen #page-root,
 }
 
 .transport .chip {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: #2a3b4d;
-  color: #f4efe6;
-}
-
-.transport .chip.active {
-  border-color: #f0a202;
-  color: #f0a202;
+  border-color: var(--well-line);
+  background: var(--well-btn);
+  color: var(--well-ink);
 }
 
 .sim-nav {
@@ -918,7 +914,7 @@ html.is-fullscreen #page-root,
 .motion-inputs .pos-input {
   flex-direction: column;
   align-items: flex-start;
-  color: #d7e3ee;
+  color: var(--well-ink);
 }
 
 .sr-only {
