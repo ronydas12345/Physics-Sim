@@ -6,6 +6,7 @@ import { tutorials as t21 } from "./sim-2-1.js";
 import { tutorials as t22 } from "./sim-2-2.js";
 import { tutorials as t23 } from "./sim-2-3.js";
 import { tutorials as t24 } from "./sim-2-4.js";
+import { tutorials as t25 } from "./sim-2-5.js";
 
 const REGISTRY = {
   "1-1": t11,
@@ -16,6 +17,7 @@ const REGISTRY = {
   "2-2": t22,
   "2-3": t23,
   "2-4": t24,
+  "2-5": t25,
 };
 
 export function getTutorials(simulationId) {

@@ -33,6 +33,13 @@ const TARGET_ALIASES = {
   "inertia-panel": "#inertia-panel",
   "scenario-selector": "#scenario-selector",
   playback: ".transport",
+  "acceleration-panel": "#acceleration-panel",
+  "velocity-panel": "#velocity-panel",
+  "mass-control": "#mass-control",
+  "relationship-investigation": "#relationship-investigation",
+  "data-table": "#data-table",
+  "graph-panel": "#graph-panel",
+  "simulation-canvas": "#simulation-canvas",
 };
 
 function storageKey(simId, type) {

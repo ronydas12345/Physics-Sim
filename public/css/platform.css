@@ -682,7 +682,9 @@ html.is-fullscreen #page-root,
   height: 360px;
 }
 
-.fbd-stage #axis-canvas {
+.fbd-stage #axis-canvas,
+.secondlaw-stage #axis-canvas,
+.firstlaw-stage #axis-canvas {
   height: 340px;
 }
 
@@ -891,6 +893,14 @@ html.is-fullscreen #page-root,
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.graphs.graphs-four {
+  grid-template-columns: 1fr 1fr;
+}
+
+.invest-linearize {
+  margin: 0 0 16px;
+}
+
 .compare-table {
   width: 100%;
   border-collapse: collapse;
@@ -940,6 +950,7 @@ html.is-fullscreen #page-root,
   }
 
   .graphs.graphs-three,
+  .graphs.graphs-four,
   .metrics-wide,
   .fbd-pair {
     grid-template-columns: 1fr;

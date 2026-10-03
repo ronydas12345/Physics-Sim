@@ -1806,7 +1806,7 @@ export function sim24Page() {
           <p class="kicker">Unit 2 · Simulation 2.4</p>
           <h1>Newton's First Law</h1>
           <p class="objective">Learning objective: If the net external force on an object is zero, its velocity remains constant. Rest is the special case v = 0. Inertia is not a force.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-3" data-link>← 2.3</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.5 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-3" data-link>← 2.3</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-5" data-link>2.5 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -1960,7 +1960,7 @@ export function sim24Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-2" data-link>Review 2.2</a> — identify individual forces. Here you ask whether their sum changes velocity.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-3" data-link>Review 2.3</a> — third-law pairs act on different objects. First law asks what happens to one object’s velocity when <em>its</em> net force is zero.</p>
-              <p class="conn-card">Next: Newton’s second law (2.5, coming) investigates F<sub>net</sub> ≠ 0.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-2/2-5" data-link>Open 2.5</a> — when F<sub>net</sub> ≠ 0, acceleration is F<sub>net</sub> / m.</p>
             </div>
           </aside>
         </div>
@@ -2061,6 +2061,281 @@ export function sim24Page() {
           </section>
           ${trialFitTheory(`
             <p>a vs. F_net should follow a = F_net / m if you keep mass fixed. Record both F_net = 0 (a should be 0) and unbalanced runs. Two points always give R² = 1; record several before you trust the fit.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim25Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.5</p>
+          <h1>Newton's Second Law</h1>
+          <p class="objective">Learning objective: The acceleration of an object equals the net external force on it divided by its mass. Acceleration follows net force, not velocity.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-4" data-link>← 2.4</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.6 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage secondlaw-stage" aria-label="Horizontal second-law scene" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Object on a horizontal surface with force, velocity, and acceleration arrows"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-25">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Second-law scenarios">
+                  <button type="button" class="chip" data-scenario="basic">Basic: F = 10 N</button>
+                  <button type="button" class="chip" data-scenario="double-force">Double force</button>
+                  <button type="button" class="chip" data-scenario="double-mass">Double mass</button>
+                  <button type="button" class="chip" data-scenario="zero-net">Zero net force</button>
+                  <button type="button" class="chip" data-scenario="negative-net">Negative net force</button>
+                  <button type="button" class="chip" data-scenario="opp-signs">v right, a left</button>
+                  <button type="button" class="chip" data-scenario="three-stage">Three-stage motion</button>
+                  <button type="button" class="chip" data-scenario="friction">Friction and net force</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="force">Force → acceleration</button>
+                  <button type="button" class="chip" data-invest="mass">Mass → acceleration</button>
+                </div>
+                <p class="track-help" id="invest-help">Vary one quantity while holding the other constant, then record trials.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs" id="mass-control">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.5" max="20" step="0.1" value="5" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input">x₀<input id="x-input" type="number" step="0.5" value="-8" aria-label="Initial position in meters" /><span>m</span></label>
+                <label class="pos-input">v₀<input id="v-input" type="number" step="0.5" value="0" aria-label="Initial velocity in meters per second" /><span>m/s</span></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+                <label class="switch light"><input id="toggle-vertical" type="checkbox" checked /> Include vertical forces</label>
+              </div>
+              <div class="force-table-wrap" id="force-controls">
+                <table class="force-table">
+                  <thead>
+                    <tr><th>Force</th><th>Magnitude</th><th>Direction</th><th>Source</th><th></th></tr>
+                  </thead>
+                  <tbody id="force-body"></tbody>
+                </table>
+                <div class="nudge-row motion-inputs add-force-row">
+                  <label class="pos-input">Add
+                    <select id="add-type" aria-label="Force type to add">
+                      <option value="applied">Applied</option>
+                      <option value="friction">Friction</option>
+                    </select>
+                  </label>
+                  <label class="pos-input">Magnitude<input id="add-mag" type="number" min="0" max="200" step="0.5" value="10" aria-label="New force magnitude in newtons" /><span>N</span></label>
+                  <label class="pos-input">Direction
+                    <select id="add-dir" aria-label="New force direction">
+                      <option value="0">→ right</option>
+                      <option value="180">← left</option>
+                    </select>
+                  </label>
+                  <button type="button" class="btn" id="btn-add-force">Add force</button>
+                  <button type="button" class="btn" id="btn-clear-horiz">Remove horizontal forces</button>
+                  <button type="button" class="btn" id="btn-enable-friction">Add 10 N friction</button>
+                </div>
+              </div>
+              <p class="track-help">Brown arrows are forces. Teal is velocity. Gold is acceleration. Newton’s second law uses the net force, not one individual force. Camera: Origin, Follow object, or Stationary.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>Net force</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">NON-EQUILIBRIUM</strong>
+                <span id="eq-net">Net force: +10 N</span>
+                <span id="eq-detail">Right contributions minus left contributions.</span>
+              </div>
+              <dl class="metrics" id="force-sum"></dl>
+              <p class="eq-block">F<sub>net</sub> = ΣF<br />a = F<sub>net</sub> / m</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>Acceleration</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Net force</dt><dd id="read-fnet">+10.00 N</dd></div>
+                <div><dt>Mass</dt><dd id="read-m">5.00 kg</dd></div>
+                <div><dt>Acceleration</dt><dd id="read-a">+2.00 m/s²</dd></div>
+                <div><dt>Direction</dt><dd id="read-adir">→ right</dd></div>
+              </dl>
+              <p class="muted">a points with F<sub>net</sub>. It does not have to point with velocity.</p>
+            </section>
+
+            <section class="card values-card" id="velocity-panel">
+              <div class="card-head">
+                <h2>Velocity</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Time</dt><dd id="read-t">0.00 s</dd></div>
+                <div><dt>State</dt><dd id="read-motion">Speeding Up</dd></div>
+                <div><dt>Position</dt><dd id="read-x">−8.00 m</dd></div>
+                <div><dt>Velocity</dt><dd id="read-v">0.00 m/s</dd></div>
+              </dl>
+              <p class="muted">Velocity is the current motion. Acceleration is how that motion is changing.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Newton's Second Law</summary>
+              <p>Acceleration is caused by the net external force and is inversely proportional to mass. A force does not set velocity; it changes velocity through acceleration.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-4" data-link>Review 2.4</a> — when F<sub>net</sub> = 0, acceleration is zero and velocity stays constant. This lab asks what happens when F<sub>net</sub> ≠ 0.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-2" data-link>Review 2.2</a> — you already know how to add forces. Here those forces determine acceleration.</p>
+              <p class="conn-card">Next: gravitational force (2.6, coming) uses F<sub>net</sub> = ma to explain how weight produces acceleration.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram" id="fbd">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of forces on the object"></canvas>
+            <p class="caption">Individual forces build the net force. Acceleration is not a force and is not drawn here.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap" id="motion-diagram">
+            <h2>Motion diagram</h2>
+            <canvas id="diagram-canvas" width="960" height="160" aria-label="Motion diagram of equal time steps"></canvas>
+            <p class="caption">Spreading dots mean speeding up. Closing dots mean slowing down. Equal spacing means constant velocity.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs" id="graph-panel">
+          <p class="graph-hover" id="graph-hover" role="status">Hover a graph while paused to read t, v, a, and F_net together.</p>
+          <div class="graph-toggles" role="group" aria-label="Graph visibility">
+            <label><input type="checkbox" data-graph="x" checked /> Position vs. time</label>
+            <label><input type="checkbox" data-graph="v" checked /> Velocity vs. time</label>
+            <label><input type="checkbox" data-graph="a" checked /> Acceleration vs. time</label>
+            <label><input type="checkbox" data-graph="f" /> Net force vs. time</label>
+          </div>
+          <div class="graphs graphs-four">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="240" aria-label="Position versus time"></canvas>
+              <p class="caption">Constant acceleration curves this graph. Constant velocity is a straight line.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="240" aria-label="Velocity versus time"></canvas>
+              <p class="caption">Slope is acceleration. A horizontal line means a = 0.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-a">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-at" width="640" height="240" aria-label="Acceleration versus time"></canvas>
+              <p class="caption">Constant net force is a horizontal line. Click while paused to jump the clock.</p>
+            </div>
+            <div class="graph-wrap" id="wrap-f" hidden>
+              <h2>Net force vs. time</h2>
+              <canvas id="graph-ft" width="640" height="240" aria-label="Net force versus time"></canvas>
+              <p class="caption">a(t) should match this graph divided by the current mass.</p>
+            </div>
+          </div>
+        </section>
+
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · a vs. F_net",
+          heightTitle: "Your Trials · a vs. m",
+          rangeCaption: "Keep mass fixed and change F_net. The solid identity is a = F_net / m. Slope is 1/m.",
+          heightCaption: "Keep F_net fixed and change mass. This should look inverse, not linear. Optional: plot a vs 1/m.",
+          columns: ["Trial", "Scenario", "t", "m", "F_net,x", "a_x", "v", "State"],
+          emptyCols: 8,
+        })}
+        </div>
+        <p class="caption invest-linearize"><label><input type="checkbox" id="toggle-inv-mass" /> Linearize mass: plot a vs 1/m</label></p>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Acceleration from net force and mass</h2>
+            <p>
+              Newton’s second law is not a slogan to memorize. It is the observed relationship: acceleration is
+              proportional to net force and inversely proportional to mass.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. The force that belongs in the equation</h3>
+            <p>Individual forces can be large while the leftover after adding them is small. The equation uses the vector sum:</p>
+            <p class="eq-block">F<sub>net</sub> = ΣF<br />a = F<sub>net</sub> / m<br />F<sub>net</sub> = ma</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. What the experiments show</h3>
+            <p>Hold mass fixed and double F<sub>net</sub>: a doubles. Hold F<sub>net</sub> fixed and double mass: a halves. Those two statements together are a ∝ F<sub>net</sub>/m.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Direction</h3>
+            <p>Acceleration always points with F<sub>net</sub>. Velocity can point the other way. An object moving right with a leftward net force is slowing down, then it can stop and reverse while a stays leftward.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Zero net force is first law</h3>
+            <p>If F<sub>net</sub> = 0, a = 0, so velocity stays whatever it already is — including rest. Second law does not replace first law. First law is the F<sub>net</sub> = 0 case.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Force does not set velocity</h3>
+            <p>A 20 N net force on 5 kg always gives 4 m/s², whether the object is at rest or already moving at 8 m/s. Force changes velocity; it does not equal velocity.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Mistakes to avoid</h3>
+            <p>Do not use the largest individual force as F in F = ma. Do not say a large speed requires a large net force. Do not say doubling force doubles velocity. Do not say a larger mass gets a larger acceleration from the same force.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>a vs. F_net at fixed mass should be a line through the origin with slope 1/m. a vs. m at fixed F_net should be inverse. a vs. 1/m should be linear with slope F_net.</p>
           `)}
         </article>
       </div>
