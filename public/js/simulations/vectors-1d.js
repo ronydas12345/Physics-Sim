@@ -23,6 +23,7 @@ import {
   bindFullscreen,
   bindIdentityToggle,
   bindLabTabs,
+  bindResetButtons,
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
@@ -429,7 +430,7 @@ export function mountVectors1D(root) {
     onChange: () => paint(),
   });
 
-  root.querySelector("#btn-reset").addEventListener("click", onReset);
+  bindResetButtons(root, onReset);
   root.querySelector("#nudge-neg").addEventListener("click", onNeg);
   root.querySelector("#nudge-pos").addEventListener("click", onPos);
   root.querySelector("#btn-check-1d").addEventListener("click", onCheck);

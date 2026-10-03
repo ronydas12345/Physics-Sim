@@ -257,6 +257,13 @@ export function createTrialBook({ columns, renderRow, onChange }) {
   };
 }
 
+export function bindResetButtons(root, onReset) {
+  if (!root || typeof onReset !== "function") return () => {};
+  const buttons = [...root.querySelectorAll("#btn-reset, #btn-reset-run")];
+  buttons.forEach((btn) => btn.addEventListener("click", onReset));
+  return () => buttons.forEach((btn) => btn.removeEventListener("click", onReset));
+}
+
 export function bindFullscreen(button) {
   if (!button) return () => {};
   const target = document.documentElement;

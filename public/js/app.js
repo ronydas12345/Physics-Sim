@@ -15,7 +15,7 @@ import {
 } from "/lib/projectile.js";
 import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
 import { renderSimulation } from "./render.js";
-import { bindDownload, bindFullscreen, labIconToolbar } from "./platform/lab-kit.js";
+import { bindDownload, bindFullscreen, bindResetButtons, labIconToolbar } from "./platform/lab-kit.js";
 import { planetById, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
@@ -527,7 +527,7 @@ els.velocity.addEventListener("input", applyUiFromSliders);
 els.gravity.addEventListener("input", applyUiFromSliders);
 els.launch.addEventListener("click", doLaunch);
 els.pause.addEventListener("click", doPause);
-els.reset?.addEventListener("click", doReset);
+bindResetButtons(document, doReset);
 els.record.addEventListener("click", recordTrial);
 els.clear.addEventListener("click", clearTrials);
 els.autoRecord.addEventListener("change", () => {

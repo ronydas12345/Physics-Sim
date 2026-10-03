@@ -33,6 +33,7 @@ import {
   bindFullscreen,
   bindIdentityToggle,
   bindLabTabs,
+  bindResetButtons,
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
@@ -726,7 +727,7 @@ export function mountThirdLaw(root) {
     });
   });
 
-  root.querySelector("#btn-reset").addEventListener("click", onReset);
+  bindResetButtons(root, onReset);
   root.querySelector("#btn-play").addEventListener("click", play);
   root.querySelector("#btn-pause").addEventListener("click", pause);
   root.querySelector("#btn-step").addEventListener("click", () => {

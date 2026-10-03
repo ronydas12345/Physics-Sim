@@ -257,6 +257,7 @@ export function sim11Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -405,6 +406,7 @@ export function sim12Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -650,6 +652,7 @@ export function sim13Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -891,6 +894,7 @@ export function sim14Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -1137,6 +1141,7 @@ export function sim21Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -1347,6 +1352,7 @@ export function sim22Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -1585,6 +1591,7 @@ export function sim23Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -1829,6 +1836,7 @@ export function sim24Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>
@@ -2099,6 +2107,7 @@ export function sim25Page() {
                 <input id="auto-record" type="checkbox" />
                 Auto-record
               </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
               <button type="button" class="btn" id="btn-clear">Clear Trials</button>
             </div>

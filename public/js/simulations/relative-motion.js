@@ -27,6 +27,7 @@ import {
   bindFullscreen,
   bindIdentityToggle,
   bindLabTabs,
+  bindResetButtons,
   bindTeacher,
   createTrialBook,
 } from "../platform/lab-kit.js";
@@ -672,7 +673,7 @@ export function mountRelativeMotion(root) {
     onChange: () => paint(),
   });
 
-  root.querySelector("#btn-reset").addEventListener("click", onReset);
+  bindResetButtons(root, onReset);
   root.querySelector("#btn-play").addEventListener("click", play);
   root.querySelector("#btn-pause").addEventListener("click", pause);
   root.querySelector("#btn-step").addEventListener("click", () => {
