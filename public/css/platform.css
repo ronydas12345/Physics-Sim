@@ -141,6 +141,10 @@
   background: var(--raised-hover);
 }
 
+a.btn.ghost-paper.action-go {
+  border-color: color-mix(in srgb, var(--teal) 40%, var(--line));
+}
+
 .hero-visual {
   position: relative;
   aspect-ratio: 320 / 180;
@@ -437,6 +441,26 @@
 .icon-btn:hover {
   background: var(--raised-hover);
   border-color: var(--accent);
+}
+
+.icon-btn.action-reset {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+}
+
+.icon-btn.action-reset:hover:not(:disabled) {
+  color: var(--accent-dark);
+}
+
+.icon-btn.action-download {
+  border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
+}
+
+.icon-btn.action-download:hover:not(:disabled) {
+  color: var(--teal);
+}
+
+.icon-btn.action-fullscreen:hover:not(:disabled) {
+  color: var(--teal);
 }
 
 .icon-btn:focus-visible {

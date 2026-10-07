@@ -13,25 +13,178 @@ import {
 import { fileForFormat, triggerDownload } from "/lib/export-trials.js";
 import { PLANET_CHIP_ORDER, planetById, planetIcon } from "/lib/planets.js";
 
+function iconSvg(name, inner) {
+  return `<svg class="btn-icon btn-icon-${name}" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">${inner}</svg>`;
+}
+
 function iconReset() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.5 9A7 7 0 0 1 19 8M18.5 15A7 7 0 0 1 5 16"/></svg>`;
+  return iconSvg(
+    "reset",
+    `<g class="icon-spin"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.5 9A7 7 0 0 1 19 8M18.5 15A7 7 0 0 1 5 16"/></g>`,
+  );
 }
 
 function iconFullscreen() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 3H3v5M16 3h5v5M8 21H3v-5M21 16v5h-5"/></svg>`;
+  return iconSvg(
+    "fullscreen",
+    `<g class="icon-expand"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 3H3v5M16 3h5v5M8 21H3v-5M21 16v5h-5"/></g>`,
+  );
 }
 
 function iconDownload() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>`;
+  return iconSvg(
+    "download",
+    `<g class="icon-drop"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0 4-4m-4 4-4-4M5 19h14"/></g>`,
+  );
+}
+
+const ACTION_ICONS = {
+  play: iconSvg("play", `<path class="icon-playhead" fill="currentColor" d="M8 5.5v13l11-6.5z"/>`),
+  pause: iconSvg(
+    "pause",
+    `<rect class="icon-bar-l" x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect class="icon-bar-r" x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>`,
+  ),
+  step: iconSvg(
+    "step",
+    `<path class="icon-playhead" fill="currentColor" d="M5 6v12l8-6z"/><rect class="icon-tick" x="16" y="6" width="2.2" height="12" rx="1" fill="currentColor"/>`,
+  ),
+  launch: iconSvg(
+    "launch",
+    `<path class="icon-trail" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" pathLength="24" d="M4 18c4-1 7-6 9-11"/><circle class="icon-ball" cx="5.5" cy="17" r="2" fill="currentColor"/>`,
+  ),
+  check: iconSvg(
+    "check",
+    `<path class="icon-check" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" pathLength="24" d="M5 12.5 9.5 17 19 7"/>`,
+  ),
+  reset: iconReset(),
+  record: iconSvg(
+    "record",
+    `<rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle class="icon-dot" cx="12" cy="12" r="2.4" fill="currentColor"/>`,
+  ),
+  clear: iconSvg(
+    "clear",
+    `<path class="icon-wipe" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M7 7l10 10M17 7 7 17"/>`,
+  ),
+  "nudge-left": iconSvg(
+    "nudge-left",
+    `<path class="icon-chevron" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M14 5 7 12l7 7"/>`,
+  ),
+  "nudge-right": iconSvg(
+    "nudge-right",
+    `<path class="icon-chevron" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M10 5l7 7-7 7"/>`,
+  ),
+  add: iconSvg(
+    "add",
+    `<path class="icon-plus" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"/>`,
+  ),
+  friction: iconSvg(
+    "friction",
+    `<path class="icon-scrape" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 16h16M6 12l3 4M11 10l3 6M16 9l3 7"/>`,
+  ),
+  reveal: iconSvg(
+    "reveal",
+    `<path fill="none" stroke="currentColor" stroke-width="1.8" d="M2.8 12S6.5 6 12 6s9.2 6 9.2 6-3.7 6-9.2 6S2.8 12 2.8 12z"/><circle class="icon-pupil" cx="12" cy="12" r="2.4" fill="currentColor"/>`,
+  ),
+  shuffle: iconSvg(
+    "shuffle",
+    `<g class="icon-swap"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 8h7l9-4M4 16h7l9 4M17 5l3-1-1 3M17 19l3 1-1-3"/></g>`,
+  ),
+  howto: iconSvg(
+    "howto",
+    `<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 5h10a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V5z"/><path class="icon-page" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 9h6M9 13h6"/>`,
+  ),
+  guided: iconSvg(
+    "guided",
+    `<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path class="icon-needle" fill="currentColor" d="M12 5.5 14.2 12 12 18.5 9.8 12z"/>`,
+  ),
+  prev: iconSvg(
+    "prev",
+    `<path class="icon-chevron" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M14 5 7 12l7 7"/>`,
+  ),
+  next: iconSvg(
+    "next",
+    `<path class="icon-chevron" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M10 5l7 7-7 7"/>`,
+  ),
+  fullscreen: iconFullscreen(),
+  download: iconDownload(),
+  open: iconSvg(
+    "open",
+    `<path class="icon-arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h12m0 0-4-4m4 4-4 4"/>`,
+  ),
+  go: iconSvg(
+    "go",
+    `<path class="icon-arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h12m0 0-4-4m4 4-4 4"/>`,
+  ),
+  close: iconSvg(
+    "close",
+    `<path class="icon-x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M7 7l10 10M17 7 7 17"/>`,
+  ),
+};
+
+function actionOf(el) {
+  const id = el.id || "";
+  if (id === "btn-play") return "play";
+  if (id === "btn-pause") return "pause";
+  if (id === "btn-step") return "step";
+  if (id === "btn-launch") return "launch";
+  if (id === "btn-reset" || id === "btn-reset-run") return "reset";
+  if (id === "btn-record") return "record";
+  if (id === "btn-clear" || id === "btn-clear-horiz" || id === "btn-clear-extra") return "clear";
+  if (id.startsWith("btn-check")) return "check";
+  if (id === "nudge-neg") return "nudge-left";
+  if (id === "nudge-pos") return "nudge-right";
+  if (id === "btn-add-force" || id === "btn-add-extra") return "add";
+  if (id === "btn-enable-friction") return "friction";
+  if (id === "btn-reveal") return "reveal";
+  if (id === "btn-new-target") return "shuffle";
+  if (id === "btn-howto") return "howto";
+  if (id === "btn-guided") return "guided";
+  if (id === "tutorial-prev") return "prev";
+  if (id === "tutorial-next") return "next";
+  if (id === "tutorial-close") return "close";
+  if (id === "tutorial-restart") return "reset";
+  if (id === "btn-fullscreen") return "fullscreen";
+  if (id === "btn-download") return "download";
+  if (el.matches?.("a.btn.primary")) return "open";
+  if (el.matches?.("a.btn.ghost-paper")) return "go";
+  if (el.hasAttribute("data-derive")) return "reveal";
+  return "";
+}
+
+export function decorateActionButtons(root = document) {
+  if (!root?.querySelectorAll) return;
+  root.querySelectorAll("button.btn, a.btn, button.icon-btn, #tutorial-close, #tutorial-restart").forEach((el) => {
+    if (el.dataset.iconified === "1") return;
+    const action = actionOf(el);
+    if (!action) return;
+    el.dataset.iconified = "1";
+    el.dataset.action = action;
+    el.classList.add("has-icon", `action-${action}`);
+    const icon = ACTION_ICONS[action];
+    if (!icon) return;
+    if (el.querySelector("svg")) {
+      el.querySelector("svg")?.classList.add("btn-icon", `btn-icon-${action}`);
+      return;
+    }
+    const label = el.innerHTML.trim();
+    el.innerHTML = el.id === "tutorial-close" ? icon : `${icon}<span class="btn-label">${label}</span>`;
+  });
+}
+
+export function setButtonLabel(el, text) {
+  if (!el) return;
+  const label = el.querySelector(".btn-label");
+  if (label) label.textContent = text;
+  else el.textContent = text;
 }
 
 export function labIconToolbar() {
   return `
     <div class="icon-toolbar" role="group" aria-label="Lab tools">
-      <button type="button" class="icon-btn" id="btn-reset" title="Reset" aria-label="Reset">${iconReset()}</button>
-      <button type="button" class="icon-btn" id="btn-fullscreen" title="Fullscreen" aria-label="Fullscreen">${iconFullscreen()}</button>
+      <button type="button" class="icon-btn action-reset" id="btn-reset" title="Reset" aria-label="Reset">${iconReset()}</button>
+      <button type="button" class="icon-btn action-fullscreen" id="btn-fullscreen" title="Fullscreen" aria-label="Fullscreen">${iconFullscreen()}</button>
       <div class="download-menu">
-        <button type="button" class="icon-btn" id="btn-download" title="Download trials" aria-label="Download trials" aria-haspopup="menu" aria-expanded="false" disabled>${iconDownload()}</button>
+        <button type="button" class="icon-btn action-download" id="btn-download" title="Download trials" aria-label="Download trials" aria-haspopup="menu" aria-expanded="false" disabled>${iconDownload()}</button>
         <div class="download-pop" id="download-pop" hidden role="menu" aria-label="Download format">
           <button type="button" role="menuitem" data-format="txt">Text (.txt)</button>
           <button type="button" role="menuitem" data-format="csv">CSV (.csv)</button>

@@ -23,6 +23,7 @@
   --on-accent: #fff7ef;
   --teal: #1c6b73;
   --ok: #2c6e49;
+  --on-ok: #f4fff7;
   --card: var(--panel);
   --muted: var(--ink-soft);
   --stage-bg: #0f1a24;
@@ -74,6 +75,7 @@
   --on-accent: #fff7ef;
   --teal: #0f5f68;
   --ok: #1f6b3a;
+  --on-ok: #f4fff7;
   --shadow: 0 1px 0 rgba(26, 31, 38, 0.06);
   --paper-wash: none;
   --spot: #b44b1c;
@@ -110,6 +112,7 @@
   --on-accent: #1b2430;
   --teal: #7ec8d0;
   --ok: #7dca9a;
+  --on-ok: #102016;
   --shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
   --paper-wash: none;
   --spot: #f0a202;
@@ -146,6 +149,7 @@
   --on-accent: #000000;
   --teal: #ffff00;
   --ok: #00ff00;
+  --on-ok: #000000;
   --shadow: none;
   --paper-wash: none;
   --spot: #ffff00;
@@ -504,7 +508,7 @@ h2 {
 }
 
 .btn.primary:hover {
-  background: var(--accent-dark);
+  background-color: var(--accent-dark);
   border-color: var(--accent-dark);
 }
 
@@ -780,7 +784,7 @@ input[type="range"] {
 
 .transport .btn.primary:hover,
 .track-controls .btn.primary:hover {
-  background: var(--accent-dark);
+  background-color: var(--accent-dark);
   border-color: var(--accent-dark);
 }
 
@@ -972,4 +976,468 @@ tbody tr.best td {
 
 [data-theme="contrast"] .site-nav a.is-active {
   text-decoration: underline;
+}
+
+.btn.has-icon,
+a.btn.has-icon {
+  gap: 0.4rem;
+  padding-inline: 0.78rem 0.95rem;
+  overflow: visible;
+}
+
+.btn-label {
+  display: inline-block;
+}
+
+.btn-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  display: block;
+  overflow: visible;
+}
+
+.btn.primary {
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, white 18%, transparent), transparent 46%),
+    repeating-linear-gradient(
+      -22deg,
+      transparent 0 3px,
+      color-mix(in srgb, black 6%, transparent) 3px 4px
+    );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
+}
+
+.btn.action-check {
+  background: color-mix(in srgb, var(--ok) 18%, var(--raised));
+  border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+  color: var(--ok);
+}
+
+.btn.action-check.primary {
+  background-color: var(--ok);
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, white 18%, transparent), transparent 46%),
+    repeating-linear-gradient(
+      -22deg,
+      transparent 0 3px,
+      color-mix(in srgb, black 6%, transparent) 3px 4px
+    );
+  border-color: var(--ok);
+  color: var(--on-ok);
+}
+
+.btn.action-pause,
+.btn.action-step,
+.btn.action-record,
+.btn.action-nudge-left,
+.btn.action-nudge-right {
+  border-color: color-mix(in srgb, var(--teal) 48%, var(--line));
+  color: var(--teal);
+}
+
+.btn.action-reset,
+.btn.action-guided,
+.btn.action-shuffle,
+.btn.action-friction {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  color: var(--accent-dark);
+}
+
+.btn.action-howto,
+.btn.action-reveal,
+.btn.action-add,
+.btn.action-prev {
+  border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
+  color: var(--teal);
+}
+
+.btn.action-clear {
+  border-color: color-mix(in srgb, var(--ink-soft) 50%, var(--line));
+  color: var(--ink-soft);
+}
+
+.transport .btn.action-play,
+.track-controls .btn.action-play,
+.transport .btn.action-launch,
+.track-controls .btn.action-launch {
+  background-color: var(--accent);
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, white 16%, transparent), transparent 46%),
+    repeating-linear-gradient(
+      -22deg,
+      transparent 0 3px,
+      color-mix(in srgb, black 8%, transparent) 3px 4px
+    );
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+.transport .btn.action-pause,
+.track-controls .btn.action-pause {
+  background: color-mix(in srgb, var(--teal) 26%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--teal) 55%, var(--well-line));
+  color: var(--well-ink);
+}
+
+.transport .btn.action-step,
+.track-controls .btn.action-step,
+.transport .btn.action-nudge-left,
+.track-controls .btn.action-nudge-left,
+.transport .btn.action-nudge-right,
+.track-controls .btn.action-nudge-right {
+  background: color-mix(in srgb, var(--teal) 14%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--teal) 40%, var(--well-line));
+  color: var(--well-ink);
+}
+
+.transport .btn.action-check,
+.track-controls .btn.action-check {
+  background-color: color-mix(in srgb, var(--ok) 78%, var(--well-bg));
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, white 14%, transparent), transparent 46%),
+    repeating-linear-gradient(
+      -22deg,
+      transparent 0 3px,
+      color-mix(in srgb, black 8%, transparent) 3px 4px
+    );
+  border-color: var(--ok);
+  color: var(--on-ok);
+}
+
+.transport .btn.action-reset,
+.track-controls .btn.action-reset {
+  background: color-mix(in srgb, var(--accent) 22%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--well-line));
+  color: var(--well-ink);
+}
+
+.transport .btn.action-record,
+.track-controls .btn.action-record {
+  background: color-mix(in srgb, var(--teal) 20%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--teal) 48%, var(--well-line));
+  color: var(--well-ink);
+}
+
+.transport .btn.action-add,
+.track-controls .btn.action-add {
+  background: color-mix(in srgb, var(--teal) 18%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--teal) 45%, var(--well-line));
+  color: var(--well-ink);
+}
+
+.transport .btn.action-friction,
+.track-controls .btn.action-friction {
+  background: color-mix(in srgb, var(--accent) 16%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--well-line));
+  color: var(--well-ink);
+}
+
+.transport .btn.action-clear,
+.track-controls .btn.action-clear {
+  background: color-mix(in srgb, black 12%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--well-soft) 35%, var(--well-line));
+  color: var(--well-soft);
+}
+
+.btn.action-check.primary:hover,
+.transport .btn.action-check:hover,
+.track-controls .btn.action-check:hover {
+  background-color: color-mix(in srgb, var(--ok) 78%, black);
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, white 12%, transparent), transparent 46%);
+  border-color: var(--ok);
+  color: var(--on-ok);
+}
+
+.transport .btn.action-play:hover,
+.track-controls .btn.action-play:hover,
+.transport .btn.action-launch:hover,
+.track-controls .btn.action-launch:hover {
+  background-color: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.transport .btn.action-pause:hover,
+.track-controls .btn.action-pause:hover,
+.transport .btn.action-step:hover,
+.track-controls .btn.action-step:hover,
+.transport .btn.action-record:hover,
+.track-controls .btn.action-record:hover,
+.transport .btn.action-add:hover,
+.track-controls .btn.action-add:hover,
+.transport .btn.action-nudge-left:hover,
+.track-controls .btn.action-nudge-left:hover,
+.transport .btn.action-nudge-right:hover,
+.track-controls .btn.action-nudge-right:hover {
+  background: color-mix(in srgb, var(--teal) 34%, var(--well-btn));
+}
+
+.transport .btn.action-reset:hover,
+.track-controls .btn.action-reset:hover,
+.transport .btn.action-friction:hover,
+.track-controls .btn.action-friction:hover {
+  background: color-mix(in srgb, var(--accent) 30%, var(--well-btn));
+}
+
+.transport .btn.action-clear:hover,
+.track-controls .btn.action-clear:hover {
+  background: color-mix(in srgb, black 20%, var(--well-btn));
+}
+
+.btn:hover:not(:disabled) .icon-playhead,
+a.btn:hover .icon-playhead {
+  animation: icon-play 0.45s ease;
+}
+
+.btn:hover:not(:disabled) .icon-bar-l {
+  animation: icon-pause 0.4s ease;
+}
+
+.btn:hover:not(:disabled) .icon-bar-r {
+  animation: icon-pause 0.4s ease 0.1s;
+}
+
+.btn:hover:not(:disabled) .icon-tick {
+  animation: icon-step 0.4s ease;
+}
+
+.btn:hover:not(:disabled) .icon-ball {
+  animation: icon-launch 0.55s ease-out;
+}
+
+.btn:hover:not(:disabled) .icon-trail {
+  animation: icon-trail 0.55s ease-out;
+}
+
+.btn:hover:not(:disabled) .icon-check {
+  animation: icon-check 0.45s ease;
+}
+
+.btn:hover:not(:disabled) .icon-spin,
+.icon-btn:hover:not(:disabled) .icon-spin {
+  animation: icon-spin 0.55s ease;
+}
+
+.btn:hover:not(:disabled) .icon-dot {
+  animation: icon-record 0.5s ease;
+}
+
+.btn:hover:not(:disabled) .icon-wipe {
+  animation: icon-wipe 0.4s ease;
+}
+
+.btn:hover:not(:disabled) .icon-chevron {
+  animation: icon-nudge 0.35s ease;
+}
+
+.btn.action-nudge-left:hover:not(:disabled) .icon-chevron,
+.btn.action-prev:hover:not(:disabled) .icon-chevron {
+  animation: icon-nudge-left 0.35s ease;
+}
+
+.btn:hover:not(:disabled) .icon-plus {
+  animation: icon-plus 0.35s ease;
+}
+
+.btn:hover:not(:disabled) .icon-scrape {
+  animation: icon-scrape 0.4s ease;
+}
+
+.btn:hover:not(:disabled) .icon-pupil {
+  animation: icon-reveal 0.45s ease;
+}
+
+.btn:hover:not(:disabled) .icon-swap {
+  animation: icon-shuffle 0.45s ease;
+}
+
+.btn:hover:not(:disabled) .icon-page {
+  animation: icon-page 0.45s ease;
+}
+
+.btn:hover:not(:disabled) .icon-needle {
+  animation: icon-needle 0.5s ease;
+}
+
+.btn:hover:not(:disabled) .icon-arrow,
+a.btn:hover .icon-arrow {
+  animation: icon-go 0.35s ease;
+}
+
+.icon-btn:hover:not(:disabled) .icon-expand {
+  animation: icon-expand 0.45s ease;
+}
+
+.icon-btn:hover:not(:disabled) .icon-drop {
+  animation: icon-drop 0.45s ease;
+}
+
+#tutorial-restart:hover .icon-spin {
+  animation: icon-spin 0.55s ease;
+}
+
+.tutorial-close:hover .icon-x {
+  animation: icon-close 0.35s ease;
+}
+
+@keyframes icon-play {
+  0% { transform: translateX(0) scale(1); }
+  55% { transform: translateX(2.5px) scale(1.08); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+@keyframes icon-pause {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.62); }
+}
+
+@keyframes icon-step {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes icon-launch {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(9px, -10px) scale(0.7); }
+}
+
+@keyframes icon-trail {
+  0% { stroke-dasharray: 24; stroke-dashoffset: 24; }
+  100% { stroke-dasharray: 24; stroke-dashoffset: 0; }
+}
+
+@keyframes icon-check {
+  0% { stroke-dasharray: 24; stroke-dashoffset: 24; }
+  100% { stroke-dasharray: 24; stroke-dashoffset: 0; }
+}
+
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes icon-record {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.7; }
+}
+
+@keyframes icon-wipe {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(-18deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes icon-nudge {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes icon-nudge-left {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes icon-plus {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(90deg); }
+  100% { transform: scale(1) rotate(90deg); }
+}
+
+@keyframes icon-scrape {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+@keyframes icon-reveal {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(0.15); }
+  70% { transform: scale(1.15); }
+}
+
+@keyframes icon-shuffle {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(2px) rotate(-8deg); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes icon-page {
+  0% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(3px); opacity: 0.35; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes icon-needle {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(-28deg); }
+  100% { transform: rotate(18deg); }
+}
+
+@keyframes icon-go {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes icon-expand {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+@keyframes icon-drop {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes icon-close {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg) scale(1.08); }
+  100% { transform: rotate(90deg); }
+}
+
+.btn-icon .icon-playhead,
+.btn-icon .icon-bar-l,
+.btn-icon .icon-bar-r,
+.btn-icon .icon-tick,
+.btn-icon .icon-ball,
+.btn-icon .icon-spin,
+.btn-icon .icon-dot,
+.btn-icon .icon-wipe,
+.btn-icon .icon-chevron,
+.btn-icon .icon-plus,
+.btn-icon .icon-scrape,
+.btn-icon .icon-pupil,
+.btn-icon .icon-swap,
+.btn-icon .icon-page,
+.btn-icon .icon-needle,
+.btn-icon .icon-arrow,
+.btn-icon .icon-expand,
+.btn-icon .icon-drop,
+.btn-icon .icon-x {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+[data-theme="contrast"] .btn.primary,
+[data-theme="contrast"] .btn.action-check,
+[data-theme="contrast"] .transport .btn.action-play,
+[data-theme="contrast"] .transport .btn.action-launch,
+[data-theme="contrast"] .transport .btn.action-check {
+  background-image: none;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover .btn-icon *,
+  .icon-btn:hover .btn-icon *,
+  a.btn:hover .btn-icon *,
+  #tutorial-restart:hover .btn-icon *,
+  .tutorial-close:hover .btn-icon * {
+    animation: none !important;
+  }
 }

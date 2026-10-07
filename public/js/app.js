@@ -15,7 +15,7 @@ import {
 } from "/lib/projectile.js";
 import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
 import { renderSimulation } from "./render.js";
-import { bindDownload, bindFullscreen, bindResetButtons, labIconToolbar } from "./platform/lab-kit.js";
+import { bindDownload, bindFullscreen, bindResetButtons, decorateActionButtons, labIconToolbar, setButtonLabel } from "./platform/lab-kit.js";
 import { planetById, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
@@ -319,7 +319,7 @@ function setPlanet(id) {
 function doLaunch() {
   sim = startLaunch(createLaunchState(ui));
   acc = 0;
-  els.pause.textContent = "Pause";
+  setButtonLabel(els.pause, "Pause");
   refreshPredicted();
   updateLive();
   drawAll();
@@ -329,17 +329,17 @@ function doPause() {
   if (!sim.isRunning || sim.landed) return;
   if (sim.isPaused) {
     resumeSim(sim);
-    els.pause.textContent = "Pause";
+    setButtonLabel(els.pause, "Pause");
   } else {
     pauseSim(sim);
-    els.pause.textContent = "Resume";
+    setButtonLabel(els.pause, "Resume");
   }
 }
 
 function doReset() {
   sim = createLaunchState(ui);
   acc = 0;
-  els.pause.textContent = "Pause";
+  setButtonLabel(els.pause, "Pause");
   refreshPredicted();
   updateLive();
   drawAll();
@@ -593,7 +593,7 @@ function tick(now) {
     onLanded();
   }
   updateLive();
-  els.pause.textContent = sim.isPaused ? "Resume" : "Pause";
+  setButtonLabel(els.pause, sim.isPaused ? "Resume" : "Pause");
   drawSim();
   requestAnimationFrame(tick);
 }
@@ -610,6 +610,7 @@ resize.observe(els.graphHeight);
 resize.observe(els.graphTheoryRange);
 resize.observe(els.graphTheoryHeight);
 
+decorateActionButtons(document);
 syncReadouts();
 updateLive();
 renderTrials();

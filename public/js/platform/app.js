@@ -1,4 +1,5 @@
 import { mountChrome } from "./chrome.js";
+import { decorateActionButtons } from "./lab-kit.js";
 import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page, sim23Page, sim24Page, sim25Page } from "./pages.js";
 import { fullPagePaths } from "./curriculum.js";
 import { mountVectors1D } from "../simulations/vectors-1d.js";
@@ -102,6 +103,7 @@ function render() {
   } else outlet.innerHTML = notFoundPage();
 
   if (route.name !== "module") document.title = titles[route.name] || titles.home;
+  decorateActionButtons(document);
   window.scrollTo(0, 0);
 }
 

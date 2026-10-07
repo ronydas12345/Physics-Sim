@@ -23,7 +23,33 @@
   background: var(--raised-hover);
 }
 
-.tutorial-launch .btn[aria-expanded="true"] {
+.tutorial-launch .btn.action-howto {
+  border-color: color-mix(in srgb, var(--teal) 45%, var(--line));
+  color: var(--teal);
+}
+
+.tutorial-launch .btn.action-guided {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--accent-dark);
+}
+
+.tutorial-launch .btn.action-howto:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.tutorial-launch .btn.action-guided:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.tutorial-launch .btn.action-howto[aria-expanded="true"] {
+  background: var(--teal);
+  color: var(--paper);
+  border-color: var(--teal);
+}
+
+.tutorial-launch .btn.action-guided[aria-expanded="true"] {
   background: var(--accent);
   color: var(--on-accent);
   border-color: var(--accent);
@@ -78,6 +104,20 @@
   line-height: 1;
   cursor: pointer;
   color: var(--ink);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.tutorial-close .btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+#tutorial-restart.has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .tutorial-progress {
@@ -161,6 +201,11 @@
   align-items: center;
   gap: 8px;
   margin-top: 8px;
+}
+
+.tutorial-nav .btn.action-prev {
+  border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
+  color: var(--teal);
 }
 
 .tutorial-tools {

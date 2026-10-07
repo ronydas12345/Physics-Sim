@@ -3,6 +3,7 @@
  */
 
 import { getTutorials } from "../tutorials/registry.js";
+import { decorateActionButtons } from "./lab-kit.js";
 
 const TARGET_ALIASES = {
   scene: "#axis-canvas",
@@ -123,8 +124,8 @@ export function bindTutorial(root, { simulationId }) {
       </details>
       <div class="tutorial-body" id="tutorial-body"></div>
       <footer class="tutorial-nav">
-        <button type="button" class="btn ghost-paper" id="tutorial-prev">← Previous</button>
-        <button type="button" class="btn primary" id="tutorial-next">Next →</button>
+        <button type="button" class="btn ghost-paper" id="tutorial-prev">Previous</button>
+        <button type="button" class="btn primary" id="tutorial-next">Next</button>
       </footer>
       <div class="tutorial-tools">
         <button type="button" class="text-link" id="tutorial-restart">Restart this tutorial</button>
@@ -266,7 +267,11 @@ export function bindTutorial(root, { simulationId }) {
     host.querySelector("#tutorial-title").textContent = section.title;
     host.querySelector("#tutorial-progress").textContent = `Section ${index + 1} of ${list.length}`;
     host.querySelector("#tutorial-prev").disabled = index === 0;
-    host.querySelector("#tutorial-next").textContent = index === list.length - 1 ? "Finish" : "Next →";
+    const nextBtn = host.querySelector("#tutorial-next");
+    const nextText = index === list.length - 1 ? "Finish" : "Next";
+    const nextLabel = nextBtn.querySelector(".btn-label");
+    if (nextLabel) nextLabel.textContent = nextText;
+    else nextBtn.textContent = nextText;
     body.innerHTML = (section.content || []).map(renderBlock).join("");
     toc.innerHTML = list
       .map((sec, i) => {
@@ -282,6 +287,7 @@ export function bindTutorial(root, { simulationId }) {
       .join("");
     root.querySelector("#btn-howto")?.setAttribute("aria-expanded", String(type === "howToUseLab"));
     root.querySelector("#btn-guided")?.setAttribute("aria-expanded", String(type === "guidedLab"));
+    decorateActionButtons(host);
     requestAnimationFrame(place);
     persist();
   }
