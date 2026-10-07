@@ -202,24 +202,143 @@ export function modulePage(id) {
   `;
 }
 
+function faqItem(question, answer) {
+  return `
+        <details class="faq-item">
+          <summary>${question}</summary>
+          <p>${answer}</p>
+        </details>`;
+}
+
 export function aboutPage() {
   return `
     <header class="page-head">
       <p class="kicker">Help / About</p>
       <h1>How to use the platform</h1>
+      <p>
+        This is a classroom lab for AP Physics 1, not a collection of disconnected demos. You change a variable,
+        watch a physically consistent model respond, record your own trials, and only then open Theory to see why
+        the pattern appeared.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="/simulations" data-link>Browse simulations</a>
+        <a class="btn ghost-paper" href="/simulations/module-1/1-1" data-link>Start with 1.1</a>
+      </div>
     </header>
-    <article class="prose card">
-      <h2>Navigation</h2>
-      <p>Use <strong>Simulations</strong> to browse by unit. Unit 1 currently includes 1.1–1.5. Unit 2 currently includes 2.1 Systems and Center of Mass, 2.2 Forces and Free-Body Diagrams, and 2.3 Newton’s Third Law.</p>
-      <h2>Lab, Theory, Challenge, Teacher view</h2>
-      <p>Every available lab uses the same shell. Theory holds equations and examples. Challenge randomizes a target and hides the answer until you check or launch. Teacher view compares live values with the identities the course uses. Record and auto-record fill a trial table and graphs.</p>
-      <h2>Appearance</h2>
-      <p>Use <strong>Appearance</strong> in the header to switch the current beige paper theme, a cooler light theme, dark mode, or high contrast. The choice is saved in this browser and applies on every page, including How to Use This Lab and Guided Lab.</p>
-      <h2>Reset</h2>
-      <p>Reset returns the system to its initial condition and clears running totals such as distance traveled. Recorded trials stay until you clear them.</p>
-      <h2>Accuracy</h2>
-      <p>Displayed values come from the same state that drives the visualization. Distance is the sum of path lengths, not the shortcut from start to finish. Projectile range, height, and flight time come from the numerical stepper that also draws the trajectory.</p>
-    </article>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>What lives in every lab</h2>
+        <p>Available labs share one shell so Unit 2 feels like Unit 1. Displayed numbers come from the same state that draws the animation.</p>
+      </div>
+      <div class="how-grid">
+        ${LAB_FEATURES.map(
+          (item) => `
+          <article class="how-card">
+            <p class="kicker">${item.title}</p>
+            <p>${item.blurb}</p>
+          </article>`,
+        ).join("")}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>How a lab is structured</h2>
+      </div>
+      <ol class="lab-steps">
+        <li><strong>Investigate in the Lab tab.</strong> Drag, launch, or nudge the system. Live measurements update from the physics engine.</li>
+        <li><strong>Record trials.</strong> Build a data table and graphs from your own runs. Auto-record can capture a trial when a run finishes.</li>
+        <li><strong>Turn on Challenge mode</strong> when you want a target with the answer hidden until you check or launch.</li>
+        <li><strong>Open Theory</strong> for sign conventions, worked examples, and predicted curves.</li>
+        <li><strong>Enable Teacher view</strong> to line simulated values up next to closed-form identities without changing the student model.</li>
+      </ol>
+    </section>
+
+    <section class="section about-tools">
+      <article class="prose card">
+        <h2>Navigation</h2>
+        <p>
+          Use <strong>Simulations</strong> to browse by AP Physics 1 unit. Unit 1 currently includes 1.1–1.5.
+          Unit 2 currently includes 2.1–2.5. Later units stay visible as the map of what is coming.
+        </p>
+        <h2>Shared tools</h2>
+        <p>
+          <strong>Appearance</strong> in the header switches beige paper, a cooler light theme, dark mode, or high contrast.
+          The choice is saved in this browser and applies on every page, including tutorials.
+        </p>
+        <p>
+          Header <strong>Reset</strong> and the playback-bar Reset both return the system to its initial condition.
+          Recorded trials stay until you press Clear Trials. <strong>Fullscreen</strong> expands the page.
+          <strong>Download</strong> exports the trial table as text, CSV, or Excel once you have recorded runs.
+        </p>
+        <h2>Camera</h2>
+        <p>
+          One-object labs can zoom from the origin, follow the object, or freeze the window. Labs with two or more objects
+          can fit everything on screen, keep the origin in view, or stay stationary. Follow is off for those labs for now.
+        </p>
+        <h2>Tutorials</h2>
+        <p>
+          <strong>How to Use This Lab</strong> walks the interface. <strong>Guided Lab</strong> is the investigation:
+          predict, run, and explain. Closing a tutorial does not reset the lab. Escape closes the overlay.
+        </p>
+        <h2>Accuracy</h2>
+        <p>
+          Displayed values come from the same state that drives the visualization. Distance is the sum of path lengths,
+          not the shortcut from start to finish. Projectile range, height, and flight time come from the numerical stepper
+          that also draws the trajectory.
+        </p>
+      </article>
+    </section>
+
+    <section class="section faq-section">
+      <div class="section-head">
+        <h2>FAQ</h2>
+        <p>Open a question to see the short answer. These are the issues students and teachers hit first.</p>
+      </div>
+      <div class="faq-list">
+        ${faqItem(
+          "What is the difference between Lab and Theory?",
+          "Lab is the experiment: you change a control and the model responds. Theory is the identities, sign conventions, and worked examples behind that motion. Use Lab first so the equations explain a pattern you already saw.",
+        )}
+        ${faqItem(
+          "Why is the Challenge answer hidden?",
+          "Challenge gives you a target and hides the solution until you run the experiment and press Check (or Launch in projectile). Reveal is for after you have a measurement, not a substitute for one.",
+        )}
+        ${faqItem(
+          "What does Reset do, and why are there two?",
+          "Both Reset buttons restore the initial conditions and clear running totals such as distance. The header Reset stays put; the second Reset sits after Auto-record and before Record Trial so you can restart a run without leaving the playback bar. Neither button deletes recorded trials.",
+        )}
+        ${faqItem(
+          "How do I keep my data?",
+          "Press Record Trial after a run, or turn on Auto-record so a finished run is captured for you. Clear Trials wipes the table and graphs. Download exports what you recorded as .txt, .csv, or Excel.",
+        )}
+        ${faqItem(
+          "What do the camera options mean?",
+          "Origin keeps x = 0 in view and zooms out if the object recedes. Follow tracks one object as it moves. Stationary freezes the window you are looking at. With two or more objects, Follow is not offered; Fit objects keeps everyone on screen instead.",
+        )}
+        ${faqItem(
+          "What are How to Use This Lab and Guided Lab?",
+          "How to Use is a short tour of buttons, graphs, and camera. Guided Lab is the physics investigation for that simulation. You can reopen either any time. Closing the panel does not reset the lab; Restart this tutorial does start that walkthrough over.",
+        )}
+        ${faqItem(
+          "Why don’t the live numbers match the textbook formula exactly?",
+          "The animation and the readouts share one numerical state. Identities on the Theory tab are the closed-form curves. Small differences are from the time stepper, rounding, or a trial that did not use the same conditions as the example. Teacher view places both side by side.",
+        )}
+        ${faqItem(
+          "What keyboard shortcuts work?",
+          "In most playback labs, Space plays or pauses. In 1.1, arrow keys nudge the object by 1 m. In the projectile lab, Space launches or pauses and R resets. Escape closes an open tutorial. Shortcuts are ignored while you are typing in a field.",
+        )}
+        ${faqItem(
+          "Can I change how the site looks?",
+          "Use Appearance in the header. Beige is the paper classroom look. Light is cooler gray. Dark is for dim rooms. High contrast uses thick borders and no decorative texture. The setting is stored in this browser only.",
+        )}
+        ${faqItem(
+          "Why are later units listed if I cannot open them?",
+          "The library is the full AP Physics 1 map. Units 1 and 2 have available labs through 2.5. Later topics stay visible as Coming Soon or Planned so the sequence is honest about what is still being built.",
+        )}
+      </div>
+    </section>
   `;
 }
 

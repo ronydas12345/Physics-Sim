@@ -966,6 +966,69 @@ html.is-fullscreen #page-root,
   margin-bottom: 16px;
 }
 
+.about-tools .card {
+  max-width: 52em;
+}
+
+.faq-list {
+  display: grid;
+  gap: 8px;
+  max-width: 52em;
+}
+
+.faq-item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 12px 16px;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(45deg);
+  flex: none;
+  transition: transform 0.18s ease;
+}
+
+.faq-item[open] summary::after {
+  transform: rotate(225deg);
+}
+
+.faq-item[open] summary {
+  color: var(--accent-dark);
+}
+
+.faq-item p {
+  margin: 0;
+  padding: 0 16px 14px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item summary::after {
+    transition: none;
+  }
+}
+
 @media (max-width: 1100px) {
   .hero,
   .featured-row,

@@ -69,6 +69,7 @@ function render() {
     unmount = mountHeroReel(outlet);
   }
   else if (route.name === "library") outlet.innerHTML = libraryPage();
+  else if (route.name === "about") outlet.innerHTML = aboutPage();
   else if (route.name === "module") {
     outlet.innerHTML = modulePage(route.id);
     const mod = document.querySelector(".page-head h1");

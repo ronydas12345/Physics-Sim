@@ -8,6 +8,7 @@ import { getTutorials, listedSimulationIds } from "./registry.js";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const PAGES = readFileSync(join(ROOT, "public", "js", "platform", "pages.js"), "utf8");
 const LAB_KIT = readFileSync(join(ROOT, "public", "js", "platform", "lab-kit.js"), "utf8");
+const APP = readFileSync(join(ROOT, "public", "js", "platform", "app.js"), "utf8");
 
 const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5"];
 const PAGE_FNS = {
@@ -82,6 +83,13 @@ function highlightExists(html, highlight) {
 
 test("registry lists every shipped lab", () => {
   assert.deepEqual(listedSimulationIds(), IDS);
+});
+
+test("Help / About is routed and includes an FAQ", () => {
+  assert.match(APP, /route\.name === "about"/);
+  assert.match(PAGES, /export function aboutPage/);
+  assert.match(PAGES, /class="faq-item"/);
+  assert.match(PAGES, /<summary>/);
 });
 
 for (const id of IDS) {
