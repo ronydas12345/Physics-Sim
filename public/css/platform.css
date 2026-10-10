@@ -718,6 +718,10 @@ html.is-fullscreen #page-root,
   height: 360px;
 }
 
+.circle-stage #axis-canvas {
+  height: 420px;
+}
+
 .thirdlaw-stage #axis-canvas {
   height: 340px;
 }

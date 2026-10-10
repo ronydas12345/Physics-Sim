@@ -86,7 +86,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1–1.4 and 2.1–2.8, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.4 and 2.1–2.9, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -260,7 +260,7 @@ export function aboutPage() {
         <h2>Navigation</h2>
         <p>
           Use <strong>Simulations</strong> to browse by AP Physics 1 unit. Unit 1 currently includes 1.1–1.4.
-          Unit 2 currently includes 2.1–2.8. Later units stay visible as the map of what is coming.
+          Unit 2 currently includes 2.1–2.9. Later units stay visible as the map of what is coming.
         </p>
         <h2>Shared tools</h2>
         <p>
@@ -2979,7 +2979,7 @@ export function sim28Page() {
           <p class="kicker">Unit 2 · Simulation 2.8</p>
           <h1>Spring Forces</h1>
           <p class="objective">Learning objective: An ideal spring exerts a restoring force F<sub>s</sub> = −kx. Stiffness k is not the force. Spring force is not automatically the net force.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-7" data-link>← 2.7</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.9 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-7" data-link>← 2.7</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-9" data-link>2.9 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -3134,7 +3134,7 @@ export function sim28Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m. Spring force is one term in that sum.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-7" data-link>Review 2.7</a> — friction was a contact force. A spring is a different interaction.</p>
-              <p class="conn-card">Next: circular motion (2.9, coming) needs a center-seeking net force. Do not treat every restoring force as friction.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-2/2-9" data-link>Open 2.9</a> — circular motion needs a center-seeking net force. Do not treat every restoring force as friction.</p>
             </div>
           </aside>
         </div>
@@ -3225,6 +3225,287 @@ export function sim28Page() {
           </section>
           ${trialFitTheory(`
             <p>Fs vs. x should be a line through the origin with slope −k. |Fs| vs. |x| should have slope +k. Us vs. x should curve as ½kx².</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim29Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.9</p>
+          <h1>Circular Motion</h1>
+          <p class="objective">Learning objective: Uniform circular motion has tangent velocity and inward acceleration a<sub>c</sub> = v²/r. The required net inward force is m v²/r, supplied by real forces, not by an extra “centripetal” interaction.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-8" data-link>← 2.8</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">3.1 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage circle-stage" aria-label="Object on a circular path" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="420" aria-label="Circular path with tangent velocity and inward acceleration"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-29">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="preset-selector">
+                <div class="control-head"><span>Preset</span></div>
+                <div class="presets" role="group" aria-label="Circular-motion presets">
+                  <button type="button" class="chip" data-scenario="baseline">Baseline</button>
+                  <button type="button" class="chip" data-scenario="double-v">Double speed</button>
+                  <button type="button" class="chip" data-scenario="double-r">Double radius</button>
+                  <button type="button" class="chip" data-scenario="double-m">Double mass</button>
+                  <button type="button" class="chip" data-scenario="double-both">Double v and r</button>
+                  <button type="button" class="chip" data-scenario="slow">Slow motion</button>
+                  <button type="button" class="chip" data-scenario="clockwise">Clockwise</button>
+                  <button type="button" class="chip" data-scenario="rest">Zero speed</button>
+                  <button type="button" class="chip" data-scenario="friction-limit">Friction limit</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Force source</span></div>
+                <div class="presets" role="group" aria-label="Which real force supplies the inward net force">
+                  <button type="button" class="chip" data-source="string">String (tension)</button>
+                  <button type="button" class="chip" data-source="friction">Friction (flat road)</button>
+                  <button type="button" class="chip" data-source="orbit">Orbit (gravity)</button>
+                </div>
+                <p class="track-help">Centripetal force is the net inward force. These chips choose which real force supplies it.</p>
+              </div>
+              <div class="control" id="direction-control">
+                <div class="control-head"><span>Rotation</span></div>
+                <div class="presets" role="group" aria-label="Rotation direction">
+                  <button type="button" class="chip" data-dir="1">Counterclockwise</button>
+                  <button type="button" class="chip" data-dir="-1">Clockwise</button>
+                </div>
+              </div>
+              <div class="control" id="angle-control">
+                <div class="control-head"><span>Pause at a cardinal angle</span></div>
+                <div class="presets" role="group" aria-label="Angular position">
+                  <button type="button" class="chip" data-angle="0">Right 0°</button>
+                  <button type="button" class="chip" data-angle="90">Top 90°</button>
+                  <button type="button" class="chip" data-angle="180">Left 180°</button>
+                  <button type="button" class="chip" data-angle="270">Bottom 270°</button>
+                </div>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="acv">ac vs. v</button>
+                  <button type="button" class="chip" data-invest="acv2">ac vs. v²</button>
+                  <button type="button" class="chip" data-invest="acr">ac vs. 1/r</button>
+                  <button type="button" class="chip" data-invest="fcm">Fc vs. m</button>
+                  <button type="button" class="chip" data-invest="fcv2">Fc vs. v²</button>
+                  <button type="button" class="chip" data-invest="fcr">Fc vs. 1/r</button>
+                  <button type="button" class="chip" data-invest="tv">T vs. v</button>
+                  <button type="button" class="chip" data-invest="tr">T vs. r</button>
+                </div>
+                <p class="track-help" id="invest-help">Vary one quantity while holding the others constant, then record trials.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs" id="mass-control">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.5" max="50" step="0.1" value="1" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="radius-control">r<input id="r-input" type="number" min="0.5" max="20" step="0.1" value="2" aria-label="Radius of the circular path in meters" /><span>m</span></label>
+                <label class="pos-input" id="speed-control">v<input id="v-input" type="number" min="0" max="20" step="0.1" value="4" aria-label="Speed in meters per second" /><span>m/s</span></label>
+                <label class="pos-input">θ<input id="ang-input" type="number" min="0" max="359" step="1" value="0" aria-label="Initial angular position in degrees" /><span>°</span></label>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input" id="mu-control">μ<sub>s</sub><input id="mu-input" type="number" min="0" max="1.5" step="0.05" value="0.5" aria-label="Coefficient of static friction" /></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vectors</label>
+                <label class="switch light" id="velocity-vector"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light" id="acceleration-vector"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+                <label class="switch light"><input id="toggle-axes" type="checkbox" checked /> Axes</label>
+                <label class="switch light"><input id="toggle-trail" type="checkbox" checked /> Trail</label>
+              </div>
+              <p class="track-help" id="circular-motion-animation">Teal is tangent velocity. Gold is inward acceleration. The brown or rust arrow is the real inward force for the selected scenario, not an extra centripetal interaction.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="force-readout">
+              <div class="card-head">
+                <h2>Centripetal motion</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">UNIFORM CIRCULAR</strong>
+                <span id="eq-net">ac = 8.00 m/s²</span>
+                <span id="eq-detail">Velocity is tangent. Acceleration points toward the center.</span>
+              </div>
+              <dl class="metrics metrics-wide" id="physics-readouts">
+                <div><dt>ac = v²/r</dt><dd id="read-ac">8.00 m/s²</dd></div>
+                <div><dt>Fc = m ac</dt><dd id="read-fc">8.00 N</dd></div>
+                <div><dt>ω = v/r</dt><dd id="read-omega">+2.00 rad/s</dd></div>
+                <div><dt>T = 2πr/v</dt><dd id="read-t">3.14 s</dd></div>
+                <div><dt>frequency</dt><dd id="read-f">0.32 Hz</dd></div>
+              </dl>
+              <p class="eq-block">a<sub>c</sub> = v²/r</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>State</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Mass</dt><dd id="read-m">1.00 kg</dd></div>
+                <div><dt>r</dt><dd id="read-r">2.00 m</dd></div>
+                <div><dt>v</dt><dd id="read-v">4.00 m/s</dd></div>
+                <div><dt>θ</dt><dd id="read-theta">0°</dd></div>
+                <div><dt>v<sub>x</sub></dt><dd id="read-vx">0.00 m/s</dd></div>
+                <div><dt>v<sub>y</sub></dt><dd id="read-vy">+4.00 m/s</dd></div>
+                <div><dt>a<sub>x</sub></dt><dd id="read-ax">−8.00 m/s²</dd></div>
+                <div><dt>a<sub>y</sub></dt><dd id="read-ay">0.00 m/s²</dd></div>
+              </dl>
+              <p class="muted" id="circle-center">The center is the origin. At the rightmost point, counterclockwise velocity points up and acceleration points left.</p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>Force source</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Inward force</dt><dd id="read-source">T</dd></div>
+                <div><dt>Magnitude</dt><dd id="read-inward">8.00 N</dd></div>
+                <div><dt>v<sub>max</sub> (friction)</dt><dd id="read-vmax">—</dd></div>
+              </dl>
+              <p class="muted" id="source-caption">Tension supplies the inward net force on a horizontal table.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Inward net force</summary>
+              <p>Do not add a separate centripetal-force arrow on top of tension, friction, or gravity. Those real forces are the inward net force in these simplified models.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m still holds. Here F_net points toward the center.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-8" data-link>Review 2.8</a> — a restoring force is not automatically the net force, and it is not automatically centripetal.</p>
+              <p class="conn-card">Next: work and energy (3.1, coming) tracks energy transfers. Circular motion here is still a Newton’s-law story.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram" id="fbd">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram showing only real forces"></canvas>
+            <p class="caption" id="equilibrium-marker">The diagram shows the real forces for the selected scenario. It does not add a fictitious extra centripetal force.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>x vs. time</h2>
+              <canvas id="graph-xt" width="640" height="220" aria-label="Horizontal position versus time"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity components vs. time</h2>
+              <canvas id="graph-vt" width="640" height="220" aria-label="Velocity components versus time"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-a">
+              <h2>Acceleration components vs. time</h2>
+              <canvas id="graph-at" width="640" height="220" aria-label="Acceleration components versus time"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <div id="graph-panel">
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · ac vs. v",
+          heightTitle: "Your Trials · ac vs. v²",
+          rangeCaption: "ac vs. v is not linear. Use ac vs. v² when you want a line whose slope is 1/r.",
+          heightCaption: "For fixed radius, ac vs. v² should be a line through the origin with slope 1/r.",
+          columns: ["Trial", "m", "r", "v", "ac", "Fc", "ω", "T", "f", "source", "limit"],
+          emptyCols: 11,
+        })}
+        </div>
+        </div>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Changing direction at constant speed</h2>
+            <p>
+              An object can accelerate while its speed stays constant. In uniform circular motion the velocity is
+              always tangent to the path, and the acceleration points toward the center.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Centripetal acceleration</h3>
+            <p>Right is +x and up is +y. θ is measured counterclockwise from +x. At the rightmost point, counterclockwise velocity points up and acceleration points left.</p>
+            <p class="eq-block">a<sub>c</sub> = v² / r</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Required inward net force</h3>
+            <p>Newton’s second law still holds. The net force toward the center is m a<sub>c</sub>. That net force is not a new kind of interaction.</p>
+            <p class="eq-block">F<sub>net,inward</sub> = m v² / r</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Period and angular speed</h3>
+            <p>ω = v/r and T = 2πr/v. Frequency in hertz is 1/T. If speed is zero, period and frequency are undefined rather than infinite.</p>
+            <p class="eq-block">T = 2πr / v</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Scaling</h3>
+            <p>At fixed r, doubling v multiplies a<sub>c</sub> and F<sub>c</sub> by four. At fixed v, doubling r halves both. Doubling mass at fixed v and r leaves a<sub>c</sub> unchanged and doubles F<sub>c</sub>.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Real forces supply F<sub>c</sub></h3>
+            <p>On a horizontal table, tension can be the inward force. On a flat curve, static friction can, up to μ<sub>s</sub> N. In an ideal circular orbit, gravity can. Do not draw those forces and then add another centripetal arrow.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Friction limit</h3>
+            <p>If static friction alone supplies the inward force, v<sub>max</sub> = √(μ<sub>s</sub> g r). Faster requested speeds are not supported by that model.</p>
+            <p class="eq-block">v<sub>max</sub> = √(μ<sub>s</sub> g r)</p>
+          </section>
+          <section class="theory-block">
+            <h3>7. Mistakes to avoid</h3>
+            <p>Do not aim velocity toward the center. Do not say constant speed means zero acceleration. Do not say doubling speed doubles a<sub>c</sub>. Do not say mass changes a<sub>c</sub> at fixed v and r. Do not treat centripetal force as an extra interaction.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>ac vs. v² at fixed r should be a line through the origin with slope 1/r. ac vs. 1/r at fixed v should have slope v². Fc vs. m at fixed v and r should have slope v²/r.</p>
           `)}
         </article>
       </div>

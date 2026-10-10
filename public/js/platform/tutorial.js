@@ -73,6 +73,14 @@ const TARGET_ALIASES = {
   "spring-force-readout": "#force-readout",
   "data-record-control": "#data-table",
   "simulation-reset-control": "#playback-controls",
+  "circular-motion-animation": "#simulation-canvas",
+  "circle-center": "#circle-center",
+  "radius-control": "#radius-control",
+  "speed-control": "#speed-control",
+  "velocity-vector": "#velocity-vector",
+  "acceleration-vector": "#acceleration-vector",
+  "physics-readouts": "#physics-readouts",
+  "angle-control": "#angle-control",
 };
 
 function storageKey(simId, type) {

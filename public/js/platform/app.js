@@ -1,6 +1,6 @@
 import { mountChrome } from "./chrome.js";
 import { decorateActionButtons } from "./lab-kit.js";
-import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page, sim23Page, sim24Page, sim25Page, sim26Page, sim27Page, sim28Page } from "./pages.js";
+import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page, sim23Page, sim24Page, sim25Page, sim26Page, sim27Page, sim28Page, sim29Page } from "./pages.js";
 import { fullPagePaths } from "./curriculum.js";
 import { mountVectors1D } from "../simulations/vectors-1d.js";
 import { mountMotion1D } from "../simulations/motion-1d.js";
@@ -14,6 +14,7 @@ import { mountSecondLaw } from "../simulations/second-law.js";
 import { mountGravity } from "../simulations/gravity.js";
 import { mountFriction } from "../simulations/friction.js";
 import { mountSprings } from "../simulations/springs.js";
+import { mountCircular } from "../simulations/circular.js";
 import { mountHeroReel } from "./hero-reel.js";
 
 const outlet = document.getElementById("outlet");
@@ -44,6 +45,7 @@ function resolve(pathname) {
   if (pathname === "/simulations/module-2/2-6") return { name: "sim-2-6" };
   if (pathname === "/simulations/module-2/2-7") return { name: "sim-2-7" };
   if (pathname === "/simulations/module-2/2-8") return { name: "sim-2-8" };
+  if (pathname === "/simulations/module-2/2-9") return { name: "sim-2-9" };
   return { name: "notfound" };
 }
 
@@ -71,6 +73,7 @@ function render() {
     "sim-2-6": "2.6 Gravitational Force · AP Physics 1",
     "sim-2-7": "2.7 Kinetic and Static Friction · AP Physics 1",
     "sim-2-8": "2.8 Spring Forces · AP Physics 1",
+    "sim-2-9": "2.9 Circular Motion · AP Physics 1",
     notfound: "Not found · AP Physics 1",
   };
   if (route.name === "home") {
@@ -119,6 +122,9 @@ function render() {
   } else if (route.name === "sim-2-8") {
     outlet.innerHTML = sim28Page();
     unmount = mountSprings(outlet);
+  } else if (route.name === "sim-2-9") {
+    outlet.innerHTML = sim29Page();
+    unmount = mountCircular(outlet);
   } else outlet.innerHTML = notFoundPage();
 
   if (route.name !== "module") document.title = titles[route.name] || titles.home;
