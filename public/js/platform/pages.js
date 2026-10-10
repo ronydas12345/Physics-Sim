@@ -2273,6 +2273,7 @@ export function sim25Page() {
                 <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
               </div>
               <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vectors</label>
                 <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
                 <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
                 <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>

@@ -42,6 +42,10 @@ export const tutorials = {
         text("The FBD lists the individual external forces used to calculate net force."),
         explain("Individual forces → net force → acceleration. Velocity is not drawn on the FBD."),
       ]),
+      section("vectors", "Force vectors", "force-vector-toggle", [
+        text("Force arrows on the scene can be hidden so velocity and acceleration stand out. The free-body diagram still lists the individual forces."),
+        action("Turn Force vectors off, then on, and compare the scene with the FBD."),
+      ]),
       section("diagram", "Motion diagram", "motion-diagram", [
         text("Changing spacing means changing velocity."),
         predict("pred-spread", "What should happen to the spacing if acceleration points in the same direction as velocity?"),

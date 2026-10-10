@@ -270,7 +270,9 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
   ctx.fillText("SYSTEM", boxX - 50, boxY - 78);
   ctx.globalAlpha = 1;
   drawBox(ctx, boxX, boxY, 74, 48, "Box");
-  drawForceArrows(ctx, boxX, boxY, live.forces, { showNet: state.showNetForce, net: live.net });
+  if (state.showVectors) {
+    drawForceArrows(ctx, boxX, boxY, live.forces, { showNet: state.showNetForce, net: live.net });
+  }
   if (state.showVelocity) drawSideArrow(ctx, boxX, boxY, live.vx, FORCE_COLOR.velocity, "v", "m/s", -38);
   if (state.showAccel) drawSideArrow(ctx, boxX, boxY, live.ax, FORCE_COLOR.accel, "a", "m/s²", 36);
 
@@ -553,8 +555,10 @@ export function mountSecondLaw(root) {
   }
 
   function applyScenario(params) {
+    stopLoop();
     state = createState({
       ...params,
+      showVectors: params.showVectors ?? state.showVectors,
       showNetForce: params.showNetForce ?? state.showNetForce,
       showVelocity: params.showVelocity ?? state.showVelocity,
       showAccel: params.showAccel ?? state.showAccel,
@@ -663,10 +667,12 @@ export function mountSecondLaw(root) {
     root.querySelectorAll("[data-scenario]").forEach((btn) => {
       btn.disabled = busy;
     });
+    const vecToggle = root.querySelector("#toggle-vectors");
     const netToggle = root.querySelector("#toggle-net");
     const velToggle = root.querySelector("#toggle-velocity");
     const accToggle = root.querySelector("#toggle-accel");
     const vertToggle = root.querySelector("#toggle-vertical");
+    if (document.activeElement !== vecToggle) vecToggle.checked = state.showVectors;
     if (document.activeElement !== netToggle) netToggle.checked = state.showNetForce;
     if (document.activeElement !== velToggle) velToggle.checked = state.showVelocity;
     if (document.activeElement !== accToggle) accToggle.checked = state.showAccel;
@@ -781,6 +787,7 @@ export function mountSecondLaw(root) {
       forces: state.schedule ? undefined : state.forces,
       schedule: state.schedule,
       includeVertical: state.includeVertical,
+      showVectors: state.showVectors,
       showNetForce: state.showNetForce,
       showVelocity: state.showVelocity,
       showAccel: state.showAccel,
@@ -879,6 +886,10 @@ export function mountSecondLaw(root) {
   tInput.addEventListener("change", () => {
     state.duration = readNumber(tInput, state.duration);
     state = resetState(state);
+    paint();
+  });
+  root.querySelector("#toggle-vectors").addEventListener("change", (event) => {
+    state.showVectors = event.target.checked;
     paint();
   });
   root.querySelector("#toggle-net").addEventListener("change", (event) => {
