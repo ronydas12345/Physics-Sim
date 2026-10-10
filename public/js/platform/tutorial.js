@@ -56,6 +56,15 @@ const TARGET_ALIASES = {
   "object-a": "#object-a",
   "object-b": "#object-b",
   "field-visualization": "#field-visualization",
+  "friction-animation": "#simulation-canvas",
+  "applied-force-control": "#applied-force-control",
+  "static-coefficient-control": "#static-coefficient-control",
+  "kinetic-coefficient-control": "#kinetic-coefficient-control",
+  "surface-preset-control": "#surface-preset-control",
+  "force-vector-toggle": "#force-vector-toggle",
+  "force-readout": "#force-readout",
+  "net-force-readout": "#net-force-panel",
+  "acceleration-readout": "#acceleration-panel",
 };
 
 function storageKey(simId, type) {

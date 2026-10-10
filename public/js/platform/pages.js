@@ -86,7 +86,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1–1.4 and 2.1–2.6, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.4 and 2.1–2.7, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -260,7 +260,7 @@ export function aboutPage() {
         <h2>Navigation</h2>
         <p>
           Use <strong>Simulations</strong> to browse by AP Physics 1 unit. Unit 1 currently includes 1.1–1.4.
-          Unit 2 currently includes 2.1–2.6. Later units stay visible as the map of what is coming.
+          Unit 2 currently includes 2.1–2.7. Later units stay visible as the map of what is coming.
         </p>
         <h2>Shared tools</h2>
         <p>
@@ -2479,7 +2479,7 @@ export function sim26Page() {
           <p class="kicker">Unit 2 · Simulation 2.6</p>
           <h1>Gravitational Force</h1>
           <p class="objective">Learning objective: Gravitational force is an attractive interaction between masses. Fg = G m1 m2 / r², with r measured center to center. Near Earth, Fg = mg is the same law.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-5" data-link>← 2.5</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.7 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-5" data-link>← 2.5</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-7" data-link>2.7 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -2640,7 +2640,7 @@ export function sim26Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-3" data-link>Review 2.3</a> — a gravitational pair is equal, opposite, and on two objects.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — equal forces do not mean equal accelerations. a = F/m.</p>
-              <p class="conn-card">Next: friction (2.7, coming) is a different interaction. Do not treat gravity as the only force, or as the net force.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-2/2-7" data-link>Open 2.7</a> — friction is a different contact interaction. Gravity is not automatically the net force.</p>
             </div>
           </aside>
         </div>
@@ -2708,6 +2708,262 @@ export function sim26Page() {
           </section>
           ${trialFitTheory(`
             <p>Fg vs. r at fixed masses should curve. Fg vs. 1/r² should be a line through the origin with slope G m1 m2. Fg vs. m1 at fixed m2 and r should be linear.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim27Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.7</p>
+          <h1>Kinetic and Static Friction</h1>
+          <p class="objective">Learning objective: Static friction balances up to μ<sub>s</sub> N. Kinetic friction is μ<sub>k</sub> N opposite sliding. The two are different models, not two names for μN.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-6" data-link>← 2.6</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.8 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage friction-stage" aria-label="Block on a horizontal surface" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Block on a surface with weight, normal, applied, and friction arrows"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-27">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Friction scenarios">
+                  <button type="button" class="chip" data-scenario="rest">No applied force</button>
+                  <button type="button" class="chip" data-scenario="below">Below threshold</button>
+                  <button type="button" class="chip" data-scenario="near">Near threshold</button>
+                  <button type="button" class="chip" data-scenario="sliding">Sliding</button>
+                  <button type="button" class="chip" data-scenario="coast">Constant-speed sliding</button>
+                  <button type="button" class="chip" data-scenario="decel">Decelerating</button>
+                  <button type="button" class="chip" data-scenario="leftward">Leftward</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control" id="surface-preset-control">
+                <div class="control-head"><span>Surface pair</span></div>
+                <div class="presets" role="group" aria-label="Illustrative surface pairs">
+                  <button type="button" class="chip" data-surface="ice">Low-friction</button>
+                  <button type="button" class="chip" data-surface="wood">Wood-like</button>
+                  <button type="button" class="chip" data-surface="rubber">Rubber-like</button>
+                  <button type="button" class="chip" data-surface="rough">Rough</button>
+                  <button type="button" class="chip" data-surface="custom">Custom</button>
+                </div>
+                <p class="track-help">Coefficients are illustrative models, not universal measurements of those materials.</p>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="fapp">Friction vs. F_app</button>
+                  <button type="button" class="chip" data-invest="fsmax">f<sub>s,max</sub> vs. N</button>
+                  <button type="button" class="chip" data-invest="fk">f<sub>k</sub> vs. N</button>
+                  <button type="button" class="chip" data-invest="anet">a vs. F_net</button>
+                </div>
+                <p class="track-help" id="invest-help">Vary one quantity while holding the others constant, then record trials.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs" id="mass-control">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.5" max="50" step="0.1" value="5" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="applied-force-control">F<sub>app</sub><input id="fapp-input" type="number" min="-100" max="100" step="0.5" value="0" aria-label="Applied horizontal force in newtons" /><span>N</span></label>
+                <label class="pos-input">v₀<input id="v-input" type="number" step="0.1" value="0" aria-label="Initial velocity in meters per second" /><span>m/s</span></label>
+                <label class="pos-input">g<input id="g-input" type="number" min="1" max="20" step="0.01" value="9.81" aria-label="Gravitational field strength in meters per second squared" /><span>m/s²</span></label>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input" id="static-coefficient-control">μ<sub>s</sub><input id="mus-input" type="number" min="0" max="1.5" step="0.01" value="0.50" aria-label="Coefficient of static friction" /></label>
+                <label class="pos-input" id="kinetic-coefficient-control">μ<sub>k</sub><input id="muk-input" type="number" min="0" max="1.5" step="0.01" value="0.30" aria-label="Coefficient of kinetic friction" /></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <p class="track-help" id="mu-note" hidden>μ<sub>k</sub> is larger than μ<sub>s</sub>. That is unusual for the introductory model; the math still runs with your values.</p>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vectors</label>
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+              </div>
+              <p class="track-help" id="friction-animation">Brown arrows are forces. The friction arrow is the actual friction, not fs,max unless the block is at the limit. Teal is velocity. Gold is acceleration. Camera: Origin, Follow object, or Stationary.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="force-readout">
+              <div class="card-head">
+                <h2>Friction</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">STATIONARY</strong>
+                <span id="eq-net">Actual f = 0 N</span>
+                <span id="eq-detail">fs,max is a limit, not the force at every rest.</span>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Actual friction</dt><dd id="read-f">0.00 N</dd></div>
+                <div><dt>fs,max = μs N</dt><dd id="read-fsmax">24.53 N</dd></div>
+                <div><dt>fk = μk N</dt><dd id="read-fk">14.72 N</dd></div>
+                <div><dt>Kind</dt><dd id="read-kind">static</dd></div>
+              </dl>
+              <p class="eq-block">f<sub>s</sub> ≤ μ<sub>s</sub> N<br />f<sub>k</sub> = μ<sub>k</sub> N</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>Forces and net force</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>F_app</dt><dd id="read-fapp">0.00 N</dd></div>
+                <div><dt>N = mg</dt><dd id="read-n">49.05 N</dd></div>
+                <div><dt>Weight</dt><dd id="read-w">49.05 N</dd></div>
+                <div><dt>F_net,x</dt><dd id="read-fnet">0.00 N</dd></div>
+              </dl>
+              <p class="muted">Weight and N cancel vertically here. Friction is not the net force.</p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>Motion</h2>
+              </div>
+              <dl class="metrics metrics-wide" id="velocity-panel">
+                <div><dt>Mass</dt><dd id="read-m">5.00 kg</dd></div>
+                <div><dt>a_x</dt><dd id="read-a">0.00 m/s²</dd></div>
+                <div><dt>v</dt><dd id="read-v">0.00 m/s</dd></div>
+                <div><dt>Δx</dt><dd id="read-dx">0.00 m</dd></div>
+              </dl>
+              <p class="muted">a follows F_net. v can point the other way while the block slows.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Static vs kinetic</summary>
+              <p>Static friction changes as needed, up to μs N. Once sliding, kinetic friction is μk N opposite the velocity. Do not put fs,max into F = ma after the block is moving.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-4" data-link>Review 2.4</a> — F_net = 0 means constant velocity, including rest.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m. Friction is one of the forces in that sum.</p>
+              <p class="conn-card">Next: springs (2.8, coming) are another interaction. Do not treat friction as the only contact force.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram" id="fbd">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of the block"></canvas>
+            <p class="caption">The friction arrow is the actual friction on the block. fs,max is a threshold, not an extra force.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="220" aria-label="Position versus time"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="220" aria-label="Velocity versus time"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-a">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-at" width="640" height="220" aria-label="Acceleration versus time"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <div id="graph-panel">
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · friction vs. F_app",
+          heightTitle: "Your Trials · fs,max vs. N",
+          rangeCaption: "In the static region, actual friction should rise with F_app. After sliding it should sit near μk N.",
+          heightCaption: "Hold coefficients fixed and change mass. fs,max vs. N should be a line through the origin with slope μs.",
+          columns: ["Trial", "m", "N", "μs", "μk", "F_app", "fs,max", "f", "State", "F_net", "a"],
+          emptyCols: 11,
+        })}
+        </div>
+        </div>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Two friction models, one contact</h2>
+            <p>
+              Friction is how two surfaces resist sliding. While they are not sliding, static friction balances the
+              tendency to slide, up to a maximum. Once they slide, kinetic friction has a size set by μk N.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Static friction is not always μs N</h3>
+            <p>The model is fs ≤ μs N. The equality fs,max = μs N is the largest static friction in the model, not the force at every rest. If F_app = 10 N and fs,max = 24.5 N, the actual static friction is 10 N.</p>
+            <p class="eq-block">f<sub>s</sub> ≤ μ<sub>s</sub> N<br />f<sub>s,max</sub> = μ<sub>s</sub> N</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Kinetic friction while sliding</h3>
+            <p>Once the surfaces slide, fk = μk N opposite the velocity. It does not depend on speed in this introductory model. Do not aim kinetic friction opposite the applied force if the block is still moving the other way.</p>
+            <p class="eq-block">f<sub>k</sub> = μ<sub>k</sub> N</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Normal force on this horizontal surface</h3>
+            <p>With no vertical acceleration and only gravity and the normal force vertically, N = mg. That is this setup, not a universal rule. Changing mass changes N and therefore both friction thresholds if the coefficients stay fixed.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Starting, sliding, and stopping</h3>
+            <p>Stay at rest while |F_app| ≤ fs,max. Above that, switch to kinetic friction. If kinetic friction then slows the block to rest, re-check the static condition. Friction does not reverse the block through zero velocity.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Net force is still F_net = ma</h3>
+            <p>Friction is one force in the sum. Zero net force means zero acceleration: rest, or sliding at constant speed when F_app = fk. Velocity can point opposite acceleration while the block slows.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Coefficients</h3>
+            <p>μs and μk describe a pair of surfaces in this model. Usually μs ≥ μk, but that is a common assumption, not a law you should silently enforce. Changing μs does not automatically change μk.</p>
+          </section>
+          <section class="theory-block">
+            <h3>7. Mistakes to avoid</h3>
+            <p>Do not report fs,max as the actual friction at every rest. Do not put fs,max into F = ma after sliding starts. Do not say F_net = 0 means the object is stopped. Do not say kinetic friction always opposes the applied force.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>Friction vs. F_app should rise one-to-one while static, then sit near μk N while sliding. fs,max vs. N should be a line through the origin with slope μs. a vs. F_net should have slope 1/m.</p>
           `)}
         </article>
       </div>

@@ -10,7 +10,7 @@ const PAGES = readFileSync(join(ROOT, "public", "js", "platform", "pages.js"), "
 const LAB_KIT = readFileSync(join(ROOT, "public", "js", "platform", "lab-kit.js"), "utf8");
 const APP = readFileSync(join(ROOT, "public", "js", "platform", "app.js"), "utf8");
 
-const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5", "2-6"];
+const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5", "2-6", "2-7"];
 const PAGE_FNS = {
   "1-1": "sim11Page",
   "1-2": "sim12Page",
@@ -22,6 +22,7 @@ const PAGE_FNS = {
   "2-4": "sim24Page",
   "2-5": "sim25Page",
   "2-6": "sim26Page",
+  "2-7": "sim27Page",
 };
 const TARGET_ALIASES = {
   scene: "axis-canvas",
@@ -62,6 +63,16 @@ const TARGET_ALIASES = {
   "equation-display": "equation-display",
   "distance-marker": "distance-marker",
   "height-control": "height-control",
+  "friction-animation": "simulation-canvas",
+  "applied-force-control": "applied-force-control",
+  "static-coefficient-control": "static-coefficient-control",
+  "kinetic-coefficient-control": "kinetic-coefficient-control",
+  "surface-preset-control": "surface-preset-control",
+  "force-vector-toggle": "force-vector-toggle",
+  "force-readout": "force-readout",
+  "net-force-readout": "net-force-panel",
+  "acceleration-readout": "acceleration-panel",
+  "playback-controls": "playback-controls",
 };
 const BLOCK_TYPES = new Set([
   "heading",

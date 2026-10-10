@@ -708,7 +708,8 @@ html.is-fullscreen #page-root,
 
 .fbd-stage #axis-canvas,
 .secondlaw-stage #axis-canvas,
-.firstlaw-stage #axis-canvas {
+.firstlaw-stage #axis-canvas,
+.friction-stage #axis-canvas {
   height: 340px;
 }
 
