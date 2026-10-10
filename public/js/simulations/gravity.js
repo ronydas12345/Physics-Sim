@@ -242,6 +242,7 @@ export function mountGravity(root) {
       sci: state.sci,
       extraA: params.extraA ?? 0,
       duration: params.duration ?? state.duration,
+      motion: params.motion ?? state.motion,
     });
     lastFg = liveState(state).magnitude;
     paint();
@@ -428,9 +429,19 @@ export function mountGravity(root) {
     ctx.textAlign = "left";
     ctx.fillText(`Fg ${formatCompact(live.magnitude, "N", state.sci)}`, ax + ux * fLen + 6, ay + uy * fLen - 6);
 
+    function velArrow(body, px, py, fallback) {
+      const vx = body.vx || fallback.x;
+      const vy = body.vy || fallback.y;
+      const tipX = xOf(body.x + vx) - px;
+      const tipY = yOf(body.y + vy) - py;
+      const s = Math.hypot(tipX, tipY);
+      if (s < 1e-6) return;
+      const L = 32;
+      drawArrow(ctx, px, py, px + (tipX / s) * L, py + (tipY / s) * L, COLOR_V, 2);
+    }
     if (state.showVelocity) {
-      drawArrow(ctx, ax, ay - pxA - 8, ax + Math.sign(state.A.vx || 0) * 28, ay - pxA - 8, COLOR_V, 2);
-      drawArrow(ctx, bx, by - pxB - 8, bx + Math.sign(state.B.vx || live.aB.x) * 28, by - pxB - 8, COLOR_V, 2);
+      velArrow(state.A, ax, ay, live.aA);
+      velArrow(state.B, bx, by, live.aB);
     }
     if (state.showAccel) {
       drawArrow(ctx, ax, ay + pxA + 10, ax + ux * 26, ay + uy * 26 + pxA + 10, COLOR_AVEC, 2);
@@ -536,6 +547,7 @@ export function mountGravity(root) {
   function play() {
     if (running) return;
     if (state.time >= state.duration - 1e-9) state = resetState(state);
+    state.motion = true;
     running = true;
     lastStamp = 0;
     carry = 0;

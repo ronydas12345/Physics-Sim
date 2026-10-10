@@ -19,7 +19,7 @@ export const tutorials = {
     [
       section("masses", "Changing mass", "mass-controls", [
         text("m1 and m2 are independent. Scientific notation is available for large values such as Earth’s mass."),
-        action("Change m1 and watch Fg before you press Play. Motion is optional; gravity exists while the objects sit still."),
+        action("Change m1 and watch Fg before you press Play. Gravity is there even if you later freeze Motion mode."),
       ]),
       section("distance", "Changing distance", "distance-control", [
         text("r is the distance between centers, not the gap between the drawn surfaces."),
@@ -52,8 +52,8 @@ export const tutorials = {
         explain("Fg changes if you change the test mass at a fixed place. g stays the same."),
       ]),
       section("motion", "Motion mode", "motion-mode", [
-        text("Motion mode lets the pair accelerate. Velocity can point a different way from the force. Orbit extension is a 2D path, not a full mission planner."),
-        explain("At 1000 kg and 10 m the acceleration is tiny. Earth and orbit presets make the motion visible."),
+        text("Play animates the pair. Real G makes lab-scale accelerations tiny, so playback is sped up. The force numbers stay real. Velocity can point a different way from the force."),
+        explain("Turn Motion mode off to freeze the objects and measure Fg. Orbit extension is a sped-up 2D path, not a full mission planner."),
       ]),
     ],
   ),
@@ -82,7 +82,7 @@ export const tutorials = {
     ],
     sections: [
       section("still", "Does gravity require motion?", "[data-scenario=\"basic\"]", [
-        action("Open Basic attraction: m1 = m2 = 1000 kg, r = 10 m. Leave Motion mode off."),
+        action("Open Basic attraction: m1 = m2 = 1000 kg, r = 10 m. Turn Motion mode off so the objects sit still."),
         predict("pred-still", "Is there a gravitational force while both objects are stationary?"),
         observe("obs-still", "Read Fg on the force display. Did you need Play to get a force?"),
         hint("The force formula does not include velocity."),

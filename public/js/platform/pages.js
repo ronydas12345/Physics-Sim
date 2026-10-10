@@ -2573,7 +2573,7 @@ export function sim26Page() {
                 <button type="button" class="chip" data-height="${6.371e6}">h = R_E</button>
               </div>
               <div class="nudge-row motion-inputs fbd-toggles">
-                <label class="switch light" id="motion-mode"><input id="toggle-motion" type="checkbox" /> Motion mode</label>
+                <label class="switch light" id="motion-mode"><input id="toggle-motion" type="checkbox" checked /> Motion mode</label>
                 <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
                 <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
                 <label class="switch light" id="field-mode"><input id="toggle-field" type="checkbox" /> Field visualization</label>
@@ -2583,7 +2583,7 @@ export function sim26Page() {
                 <label class="pos-input">Extra force on A<input id="extra-a" type="number" step="any" value="0" aria-label="Optional extra force on object A in newtons" /><span>N</span></label>
                 <p class="track-help">Optional. Gravity is not automatically the net force. A normal force or applied force can balance weight.</p>
               </div>
-              <p class="track-help" id="gravity-force-vectors">Brown arrows are gravitational forces and always point toward the other mass. Teal is velocity. Gold is acceleration. r is center-to-center, not surface-to-surface. Camera: Fit objects, Origin, or Stationary.</p>
+              <p class="track-help" id="gravity-force-vectors">Play moves the pair toward each other. Motion is sped up so you can see the attraction; the force readout still uses real G. Turn Motion mode off to freeze and measure Fg. Brown arrows are gravitational forces. Teal is velocity. Gold is acceleration. r is center-to-center. Camera: Fit objects, Origin, or Stationary.</p>
             </div>
           </section>
 
