@@ -86,7 +86,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1–1.4 and 2.1–2.7, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.4 and 2.1–2.8, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -260,7 +260,7 @@ export function aboutPage() {
         <h2>Navigation</h2>
         <p>
           Use <strong>Simulations</strong> to browse by AP Physics 1 unit. Unit 1 currently includes 1.1–1.4.
-          Unit 2 currently includes 2.1–2.7. Later units stay visible as the map of what is coming.
+          Unit 2 currently includes 2.1–2.8. Later units stay visible as the map of what is coming.
         </p>
         <h2>Shared tools</h2>
         <p>
@@ -2723,7 +2723,7 @@ export function sim27Page() {
           <p class="kicker">Unit 2 · Simulation 2.7</p>
           <h1>Kinetic and Static Friction</h1>
           <p class="objective">Learning objective: Static friction balances up to μ<sub>s</sub> N. Kinetic friction is μ<sub>k</sub> N opposite sliding. The two are different models, not two names for μN.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-6" data-link>← 2.6</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.8 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-6" data-link>← 2.6</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-8" data-link>2.8 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -2878,7 +2878,7 @@ export function sim27Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-4" data-link>Review 2.4</a> — F_net = 0 means constant velocity, including rest.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m. Friction is one of the forces in that sum.</p>
-              <p class="conn-card">Next: springs (2.8, coming) are another interaction. Do not treat friction as the only contact force.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-2/2-8" data-link>Open 2.8</a> — a spring is another interaction. Fs = −kx is not automatically the net force.</p>
             </div>
           </aside>
         </div>
@@ -2964,6 +2964,267 @@ export function sim27Page() {
           </section>
           ${trialFitTheory(`
             <p>Friction vs. F_app should rise one-to-one while static, then sit near μk N while sliding. fs,max vs. N should be a line through the origin with slope μs. a vs. F_net should have slope 1/m.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim28Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.8</p>
+          <h1>Spring Forces</h1>
+          <p class="objective">Learning objective: An ideal spring exerts a restoring force F<sub>s</sub> = −kx. Stiffness k is not the force. Spring force is not automatically the net force.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-7" data-link>← 2.7</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.9 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage spring-stage" aria-label="Block on a horizontal spring" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Wall, spring, and block with restoring-force arrows"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-28">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Spring scenarios">
+                  <button type="button" class="chip" data-scenario="equilibrium">Equilibrium</button>
+                  <button type="button" class="chip" data-scenario="stretch">Stretch +0.10 m</button>
+                  <button type="button" class="chip" data-scenario="compress">Compress −0.10 m</button>
+                  <button type="button" class="chip" data-scenario="double-x">Double x</button>
+                  <button type="button" class="chip" data-scenario="double-k">Double k</button>
+                  <button type="button" class="chip" data-scenario="double-both">Double both</button>
+                  <button type="button" class="chip" data-scenario="heavy">Larger mass</button>
+                  <button type="button" class="chip" data-scenario="shifted">Shifted equilibrium</button>
+                  <button type="button" class="chip" data-scenario="oscillate">Oscillation</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control" id="motion-mode-control">
+                <div class="control-head"><span>Mode</span></div>
+                <div class="presets" role="group" aria-label="Hold or release the block">
+                  <button type="button" class="chip" data-held="true">Hold position</button>
+                  <button type="button" class="chip" data-held="false">Motion (release)</button>
+                </div>
+                <p class="track-help">Hold position sets x and computes Fs. Motion releases the block. A held stretch needs a holding force.</p>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="fx">Fs vs. x</button>
+                  <button type="button" class="chip" data-invest="mag">|Fs| vs. |x|</button>
+                  <button type="button" class="chip" data-invest="k">Fs vs. k</button>
+                  <button type="button" class="chip" data-invest="mass">a vs. m</button>
+                  <button type="button" class="chip" data-invest="energy">Us vs. x</button>
+                </div>
+                <p class="track-help" id="invest-help">Vary one quantity while holding the others constant, then record trials.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs" id="mass-control">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.5" max="20" step="0.1" value="1" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="spring-constant-control">k<input id="k-input" type="number" min="1" max="200" step="1" value="20" aria-label="Spring constant in newtons per meter" /><span>N/m</span></label>
+                <label class="pos-input" id="displacement-control">x<input id="x-input" type="number" min="-0.5" max="0.5" step="0.01" value="0.10" aria-label="Displacement from equilibrium in meters" /><span>m</span></label>
+                <label class="pos-input">v₀<input id="v-input" type="number" min="-5" max="5" step="0.1" value="0" aria-label="Initial velocity in meters per second" /><span>m/s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input" id="applied-force-control">F<sub>app</sub><input id="fapp-input" type="number" min="-50" max="50" step="0.5" value="0" aria-label="Applied horizontal force in newtons" /><span>N</span></label>
+                <label class="pos-input">Duration<input id="duration-input" type="number" step="1" min="1" max="20" value="10" aria-label="Simulation duration in seconds" /><span>s</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vectors</label>
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+              </div>
+              <p class="track-help" id="spring-animation">The wall is the anchor. The dashed marker is x = 0, the spring’s unstretched position. Brown arrows are forces. Teal is velocity. Gold is acceleration.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="force-readout">
+              <div class="card-head">
+                <h2>Spring force</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">HELD</strong>
+                <span id="eq-net">Fs = −2.00 N</span>
+                <span id="eq-detail">A holding force keeps this stretch from moving.</span>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Fs = −kx</dt><dd id="read-fs">−2.00 N</dd></div>
+                <div><dt>|Fs|</dt><dd id="read-fsmag">2.00 N</dd></div>
+                <div><dt>Holding force</dt><dd id="read-hold">+2.00 N</dd></div>
+                <div><dt>x_eq = F_app/k</dt><dd id="read-xeq">0.00 m</dd></div>
+              </dl>
+              <p class="eq-block">F<sub>s</sub> = −kx</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>Forces and net force</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>x</dt><dd id="read-x">+0.10 m</dd></div>
+                <div><dt>k</dt><dd id="read-k">20 N/m</dd></div>
+                <div><dt>F_app</dt><dd id="read-fapp">0.00 N</dd></div>
+                <div><dt>F_net (if released)</dt><dd id="read-fnet">−2.00 N</dd></div>
+              </dl>
+              <p class="muted">Weight and N cancel vertically. Spring force is not the net force when F_app is present.</p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>Motion and energy</h2>
+              </div>
+              <dl class="metrics metrics-wide" id="velocity-panel">
+                <div><dt>Mass</dt><dd id="read-m">1.00 kg</dd></div>
+                <div><dt>a (if released)</dt><dd id="read-a">−2.00 m/s²</dd></div>
+                <div><dt>v</dt><dd id="read-v">0.00 m/s</dd></div>
+                <div><dt>T = 2π√(m/k)</dt><dd id="read-t">1.41 s</dd></div>
+                <div><dt>Us = ½kx²</dt><dd id="read-us">0.10 J</dd></div>
+                <div><dt>K + Us</dt><dd id="read-e">0.10 J</dd></div>
+              </dl>
+              <p class="muted">At x = 0, Fs = 0. Velocity can still be nonzero. The block does not have to stop there.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Restoring force</summary>
+              <p>Fs points opposite x. A larger k is a stiffer spring, not a larger force at every position. At x = 0 the ideal spring force is zero no matter how large k is.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m. Spring force is one term in that sum.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-7" data-link>Review 2.7</a> — friction was a contact force. A spring is a different interaction.</p>
+              <p class="conn-card">Next: circular motion (2.9, coming) needs a center-seeking net force. Do not treat every restoring force as friction.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram" id="fbd">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of the block on the spring"></canvas>
+            <p class="caption" id="equilibrium-marker">The dashed marker on the scene is the spring’s x = 0. A holding force is drawn only while the block is held.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Position vs. time</h2>
+              <canvas id="graph-xt" width="640" height="220" aria-label="Displacement versus time"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Velocity vs. time</h2>
+              <canvas id="graph-vt" width="640" height="220" aria-label="Velocity versus time"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-a">
+              <h2>Acceleration vs. time</h2>
+              <canvas id="graph-at" width="640" height="220" aria-label="Acceleration versus time"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <div id="graph-panel">
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · Fs vs. x",
+          heightTitle: "Your Trials · |Fs| vs. |x|",
+          rangeCaption: "Signed spring force vs. signed displacement should be a line through the origin with slope −k.",
+          heightCaption: "Force magnitude vs. displacement magnitude should be a line through the origin with slope +k.",
+          columns: ["Trial", "m", "k", "x", "Fs", "F_app", "F_net", "a", "v", "Us", "Mode"],
+          emptyCols: 11,
+        })}
+        </div>
+        </div>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>A restoring force proportional to stretch</h2>
+            <p>
+              An ideal spring pulls or pushes toward its unstretched length. The force is opposite the displacement
+              from that reference, and its size is k times |x|.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Hooke’s law</h3>
+            <p>Right is positive. A stretch to the right (x &gt; 0) produces a leftward force. A compression (x &lt; 0) produces a rightward force.</p>
+            <p class="eq-block">F<sub>s</sub> = −kx<br />|F<sub>s</sub>| = k|x|</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Equilibrium of the spring</h3>
+            <p>At x = 0 the ideal spring force is zero. That is the spring’s own reference, not a claim that the block’s velocity is zero.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. The spring constant</h3>
+            <p>k is stiffness in N/m. Larger k means a larger |Fs| at the same nonzero x. At x = 0, Fs is still zero for any k.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Holding vs releasing</h3>
+            <p>If you hold the block at a nonzero x, a holding force balances Fs. Play releases the block. Then a = F_net / m with F_net = −kx + F_app.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Shifted equilibrium</h3>
+            <p>A constant F_app moves the net-force zero to x_eq = F_app / k. The spring can be stretched there. That is combined-system equilibrium, not x = 0.</p>
+            <p class="eq-block">x<sub>eq</sub> = F<sub>app</sub> / k</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Oscillation</h3>
+            <p>Released from rest at a stretch, the block speeds up toward x = 0, passes through with nonzero v, and slows on the other side. Do not stop it at x = 0. The ideal period is T = 2π√(m/k).</p>
+          </section>
+          <section class="theory-block">
+            <h3>7. Energy (extension)</h3>
+            <p>Us = ½kx² is zero at x = 0 in this reference. For an undamped isolated oscillator, K + Us stays nearly constant.</p>
+            <p class="eq-block">U<sub>s</sub> = ½kx²</p>
+          </section>
+          <section class="theory-block">
+            <h3>8. Mistakes to avoid</h3>
+            <p>Do not aim Fs along velocity. Do not say a larger k always means a larger force. Do not say equilibrium means v = 0. Do not treat Fs as F_net when F_app is present. Hooke’s law is an ideal linear range, not every real spring at every stretch.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>Fs vs. x should be a line through the origin with slope −k. |Fs| vs. |x| should have slope +k. Us vs. x should curve as ½kx².</p>
           `)}
         </article>
       </div>

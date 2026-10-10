@@ -65,6 +65,14 @@ const TARGET_ALIASES = {
   "force-readout": "#force-readout",
   "net-force-readout": "#net-force-panel",
   "acceleration-readout": "#acceleration-panel",
+  "spring-animation": "#simulation-canvas",
+  "equilibrium-marker": "#equilibrium-marker",
+  "displacement-control": "#displacement-control",
+  "spring-constant-control": "#spring-constant-control",
+  "motion-mode-control": "#motion-mode-control",
+  "spring-force-readout": "#force-readout",
+  "data-record-control": "#data-table",
+  "simulation-reset-control": "#playback-controls",
 };
 
 function storageKey(simId, type) {
