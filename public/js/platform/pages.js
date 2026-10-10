@@ -86,7 +86,7 @@ export function homePage() {
       <div class="section-head">
         <h2>How a lab is structured</h2>
         <p>
-          Every available simulation, including 1.1–1.5 and 2.1–2.3, uses the same shell so later units do not invent a new interface.
+          Every available simulation, including 1.1–1.4 and 2.1–2.6, uses the same shell so later units do not invent a new interface.
           Future labs inherit Theory, Challenge, Teacher view, trial tables, graphs, Reset, and auto-record from this pattern.
         </p>
       </div>
@@ -259,8 +259,8 @@ export function aboutPage() {
       <article class="prose card">
         <h2>Navigation</h2>
         <p>
-          Use <strong>Simulations</strong> to browse by AP Physics 1 unit. Unit 1 currently includes 1.1–1.5.
-          Unit 2 currently includes 2.1–2.5. Later units stay visible as the map of what is coming.
+          Use <strong>Simulations</strong> to browse by AP Physics 1 unit. Unit 1 currently includes 1.1–1.4.
+          Unit 2 currently includes 2.1–2.6. Later units stay visible as the map of what is coming.
         </p>
         <h2>Shared tools</h2>
         <p>
@@ -2203,7 +2203,7 @@ export function sim25Page() {
           <p class="kicker">Unit 2 · Simulation 2.5</p>
           <h1>Newton's Second Law</h1>
           <p class="objective">Learning objective: The acceleration of an object equals the net external force on it divided by its mass. Acceleration follows net force, not velocity.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-4" data-link>← 2.4</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.6 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-4" data-link>← 2.4</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-2/2-6" data-link>2.6 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -2361,7 +2361,7 @@ export function sim25Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-4" data-link>Review 2.4</a> — when F<sub>net</sub> = 0, acceleration is zero and velocity stays constant. This lab asks what happens when F<sub>net</sub> ≠ 0.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-2" data-link>Review 2.2</a> — you already know how to add forces. Here those forces determine acceleration.</p>
-              <p class="conn-card">Next: gravitational force (2.6, coming) uses F<sub>net</sub> = ma to explain how weight produces acceleration.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-2/2-6" data-link>Open 2.6</a> — gravitational force is an interaction pair; a = F/m still decides each object’s acceleration.</p>
             </div>
           </aside>
         </div>
@@ -2464,6 +2464,250 @@ export function sim25Page() {
           </section>
           ${trialFitTheory(`
             <p>a vs. F_net at fixed mass should be a line through the origin with slope 1/m. a vs. m at fixed F_net should be inverse. a vs. 1/m should be linear with slope F_net.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim26Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 2 · Simulation 2.6</p>
+          <h1>Gravitational Force</h1>
+          <p class="objective">Learning objective: Gravitational force is an attractive interaction between masses. Fg = G m1 m2 / r², with r measured center to center. Near Earth, Fg = mg is the same law.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-5" data-link>← 2.5</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">2.7 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage gravity-stage" aria-label="Two-mass gravitational interaction" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="360" aria-label="Two objects with center-to-center separation and gravitational force arrows"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-26">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Gravity scenarios">
+                  <button type="button" class="chip" data-scenario="basic">Basic attraction</button>
+                  <button type="button" class="chip" data-scenario="double-one">Double one mass</button>
+                  <button type="button" class="chip" data-scenario="double-both">Double both masses</button>
+                  <button type="button" class="chip" data-scenario="double-distance">Double distance</button>
+                  <button type="button" class="chip" data-scenario="unequal">Unequal masses</button>
+                  <button type="button" class="chip" data-scenario="earth-surface" id="earth-mode">Earth surface</button>
+                  <button type="button" class="chip" data-scenario="earth-altitude">Earth at altitude</button>
+                  <button type="button" class="chip" data-scenario="orbit" id="orbit-mode">Orbit extension</button>
+                </div>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode" id="relationship-selector">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="m1">Force vs. m1</button>
+                  <button type="button" class="chip" data-invest="m2">Force vs. m2</button>
+                  <button type="button" class="chip" data-invest="r">Force vs. r</button>
+                  <button type="button" class="chip" data-invest="invsq">Force vs. 1/r²</button>
+                  <button type="button" class="chip" data-invest="field">g vs. r</button>
+                  <button type="button" class="chip" data-invest="earthm">Force vs. test mass</button>
+                </div>
+                <p class="track-help" id="invest-help">Vary one quantity while holding the others constant, then record trials.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Quick scale</span></div>
+                <div class="presets" role="group" aria-label="Scale masses and distance">
+                  <button type="button" class="chip" data-scale="m1-2">Double m1</button>
+                  <button type="button" class="chip" data-scale="m2-2">Double m2</button>
+                  <button type="button" class="chip" data-scale="both-2">Double both</button>
+                  <button type="button" class="chip" data-scale="r-2">Double r</button>
+                  <button type="button" class="chip" data-scale="r-3">Triple r</button>
+                  <button type="button" class="chip" data-scale="r-0.5">Half r</button>
+                  <button type="button" class="chip" data-scale="r-4">Quadruple r</button>
+                </div>
+                <p class="track-help" id="scale-ratio">Force ratio after last scale: —</p>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(2)}</div>
+              <div class="nudge-row motion-inputs" id="mass-controls">
+                <label class="pos-input" id="object-a">m1<input id="m1-input" type="number" min="1" step="any" value="1000" aria-label="Mass of object A in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="object-b">m2<input id="m2-input" type="number" min="1" step="any" value="1000" aria-label="Mass of object B in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="distance-control">r<input id="r-input" type="number" min="0.01" step="any" value="10" aria-label="Center-to-center separation in meters" /><span>m</span></label>
+                <label class="pos-input" id="height-control">h<input id="h-input" type="number" min="0" step="any" value="0" aria-label="Height above Earth's surface in meters" /><span>m</span></label>
+              </div>
+              <div class="presets" id="height-presets" role="group" aria-label="Height above Earth">
+                <button type="button" class="chip" data-height="0">h = 0</button>
+                <button type="button" class="chip" data-height="1000">1 km</button>
+                <button type="button" class="chip" data-height="10000">10 km</button>
+                <button type="button" class="chip" data-height="100000">100 km</button>
+                <button type="button" class="chip" data-height="1000000">1000 km</button>
+                <button type="button" class="chip" data-height="${6.371e6}">h = R_E</button>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="motion-mode"><input id="toggle-motion" type="checkbox" /> Motion mode</label>
+                <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+                <label class="switch light" id="field-mode"><input id="toggle-field" type="checkbox" /> Field visualization</label>
+                <label class="switch light"><input id="toggle-sci" type="checkbox" checked /> Scientific notation</label>
+              </div>
+              <div class="nudge-row motion-inputs" id="net-force-panel">
+                <label class="pos-input">Extra force on A<input id="extra-a" type="number" step="any" value="0" aria-label="Optional extra force on object A in newtons" /><span>N</span></label>
+                <p class="track-help">Optional. Gravity is not automatically the net force. A normal force or applied force can balance weight.</p>
+              </div>
+              <p class="track-help" id="gravity-force-vectors">Brown arrows are gravitational forces and always point toward the other mass. Teal is velocity. Gold is acceleration. r is center-to-center, not surface-to-surface. Camera: Fit objects, Origin, or Stationary.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="force-display">
+              <div class="card-head">
+                <h2>Gravitational force</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">ATTRACTIVE PAIR</strong>
+                <span id="eq-net">Fg = —</span>
+                <span id="eq-detail">r is <span id="distance-marker">center-to-center</span>.</span>
+              </div>
+              <p class="eq-block" id="equation-display">F<sub>g</sub> = G m<sub>1</sub> m<sub>2</sub> / r²</p>
+              <p class="eq-block" id="eq-sub">—</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="force-pair-panel">
+              <div class="card-head">
+                <h2>Force pair</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>F on A by B</dt><dd id="read-fa">—</dd></div>
+                <div><dt>F on B by A</dt><dd id="read-fb">—</dd></div>
+                <div><dt>|FA| = |FB|?</dt><dd id="read-equal">yes</dd></div>
+                <div><dt>Directions</dt><dd id="read-dirs">toward each other</dd></div>
+              </dl>
+              <p class="muted">Same interaction, two objects. That is Simulation 2.3 applied to gravity.</p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>Acceleration and field</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>a_A</dt><dd id="read-aa">—</dd></div>
+                <div><dt>a_B</dt><dd id="read-ab">—</dd></div>
+                <div><dt>g at B</dt><dd id="read-g">—</dd></div>
+                <div><dt>Fg / m2</dt><dd id="read-fgm">—</dd></div>
+              </dl>
+              <p class="muted">g is the field of the source at a location. Fg is the force on a test mass there.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Universal gravitation</summary>
+              <p>Every pair of masses attracts. The force grows with each mass and falls as 1/r². Near Earth’s surface the same law looks like Fg = mg because g = G M_E / R_E² is nearly constant.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-3" data-link>Review 2.3</a> — a gravitational pair is equal, opposite, and on two objects.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — equal forces do not mean equal accelerations. a = F/m.</p>
+              <p class="conn-card">Next: friction (2.7, coming) is a different interaction. Do not treat gravity as the only force, or as the net force.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div id="graph-panel">
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · Fg vs. r",
+          heightTitle: "Your Trials · Fg vs. 1/r²",
+          rangeCaption: "Hold the masses fixed and change r. This should curve, not form a line through the origin.",
+          heightCaption: "For fixed masses this is linear. The slope is G m1 m2.",
+          columns: ["Trial", "m1 (kg)", "m2 (kg)", "r (m)", "Fg (N)", "1/r² (m⁻²)"],
+          emptyCols: 6,
+        })}
+        </div>
+        </div>
+        <p class="track-help" id="field-visualization" hidden>Field arrows on the canvas show g of the source. They are not forces drawn by the test mass.</p>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Gravity as an interaction, not a slogan</h2>
+            <p>
+              Gravitational force is how two masses pull on each other. You can find the equation by holding variables
+              constant: Fg grows with each mass and falls as the square of the center-to-center separation.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. The measured relationship</h3>
+            <p>Hold m2 and r fixed and double m1: Fg doubles. Hold m1 and r fixed and double m2: Fg doubles. Hold both masses fixed and double r: Fg becomes one fourth. Together:</p>
+            <p class="eq-block">F<sub>g</sub> ∝ m<sub>1</sub> m<sub>2</sub> / r²<br />F<sub>g</sub> = G m<sub>1</sub> m<sub>2</sub> / r²</p>
+            <p>G = 6.67430 × 10⁻¹¹ N·m²/kg² is the same constant for every pair of masses in this model.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Distance is center to center</h3>
+            <p>r is not the gap between surfaces. The model uses the distance between centers. A larger drawn circle does not secretly change r.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. The force pair</h3>
+            <p>A on B and B on A have equal magnitude and opposite direction. They cannot cancel on one free-body diagram because they act on different objects. That is Newton’s third law, not a special gravity rule.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Equal force, different acceleration</h3>
+            <p>a = F/m. The smaller mass has the larger acceleration when the pair is isolated. Simulation 2.5 still applies.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. g is not G</h3>
+            <p>G is universal. g is the gravitational field at a location, g = G M / r². The force on a test mass is Fg = m g. Change the test mass at a fixed place: Fg changes and g does not.</p>
+            <p class="eq-block">g = F<sub>g</sub> / m = G M / r²</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Weight near Earth</h3>
+            <p>At Earth’s mean radius the spherical model gives g ≈ 9.8 m/s². Then Fg = m g is universal gravitation with r ≈ R_E. Raising the test mass increases r = R_E + h and decreases g. Gravity does not switch off at a finite height.</p>
+          </section>
+          <section class="theory-block">
+            <h3>7. Units</h3>
+            <p class="eq-block">(N·m²/kg²)(kg)(kg) / m² = N</p>
+            <p>The combination is a force. That is why G has those units.</p>
+          </section>
+          <section class="theory-block">
+            <h3>8. Mistakes to avoid</h3>
+            <p>Do not say gravity needs motion. Do not say doubling r halves Fg. Do not treat G and g as the same quantity. Do not say gravity is always the net force. Do not measure r surface-to-surface in this model.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>Fg vs. r at fixed masses should curve. Fg vs. 1/r² should be a line through the origin with slope G m1 m2. Fg vs. m1 at fixed m2 and r should be linear.</p>
           `)}
         </article>
       </div>

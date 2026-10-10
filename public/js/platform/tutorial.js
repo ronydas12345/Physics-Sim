@@ -41,6 +41,21 @@ const TARGET_ALIASES = {
   "data-table": "#data-table",
   "graph-panel": "#graph-panel",
   "simulation-canvas": "#simulation-canvas",
+  "mass-controls": "#mass-controls",
+  "distance-control": "#distance-control",
+  "force-display": "#force-display",
+  "gravity-force-vectors": "#gravity-force-vectors",
+  "force-pair-panel": "#force-pair-panel",
+  "earth-mode": "#earth-mode",
+  "field-mode": "#field-mode",
+  "motion-mode": "#motion-mode",
+  "equation-display": "#equation-display",
+  "distance-marker": "#distance-marker",
+  "height-control": "#height-control",
+  "orbit-mode": "#orbit-mode",
+  "object-a": "#object-a",
+  "object-b": "#object-b",
+  "field-visualization": "#field-visualization",
 };
 
 function storageKey(simId, type) {

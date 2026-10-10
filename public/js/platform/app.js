@@ -1,6 +1,6 @@
 import { mountChrome } from "./chrome.js";
 import { decorateActionButtons } from "./lab-kit.js";
-import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page, sim23Page, sim24Page, sim25Page } from "./pages.js";
+import { aboutPage, homePage, libraryPage, modulePage, notFoundPage, sim11Page, sim12Page, sim13Page, sim14Page, sim21Page, sim22Page, sim23Page, sim24Page, sim25Page, sim26Page } from "./pages.js";
 import { fullPagePaths } from "./curriculum.js";
 import { mountVectors1D } from "../simulations/vectors-1d.js";
 import { mountMotion1D } from "../simulations/motion-1d.js";
@@ -11,6 +11,7 @@ import { mountForcesFbd } from "../simulations/forces-fbd.js";
 import { mountThirdLaw } from "../simulations/third-law.js";
 import { mountFirstLaw } from "../simulations/first-law.js";
 import { mountSecondLaw } from "../simulations/second-law.js";
+import { mountGravity } from "../simulations/gravity.js";
 import { mountHeroReel } from "./hero-reel.js";
 
 const outlet = document.getElementById("outlet");
@@ -38,6 +39,7 @@ function resolve(pathname) {
   if (pathname === "/simulations/module-2/2-3") return { name: "sim-2-3" };
   if (pathname === "/simulations/module-2/2-4") return { name: "sim-2-4" };
   if (pathname === "/simulations/module-2/2-5") return { name: "sim-2-5" };
+  if (pathname === "/simulations/module-2/2-6") return { name: "sim-2-6" };
   return { name: "notfound" };
 }
 
@@ -62,6 +64,7 @@ function render() {
     "sim-2-3": "2.3 Newton's Third Law · AP Physics 1",
     "sim-2-4": "2.4 Newton's First Law · AP Physics 1",
     "sim-2-5": "2.5 Newton's Second Law · AP Physics 1",
+    "sim-2-6": "2.6 Gravitational Force · AP Physics 1",
     notfound: "Not found · AP Physics 1",
   };
   if (route.name === "home") {
@@ -101,6 +104,9 @@ function render() {
   } else if (route.name === "sim-2-5") {
     outlet.innerHTML = sim25Page();
     unmount = mountSecondLaw(outlet);
+  } else if (route.name === "sim-2-6") {
+    outlet.innerHTML = sim26Page();
+    unmount = mountGravity(outlet);
   } else outlet.innerHTML = notFoundPage();
 
   if (route.name !== "module") document.title = titles[route.name] || titles.home;

@@ -10,7 +10,7 @@ const PAGES = readFileSync(join(ROOT, "public", "js", "platform", "pages.js"), "
 const LAB_KIT = readFileSync(join(ROOT, "public", "js", "platform", "lab-kit.js"), "utf8");
 const APP = readFileSync(join(ROOT, "public", "js", "platform", "app.js"), "utf8");
 
-const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5"];
+const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5", "2-6"];
 const PAGE_FNS = {
   "1-1": "sim11Page",
   "1-2": "sim12Page",
@@ -21,6 +21,7 @@ const PAGE_FNS = {
   "2-3": "sim23Page",
   "2-4": "sim24Page",
   "2-5": "sim25Page",
+  "2-6": "sim26Page",
 };
 const TARGET_ALIASES = {
   scene: "axis-canvas",
@@ -50,6 +51,17 @@ const TARGET_ALIASES = {
   "relationship-investigation": "relationship-investigation",
   "data-table": "data-table",
   "graph-panel": "graph-panel",
+  "mass-controls": "mass-controls",
+  "distance-control": "distance-control",
+  "force-display": "force-display",
+  "gravity-force-vectors": "gravity-force-vectors",
+  "force-pair-panel": "force-pair-panel",
+  "earth-mode": "earth-mode",
+  "field-mode": "field-mode",
+  "motion-mode": "motion-mode",
+  "equation-display": "equation-display",
+  "distance-marker": "distance-marker",
+  "height-control": "height-control",
 };
 const BLOCK_TYPES = new Set([
   "heading",

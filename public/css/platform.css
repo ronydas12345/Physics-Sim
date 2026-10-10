@@ -712,6 +712,10 @@ html.is-fullscreen #page-root,
   height: 340px;
 }
 
+.gravity-stage #axis-canvas {
+  height: 360px;
+}
+
 .thirdlaw-stage #axis-canvas {
   height: 340px;
 }
