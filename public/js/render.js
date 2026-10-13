@@ -1,3 +1,6 @@
+import { CAMERA, cameraRange } from "/lib/camera.js";
+import { themeCanvas } from "./platform/theme.js";
+
 export const COLORS = {
   skyTop: "#7fb7dc",
   skyBottom: "#eaf4fb",
@@ -42,14 +45,44 @@ export function createView(canvas, v0, g, extras = {}) {
   const pad = { l: 58, r: 28, t: 52, b: 62 };
   const plotW = cssW - pad.l - pad.r;
   const plotH = cssH - pad.t - pad.b;
-  const maxR = Math.max((v0 * v0) / Math.max(g, 0.01), extras.targetRange || 0, 8);
-  const maxH = Math.max((v0 * v0) / (2 * Math.max(g, 0.01)), extras.targetHeight || 0, 4);
-  const worldW = maxR * 1.12;
-  const worldH = maxH * 1.2;
-  const scale = Math.min(plotW / worldW, plotH / worldH);
+  const maxR = Math.max((v0 * v0) / Math.max(g, 0.01), extras.targetRange || 0, extras.x || 0, 8);
+  const maxH = Math.max((v0 * v0) / (2 * Math.max(g, 0.01)), extras.targetHeight || 0, extras.y || 0, 4);
+  const mode = extras.cameraMode || CAMERA.ORIGIN;
 
-  const originX = pad.l;
-  const originY = cssH - pad.b;
+  let xLo = 0;
+  let xHi = maxR * 1.12;
+  let yLo = 0;
+  let yHi = maxH * 1.2;
+
+  if (mode === CAMERA.STATIONARY && Number.isFinite(extras.lockLo) && Number.isFinite(extras.lockHi)) {
+    xLo = extras.lockLo;
+    xHi = extras.lockHi;
+    yLo = Number.isFinite(extras.lockYLo) ? extras.lockYLo : 0;
+    yHi = Number.isFinite(extras.lockYHi) ? extras.lockYHi : yHi;
+  } else if (mode === CAMERA.FOLLOW) {
+    const xRange = cameraRange([extras.x || 0], {
+      mode: CAMERA.FOLLOW,
+      minSpan: Math.max(16, maxR * 0.55),
+      followSpan: Math.max(18, maxR * 0.6),
+      followEdge: 3.5,
+    });
+    const yRange = cameraRange([Math.max(0, extras.y || 0)], {
+      mode: CAMERA.FOLLOW,
+      minSpan: Math.max(8, maxH * 0.55),
+      followSpan: Math.max(10, maxH * 0.6),
+      followEdge: 2.5,
+    });
+    xLo = xRange.lo;
+    xHi = xRange.hi;
+    yLo = Math.max(0, yRange.lo);
+    yHi = Math.max(yRange.hi, yLo + 6);
+  }
+
+  const worldW = Math.max(xHi - xLo, 1e-6);
+  const worldH = Math.max(yHi - yLo, 1e-6);
+  const scale = Math.min(plotW / worldW, plotH / worldH);
+  const originX = pad.l - xLo * scale;
+  const originY = cssH - pad.b + yLo * scale;
 
   return {
     cssW,
@@ -61,6 +94,10 @@ export function createView(canvas, v0, g, extras = {}) {
     originY,
     worldW,
     worldH,
+    xLo,
+    xHi,
+    yLo,
+    yHi,
     maxR,
     maxH,
     toScreen(x, y) {
@@ -135,34 +172,43 @@ function drawSkyAndGround(ctx, view, scene) {
 }
 
 function drawAxes(ctx, view, scene) {
-  const { originX, originY, scale, worldW, worldH, cssW, pad } = view;
-  const xEnd = originX + worldW * scale;
-  const yEnd = originY - worldH * scale;
+  const { originX, originY, cssW, cssH, pad, xLo, xHi, yLo, yHi } = view;
+  const xStart = Number.isFinite(xLo) ? xLo : 0;
+  const xEndW = Number.isFinite(xHi) ? xHi : view.worldW;
+  const yStart = Number.isFinite(yLo) ? yLo : 0;
+  const yEndW = Number.isFinite(yHi) ? yHi : view.worldH;
+  const left = view.toScreen(xStart, 0);
+  const right = view.toScreen(xEndW, 0);
+  const top = view.toScreen(0, yEndW);
+  const xEnd = right.x;
+  const yEnd = top.y;
 
   ctx.strokeStyle = scene.grid;
   ctx.lineWidth = 1;
-  const xStep = niceStep(worldW);
-  const yStep = niceStep(worldH, 5);
+  const xStep = niceStep(Math.max(xEndW - xStart, 1e-6));
+  const yStep = niceStep(Math.max(yEndW - yStart, 1e-6), 5);
 
   ctx.font = "11px IBM Plex Mono, monospace";
   ctx.fillStyle = scene.axis;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  for (let x = 0; x <= worldW + 1e-6; x += xStep) {
+  const x0 = Math.ceil(xStart / xStep) * xStep;
+  for (let x = x0; x <= xEndW + 1e-6; x += xStep) {
     const p = view.toScreen(x, 0);
     ctx.beginPath();
-    ctx.moveTo(p.x, yEnd);
-    ctx.lineTo(p.x, originY + 4);
+    ctx.moveTo(p.x, Math.max(pad.t, yEnd));
+    ctx.lineTo(p.x, Math.min(cssH - pad.b + 4, originY + 4));
     ctx.stroke();
     ctx.fillText(`${Math.round(x)}`, p.x, originY + 10);
   }
 
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  for (let y = yStep; y <= worldH + 1e-6; y += yStep) {
+  const y0 = Math.max(yStep, Math.ceil(yStart / yStep) * yStep);
+  for (let y = y0; y <= yEndW + 1e-6; y += yStep) {
     const p = view.toScreen(0, y);
     ctx.beginPath();
-    ctx.moveTo(originX - 4, p.y);
+    ctx.moveTo(Math.max(pad.l - 4, originX - 4), p.y);
     ctx.lineTo(cssW - pad.r, p.y);
     ctx.stroke();
     ctx.fillText(`${Math.round(y)}`, originX - 8, p.y);
@@ -171,7 +217,7 @@ function drawAxes(ctx, view, scene) {
   ctx.strokeStyle = scene.axis;
   ctx.lineWidth = 1.6;
   ctx.beginPath();
-  ctx.moveTo(originX, originY);
+  ctx.moveTo(left.x, originY);
   ctx.lineTo(xEnd + 8, originY);
   ctx.moveTo(originX, originY);
   ctx.lineTo(originX, yEnd - 8);
@@ -216,7 +262,11 @@ function drawGravityLegend(ctx, view, g) {
   label(ctx, `g = ${g.toFixed(1)} m/s²`, x - 10, y + 18, COLORS.g, "right");
 }
 
-function drawVectors(ctx, view, sim, pending) {
+function drawVectors(ctx, view, sim, pending, options = {}) {
+  const showForces = options.showForces !== false;
+  const showVelocity = options.showVelocity !== false;
+  const showAccel = options.showAccel !== false;
+  const showNet = options.showNet !== false;
   const origin = view.toScreen(0, 0);
   const proj = view.toScreen(sim.x, Math.max(0, sim.y));
   const vScale = Math.min(0.38, (view.worldH * 0.42) / Math.max(pending.v0, 1));
@@ -225,8 +275,9 @@ function drawVectors(ctx, view, sim, pending) {
   const v0x = pending.v0 * Math.cos(theta) * vScale;
   const v0y = pending.v0 * Math.sin(theta) * vScale;
   const idle = !sim.isRunning && sim.t === 0 && !sim.landed;
+  const inFlight = sim.isRunning && !sim.landed && sim.y > 0.02;
 
-  if (idle) {
+  if (idle && showVelocity) {
     const tip = view.toScreen(v0x, v0y);
     const hx = view.toScreen(v0x, 0);
     const hy = view.toScreen(0, v0y);
@@ -250,7 +301,7 @@ function drawVectors(ctx, view, sim, pending) {
     label(ctx, "vₓ", hx.x, hx.y + 14, COLORS.vx, "center");
     label(ctx, "vᵧ", hy.x - 10, hy.y, COLORS.vy, "right");
     drawAngleArc(ctx, view, pending.angleDeg);
-  } else if (sim.isRunning) {
+  } else if (sim.isRunning && showVelocity) {
     const cvx = sim.vx * vScale;
     const cvy = sim.vy * vScale;
     const tip = view.toScreen(sim.x + cvx, sim.y + cvy);
@@ -275,12 +326,25 @@ function drawVectors(ctx, view, sim, pending) {
     label(ctx, "v", tip.x + 6, tip.y - 6, COLORS.v0);
     label(ctx, "vₓ", hx.x, hx.y + 12, COLORS.vx, "center");
     label(ctx, "vᵧ", hy.x - 8, hy.y, COLORS.vy, "right");
-
-    const gTip = { x: proj.x, y: proj.y + 34 };
-    drawArrow(ctx, proj.x, proj.y, gTip.x, gTip.y, COLORS.g, 2.2);
   }
 
-  drawGravityLegend(ctx, view, pending.g);
+  if (inFlight && showForces) {
+    const gTip = { x: proj.x, y: proj.y + 34 };
+    drawArrow(ctx, proj.x, proj.y, gTip.x, gTip.y, COLORS.g, 2.2);
+    label(ctx, "Fg", gTip.x + 8, gTip.y, COLORS.g);
+  }
+  if (inFlight && showAccel) {
+    const aTip = { x: proj.x + (showForces ? 18 : 0), y: proj.y + 34 };
+    drawArrow(ctx, proj.x, proj.y, aTip.x, aTip.y, COLORS.v0, 2);
+    label(ctx, "a", aTip.x + 8, aTip.y - 8, COLORS.v0);
+  }
+  if (inFlight && showNet && !showForces) {
+    const nTip = { x: proj.x - 16, y: proj.y + 34 };
+    drawArrow(ctx, proj.x, proj.y, nTip.x, nTip.y, COLORS.g, 2.4);
+    label(ctx, "Fnet", nTip.x - 6, nTip.y, COLORS.g, "right");
+  }
+
+  if (showForces || showAccel) drawGravityLegend(ctx, view, pending.g);
 }
 
 function drawApex(ctx, view, sim) {
@@ -394,10 +458,30 @@ function drawProjectile(ctx, view, sim) {
   ctx.stroke();
 }
 
-export function renderSimulation(canvas, { sim, pending, predicted, ghost, challenge, scene }) {
+export function renderSimulation(canvas, {
+  sim,
+  pending,
+  predicted,
+  ghost,
+  challenge,
+  scene,
+  cameraMode,
+  cameraLock,
+  showForces = true,
+  showVelocity = true,
+  showAccel = true,
+  showNet = true,
+}) {
   const view = createView(canvas, pending.v0, pending.g, {
     targetRange: challenge?.active && challenge.goalKey === "range" ? challenge.goalValue : 0,
     targetHeight: challenge?.active && challenge.goalKey === "maxHeight" ? challenge.goalValue : 0,
+    x: sim.x,
+    y: Math.max(0, sim.y),
+    cameraMode,
+    lockLo: cameraLock?.lo,
+    lockHi: cameraLock?.hi,
+    lockYLo: cameraLock?.yLo,
+    lockYHi: cameraLock?.yHi,
   });
   const ctx = canvas.getContext("2d");
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
@@ -447,6 +531,66 @@ export function renderSimulation(canvas, { sim, pending, predicted, ghost, chall
   drawLaunchPad(ctx, view);
   drawApex(ctx, view, sim);
   drawRange(ctx, view, sim);
-  drawVectors(ctx, view, sim, pending);
+  drawVectors(ctx, view, sim, pending, { showForces, showVelocity, showAccel, showNet });
   drawProjectile(ctx, view, sim);
+}
+
+export function renderFbd(canvas, { sim, showNet = true }) {
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = Math.max(1, canvas.clientWidth);
+  const cssH = Math.max(1, canvas.clientHeight);
+  const nextW = Math.round(cssW * dpr);
+  const nextH = Math.round(cssH * dpr);
+  if (canvas.width !== nextW) canvas.width = nextW;
+  if (canvas.height !== nextH) canvas.height = nextH;
+
+  const ctx = canvas.getContext("2d");
+  const theme = themeCanvas();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+  ctx.fillStyle = theme.fill;
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  const cx = cssW / 2;
+  const cy = cssH / 2 + 8;
+  const inFlight = Boolean(sim?.isRunning && !sim.landed && sim.y > 0.02);
+  ctx.fillStyle = theme.ink;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.font = "700 12px Figtree, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("FBD", cx, cy - 16);
+
+  const len = Math.min(72, cssH * 0.28);
+  drawArrow(ctx, cx, cy, cx, cy + len, COLORS.g, 3);
+  ctx.fillStyle = COLORS.g;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.font = "700 12px Figtree, sans-serif";
+  ctx.fillText("Fg", cx + 10, cy + len - 4);
+
+  if (!inFlight) {
+    drawArrow(ctx, cx, cy, cx, cy - len, COLORS.vx, 3);
+    ctx.fillStyle = COLORS.vx;
+    ctx.fillText("N", cx + 10, cy - len + 4);
+  }
+
+  if (showNet && inFlight) {
+    drawArrow(ctx, cx - 22, cy, cx - 22, cy + len, COLORS.g, 2.4);
+    ctx.fillStyle = COLORS.g;
+    ctx.textAlign = "right";
+    ctx.fillText("Fnet", cx - 28, cy + len - 4);
+  }
+
+  ctx.fillStyle = theme.muted || theme.ink;
+  ctx.font = "600 12px Figtree, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  const note = inFlight
+    ? "In flight: gravity is the only force. Velocity is not drawn."
+    : "On the pad: weight and the normal force balance.";
+  ctx.fillText(note, 16, 12);
 }

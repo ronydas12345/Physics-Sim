@@ -1,6 +1,8 @@
+import { CAMERA } from "/lib/camera.js";
 import {
   analyzeLaunch,
   analytical,
+  clamp,
   generateChallenge,
   goalTolerance,
   measuredGoal,
@@ -14,8 +16,17 @@ import {
   sweepAngles,
 } from "/lib/projectile.js";
 import { renderTheoryGraphs, renderTrialGraphs } from "./graphs.js";
-import { renderSimulation } from "./render.js";
-import { bindDownload, bindFullscreen, bindResetButtons, decorateActionButtons, labIconToolbar, setButtonLabel } from "./platform/lab-kit.js";
+import { renderFbd, renderSimulation } from "./render.js";
+import {
+  bindCameraMode,
+  bindDownload,
+  bindFullscreen,
+  bindResetButtons,
+  cameraModeControls,
+  decorateActionButtons,
+  labIconToolbar,
+  setButtonLabel,
+} from "./platform/lab-kit.js";
 import { planetById, planetChipStyle, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
@@ -32,6 +43,17 @@ const ui = {
   g: 9.8,
 };
 
+const SCENARIOS = {
+  "max-range": { angleDeg: 45, v0: 20, planet: "earth" },
+  "pair-30": { angleDeg: 30, v0: 20, planet: "earth" },
+  "pair-60": { angleDeg: 60, v0: 20, planet: "earth" },
+  vertical: { angleDeg: 90, v0: 20, planet: "earth" },
+  slow: { angleDeg: 45, v0: 10, planet: "earth" },
+  fast: { angleDeg: 45, v0: 40, planet: "earth" },
+  moon: { angleDeg: 45, v0: 20, planet: "moon" },
+  jupiter: { angleDeg: 45, v0: 20, planet: "jupiter" },
+};
+
 let sim = createLaunchState(ui);
 let trials = [];
 let predicted = predictedTrajectory(ui);
@@ -41,6 +63,13 @@ let autoRecord = false;
 let planetId = "earth";
 let planetBackgrounds = true;
 let activeTab = "lab";
+let playback = 1;
+let scenarioId = "max-range";
+let showForces = true;
+let showNet = true;
+let showVelocity = true;
+let showAccel = true;
+let yLock = null;
 let challenge = {
   active: false,
   attempted: false,
@@ -86,7 +115,37 @@ const els = {
   newTarget: $("btn-new-target"),
   debugToggle: $("debug-toggle"),
   debugLine: $("debug-line"),
+  fbd: $("fbd-canvas"),
+  step: $("btn-step"),
+  check: $("btn-check-15"),
+  vectors: $("toggle-vectors"),
+  net: $("toggle-net"),
+  velocityToggle: $("toggle-velocity"),
+  accel: $("toggle-accel"),
 };
+
+const cameraHost = $("camera-host");
+if (cameraHost && !cameraHost.querySelector("[data-camera]")) {
+  cameraHost.innerHTML = cameraModeControls(1);
+}
+
+const camera = bindCameraMode(document, {
+  objectCount: 1,
+  rangeForLock() {
+    const g = Math.max(ui.g, 0.01);
+    const maxR = Math.max((ui.v0 * ui.v0) / g, 8);
+    return { lo: -2, hi: maxR * 1.12 };
+  },
+  onChange(mode) {
+    if (mode === CAMERA.STATIONARY) {
+      const g = Math.max(ui.g, 0.01);
+      yLock = { lo: 0, hi: Math.max((ui.v0 * ui.v0) / (2 * g), 4) * 1.2 };
+    } else {
+      yLock = null;
+    }
+    drawAll();
+  },
+});
 
 const download = bindDownload(document, {
   filename: "ap-physics-1-1-5-trials",
@@ -160,6 +219,7 @@ function syncReadouts() {
     chip.classList.toggle("active", Number(chip.dataset.angle) === ui.angleDeg);
   }
   syncPlanetChips();
+  syncScenarioChips();
 }
 
 function setControlsEnabled() {
@@ -173,6 +233,9 @@ function setControlsEnabled() {
   }
   for (const chip of planetChips()) {
     chip.disabled = els.gravity.disabled;
+  }
+  for (const chip of document.querySelectorAll("[data-scenario]")) {
+    chip.disabled = Boolean(spec);
   }
 }
 
@@ -216,6 +279,17 @@ function refreshPredicted() {
   }
 }
 
+function cameraLock() {
+  const opts = camera.options();
+  if (opts.mode !== CAMERA.STATIONARY) return null;
+  return {
+    lo: opts.lockLo,
+    hi: opts.lockHi,
+    yLo: yLock?.lo,
+    yHi: yLock?.hi,
+  };
+}
+
 function drawSim() {
   if (activeTab !== "lab") return;
   const scene = currentScene();
@@ -227,7 +301,14 @@ function drawSim() {
     ghost,
     challenge: challenge.active ? { ...challenge.spec, active: true } : { active: false },
     scene,
+    cameraMode: camera.mode,
+    cameraLock: cameraLock(),
+    showForces,
+    showVelocity,
+    showAccel,
+    showNet,
   });
+  renderFbd(els.fbd, { sim, showNet });
 }
 
 function identityLaunch() {
@@ -296,10 +377,58 @@ function renderTrials() {
   download.sync();
 }
 
+function syncScenarioChips() {
+  scenarioId = matchingScenario();
+  for (const chip of document.querySelectorAll("[data-scenario]")) {
+    chip.classList.toggle("active", chip.dataset.scenario === scenarioId);
+  }
+}
+
+function matchingScenario() {
+  for (const [id, spec] of Object.entries(SCENARIOS)) {
+    const planet = planetById(spec.planet);
+    const g = planet?.g;
+    if (
+      ui.angleDeg === spec.angleDeg &&
+      ui.v0 === spec.v0 &&
+      Number.isFinite(g) &&
+      Math.abs(ui.g - g) < 0.05 &&
+      planetId === spec.planet
+    ) {
+      return id;
+    }
+  }
+  return "custom";
+}
+
+function applyScenario(id) {
+  if (els.angle.disabled && els.velocity.disabled && els.gravity.disabled) return;
+  const spec = SCENARIOS[id];
+  scenarioId = spec ? id : "custom";
+  if (spec) {
+    if (!els.angle.disabled) {
+      ui.angleDeg = spec.angleDeg;
+      els.angle.value = String(spec.angleDeg);
+    }
+    if (!els.velocity.disabled) {
+      ui.v0 = spec.v0;
+      els.velocity.value = String(spec.v0);
+    }
+    if (!els.gravity.disabled && spec.planet) {
+      setPlanet(spec.planet);
+      return;
+    }
+  }
+  applyUiFromSliders();
+}
+
 function applyUiFromSliders() {
-  ui.angleDeg = Number(els.angle.value);
-  ui.v0 = Number(els.velocity.value);
-  ui.g = Number(els.gravity.value);
+  const angle = Number(els.angle.value);
+  const v0 = Number(els.velocity.value);
+  const g = Number(els.gravity.value);
+  if (Number.isFinite(angle)) ui.angleDeg = clamp(angle, 0, 90);
+  if (Number.isFinite(v0) && els.velocity.value !== "") ui.v0 = clamp(v0, 1, 50);
+  if (Number.isFinite(g) && els.gravity.value !== "") ui.g = clamp(g, 0.6, 25);
   const selected = planetById(planetId);
   if (selected && Math.abs(ui.g - selected.g) > 0.05) planetId = null;
   if (!sim.isRunning && !sim.landed && sim.t === 0) {
@@ -338,6 +467,35 @@ function doPause() {
     pauseSim(sim);
     setButtonLabel(els.pause, "Resume");
   }
+}
+
+function doStep() {
+  if (sim.landed) return;
+  if (!sim.isRunning) sim = startLaunch(createLaunchState(ui));
+  sim.isPaused = false;
+  const n = Math.max(1, Math.round(0.1 / Math.max(sim.dt, 0.001)));
+  for (let i = 0; i < n && sim.isRunning && !sim.landed; i += 1) step(sim);
+  if (sim.landed) onLanded();
+  else pauseSim(sim);
+  setButtonLabel(els.pause, sim.isPaused ? "Resume" : "Pause");
+  updateLive();
+  drawAll();
+}
+
+function doCheck() {
+  if (!challenge.active || !challenge.spec) {
+    els.challengeFeedback.className = "feedback";
+    els.challengeFeedback.textContent = "Turn on Challenge Mode, then launch and check.";
+    return;
+  }
+  if (!sim.landed) {
+    els.challengeFeedback.className = "feedback";
+    els.challengeFeedback.textContent = "Launch first, then check against the target.";
+    return;
+  }
+  challenge.attempted = true;
+  challenge.lastMeasured = measuredGoal(sim, challenge.spec.goalKey);
+  describeChallengeFeedback();
 }
 
 function doReset() {
@@ -531,12 +689,41 @@ els.velocity.addEventListener("input", applyUiFromSliders);
 els.gravity.addEventListener("input", applyUiFromSliders);
 els.launch.addEventListener("click", doLaunch);
 els.pause.addEventListener("click", doPause);
+els.step?.addEventListener("click", doStep);
+els.check?.addEventListener("click", doCheck);
 bindResetButtons(document, doReset);
 els.record.addEventListener("click", recordTrial);
 els.clear.addEventListener("click", clearTrials);
 els.autoRecord.addEventListener("change", () => {
   autoRecord = els.autoRecord.checked;
 });
+els.vectors?.addEventListener("change", () => {
+  showForces = Boolean(els.vectors.checked);
+  drawAll();
+});
+els.net?.addEventListener("change", () => {
+  showNet = Boolean(els.net.checked);
+  drawAll();
+});
+els.velocityToggle?.addEventListener("change", () => {
+  showVelocity = Boolean(els.velocityToggle.checked);
+  drawAll();
+});
+els.accel?.addEventListener("change", () => {
+  showAccel = Boolean(els.accel.checked);
+  drawAll();
+});
+for (const chip of document.querySelectorAll("[data-scenario]")) {
+  chip.addEventListener("click", () => applyScenario(chip.dataset.scenario));
+}
+for (const chip of document.querySelectorAll("[data-speed]")) {
+  chip.addEventListener("click", () => {
+    playback = Number(chip.dataset.speed) || 1;
+    document.querySelectorAll("[data-speed]").forEach((btn) => {
+      btn.classList.toggle("active", Number(btn.dataset.speed) === playback);
+    });
+  });
+}
 els.identityToggle?.addEventListener("change", () => drawCharts());
 els.challengeToggle.addEventListener("change", () => setChallenge(els.challengeToggle.checked));
 els.reveal.addEventListener("click", () => {
@@ -584,7 +771,7 @@ function tick(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   if (sim.isRunning && !sim.isPaused) {
-    acc += dt;
+    acc += dt * playback;
     while (acc >= sim.dt && sim.isRunning && !sim.isPaused) {
       step(sim);
       acc -= sim.dt;
@@ -604,11 +791,12 @@ function tick(now) {
 
 const resize = new ResizeObserver((entries) => {
   for (const entry of entries) {
-    if (entry.target === els.canvas) drawSim();
+    if (entry.target === els.canvas || entry.target === els.fbd) drawSim();
     else drawCharts();
   }
 });
 resize.observe(els.canvas);
+if (els.fbd) resize.observe(els.fbd);
 resize.observe(els.graphRange);
 resize.observe(els.graphHeight);
 resize.observe(els.graphTheoryRange);

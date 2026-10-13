@@ -51,15 +51,17 @@
 
       <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
         <div class="workspace">
-          <section class="stage" aria-label="Projectile simulation">
+          <section class="stage track-stage motion-stage projectile-stage" aria-label="Projectile simulation" id="simulation-canvas">
             <canvas
               id="sim-canvas"
               role="img"
               aria-label="Two-dimensional projectile motion on flat ground"
             ></canvas>
-            <div class="transport">
+            <div class="transport" id="playback-controls">
               <button type="button" id="btn-launch" class="btn primary">Launch</button>
               <button type="button" id="btn-pause" class="btn">Pause</button>
+              <button type="button" id="btn-step" class="btn">Step +0.1 s</button>
+              <button type="button" id="btn-check-15" class="btn">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -69,37 +71,62 @@
               <button type="button" id="btn-record" class="btn">Record Trial</button>
               <button type="button" id="btn-clear" class="btn ghost">Clear Trials</button>
             </div>
-          </section>
-
-          <aside class="rail">
-            <section class="card">
-              <h2>Controls</h2>
-              <div class="control">
-                <div class="control-head">
-                  <label for="angle">Launch Angle</label>
-                  <span id="angle-readout" class="readout">45°</span>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Projectile scenarios">
+                  <button type="button" class="chip active" data-scenario="max-range">45° max range</button>
+                  <button type="button" class="chip" data-scenario="pair-30">30° pair</button>
+                  <button type="button" class="chip" data-scenario="pair-60">60° pair</button>
+                  <button type="button" class="chip" data-scenario="vertical">Vertical</button>
+                  <button type="button" class="chip" data-scenario="slow">Slow launch</button>
+                  <button type="button" class="chip" data-scenario="fast">Fast launch</button>
+                  <button type="button" class="chip" data-scenario="moon">Moon</button>
+                  <button type="button" class="chip" data-scenario="jupiter">Jupiter</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
                 </div>
-                <input id="angle" type="range" min="0" max="90" step="1" value="45" />
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip active" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host"></div>
+              <div class="nudge-row motion-inputs">
+                <label class="pos-input">Launch angle
+                  <input id="angle" type="number" min="0" max="90" step="1" value="45" aria-label="Launch angle in degrees" />
+                  <span>°</span>
+                </label>
+                <label class="pos-input">Initial speed
+                  <input id="velocity" type="number" min="1" max="50" step="1" value="20" aria-label="Initial speed in meters per second" />
+                  <span>m/s</span>
+                </label>
+                <label class="pos-input">Gravity
+                  <input id="gravity" type="number" min="0.6" max="25" step="0.1" value="9.8" aria-label="Gravity in meters per second squared" />
+                  <span>m/s²</span>
+                </label>
+              </div>
+              <p class="sr-only">
+                <span id="angle-readout">45°</span>
+                <span id="velocity-readout">20 m/s</span>
+                <span id="gravity-readout">9.8 m/s²</span>
+              </p>
+              <div class="control">
+                <div class="control-head"><span>Quick angles</span></div>
                 <div class="presets" role="group" aria-label="Common investigation angles">
                   <button type="button" class="chip" data-angle="30">30°</button>
-                  <button type="button" class="chip" data-angle="45">45°</button>
+                  <button type="button" class="chip active" data-angle="45">45°</button>
                   <button type="button" class="chip" data-angle="60">60°</button>
                   <button type="button" class="chip" data-angle="90">90°</button>
                 </div>
               </div>
               <div class="control">
-                <div class="control-head">
-                  <label for="velocity">Initial Velocity</label>
-                  <span id="velocity-readout" class="readout">20 m/s</span>
-                </div>
-                <input id="velocity" type="range" min="1" max="50" step="1" value="20" />
-              </div>
-              <div class="control">
-                <div class="control-head">
-                  <label for="gravity">Gravity</label>
-                  <span id="gravity-readout" class="readout">9.8 m/s²</span>
-                </div>
-                <input id="gravity" type="range" min="0.6" max="25" step="0.1" value="9.8" />
+                <div class="control-head"><span>World</span></div>
                 <div class="presets planet-chips" role="group" aria-label="Planetary gravity">
                   <button type="button" class="chip" data-planet="moon">Moon</button>
                   <button type="button" class="chip" data-planet="mercury">Mercury</button>
@@ -111,14 +138,23 @@
                   <button type="button" class="chip" data-planet="uranus">Uranus</button>
                   <button type="button" class="chip" data-planet="neptune">Neptune</button>
                 </div>
-                <label class="switch planet-bg-switch">
+                <label class="switch light planet-bg-switch">
                   <input id="planet-backgrounds" type="checkbox" checked />
                   <span>Planet backgrounds</span>
                 </label>
-                <p class="caption">A selected world paints its sky and ground. Custom g keeps the gray lab scene.</p>
+                <p class="track-help">A selected world paints its sky and ground. Custom g keeps the gray lab scene.</p>
               </div>
-            </section>
+              <div class="nudge-row fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vectors</label>
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+              </div>
+              <p class="track-help">Launch, then change angle at the same speed and gravity. Complementary angles land equally far. Camera: Origin keeps the launcher in view, Follow tracks the projectile, Stationary freezes the window.</p>
+            </div>
+          </section>
 
+          <aside class="rail">
             <section class="card data-card">
               <div class="card-head">
                 <h2>Live Measurements</h2>
@@ -168,6 +204,14 @@
             <p class="theory-link">Need the equations? Open the <button type="button" id="open-theory" class="text-link">Theory</button> tab.</p>
           </aside>
         </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram" id="fbd">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of forces on the projectile"></canvas>
+            <p class="caption">In flight the only real force is gravity. The normal force appears only on the pad. Velocity and acceleration are not forces and are not drawn here.</p>
+          </div>
+        </section>
 
         <section class="lab-bottom">
           <div class="graph-toggles" role="group" aria-label="Recorded graph overlays">
