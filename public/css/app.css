@@ -620,15 +620,18 @@ input[type="range"] {
 .stage .chip,
 .track-controls .chip,
 .transport .chip {
-  background: var(--well-btn);
+  min-height: 2rem;
+  padding: 0.28rem 0.72rem;
+  background: color-mix(in srgb, var(--well-ink) 12%, var(--well-btn));
   color: var(--well-ink);
-  border-color: var(--well-line);
+  border-color: color-mix(in srgb, var(--well-ink) 30%, var(--well-line));
+  font-weight: 650;
 }
 
 .stage .chip:hover,
 .track-controls .chip:hover,
 .transport .chip:hover {
-  background: var(--well-btn-hover);
+  background: color-mix(in srgb, var(--well-ink) 18%, var(--well-btn));
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -636,9 +639,127 @@ input[type="range"] {
 .stage .chip.active,
 .track-controls .chip.active,
 .transport .chip.active {
-  background: color-mix(in srgb, var(--accent) 22%, var(--well-bg));
+  background: color-mix(in srgb, var(--accent) 32%, var(--well-bg));
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.gravity-stage .presets .chip,
+.gravity-stage #height-presets .chip {
+  min-height: 2.15rem;
+  padding-inline: 0.8rem;
+  background: color-mix(in srgb, var(--well-ink) 16%, var(--well-btn));
+  border-color: color-mix(in srgb, var(--well-ink) 38%, var(--well-line));
+}
+
+.stage .chip:has(.chip-icon),
+.track-controls .chip:has(.chip-icon),
+.transport .chip:has(.chip-icon) {
+  padding-left: 0.5rem;
+}
+
+.chip[data-planet] {
+  --planet-sky: var(--well-btn);
+  --planet-sky-2: var(--well-btn);
+  --planet-ground: var(--well-btn);
+  --planet-ground-2: var(--well-btn);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--well-ink);
+  border-color: color-mix(in srgb, var(--planet-ground) 42%, var(--well-line));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--planet-sky) 36%, var(--well-btn)) 0%,
+      color-mix(in srgb, var(--planet-sky-2) 26%, var(--well-btn)) 54%,
+      color-mix(in srgb, var(--planet-ground) 32%, var(--well-btn)) 55%,
+      color-mix(in srgb, var(--planet-ground-2) 40%, var(--well-btn)) 100%
+    );
+}
+
+.chip[data-planet]::before {
+  content: "";
+  position: absolute;
+  left: -0.4rem;
+  top: 50%;
+  width: 1.9rem;
+  height: 1.9rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 32% 30%,
+      color-mix(in srgb, var(--planet-sky) 70%, white) 0%,
+      var(--planet-sky-2) 45%,
+      var(--planet-ground) 78%
+    );
+  opacity: 0.38;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chip[data-planet] .planet-icon {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 0.7px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 0.7px rgba(255, 255, 255, 0.4));
+}
+
+.stage .chip[data-planet]:hover,
+.track-controls .chip[data-planet]:hover,
+.chip[data-planet]:hover {
+  color: var(--well-ink);
+  border-color: color-mix(in srgb, var(--planet-sky) 50%, var(--accent));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--planet-sky) 48%, var(--well-btn)) 0%,
+      color-mix(in srgb, var(--planet-sky-2) 36%, var(--well-btn)) 54%,
+      color-mix(in srgb, var(--planet-ground) 44%, var(--well-btn)) 55%,
+      color-mix(in srgb, var(--planet-ground-2) 50%, var(--well-btn)) 100%
+    );
+}
+
+.stage .chip[data-planet]:hover::before,
+.track-controls .chip[data-planet]:hover::before,
+.chip[data-planet]:hover::before {
+  opacity: 0.52;
+}
+
+.stage .chip[data-planet].active,
+.track-controls .chip[data-planet].active,
+.chip[data-planet].active {
+  color: var(--well-ink);
+  border-color: color-mix(in srgb, var(--planet-sky) 45%, var(--accent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--planet-sky) 50%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--planet-sky) 58%, var(--well-btn)) 0%,
+      color-mix(in srgb, var(--planet-sky-2) 44%, var(--well-btn)) 54%,
+      color-mix(in srgb, var(--planet-ground) 52%, var(--well-btn)) 55%,
+      color-mix(in srgb, var(--planet-ground-2) 58%, var(--well-btn)) 100%
+    );
+}
+
+.stage .chip[data-planet].active::before,
+.track-controls .chip[data-planet].active::before,
+.chip[data-planet].active::before {
+  opacity: 0.62;
+}
+
+[data-theme="contrast"] .chip[data-planet],
+[data-theme="contrast"] .chip[data-planet]:hover,
+[data-theme="contrast"] .chip[data-planet].active {
+  background: #000;
+  color: #fff;
+  border-color: #fff;
+  box-shadow: none;
+}
+
+[data-theme="contrast"] .chip[data-planet]::before {
+  display: none;
 }
 
 .chip:hover {

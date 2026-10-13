@@ -11,7 +11,7 @@ import {
   normalizeCameraMode,
 } from "/lib/camera.js";
 import { fileForFormat, triggerDownload } from "/lib/export-trials.js";
-import { PLANET_CHIP_ORDER, planetById, planetIcon } from "/lib/planets.js";
+import { PLANET_CHIP_ORDER, planetById, planetChipStyle, planetIcon } from "/lib/planets.js";
 
 function iconSvg(name, inner) {
   return `<svg class="btn-icon btn-icon-${name}" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">${inner}</svg>`;
@@ -527,7 +527,7 @@ export function planetPresetControls({ switchClass = "switch light" } = {}) {
   const chips = PLANET_CHIP_ORDER.map((id) => {
     const planet = planetById(id);
     if (!planet) return "";
-    return `<button type="button" class="chip${id === "earth" ? " active" : ""}" data-planet="${id}">${planetIcon(id)}${planet.name}</button>`;
+    return `<button type="button" class="chip planet-chip${id === "earth" ? " active" : ""}" data-planet="${id}" style="${planetChipStyle(id)}">${planetIcon(id)}${planet.name}</button>`;
   }).join("");
   return `
     <div class="presets planet-chips" role="group" aria-label="Planetary gravity">
