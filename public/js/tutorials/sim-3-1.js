@@ -1,0 +1,212 @@
+import {
+  action,
+  choice,
+  compare,
+  derive,
+  explain,
+  heading,
+  hint,
+  howToUse,
+  observe,
+  predict,
+  section,
+  text,
+} from "./helpers.js";
+
+export const tutorials = {
+  howToUseLab: howToUse(
+    "This lab is a block on a horizontal track. Displacement is to the right. Work by a constant force is W = Fd cosθ. Net work equals the change in kinetic energy.",
+    [
+      section("track", "Read the track", "simulation-canvas", [
+        text("The start marker is x = 0. The end marker is the requested displacement d. The block’s motion must match W_net and ΔK."),
+        predict("pred-d-dir", "Which direction is the displacement in this lab?"),
+      ]),
+      section("preset", "Load a scenario", "scenario-selector", [
+        text("Each chip loads a complete, consistent experiment: along d, perpendicular, opposing, zero net work, 60°, sliding friction, or a stop-short case."),
+        action("Open Force along d and inspect m, vᵢ, F, θ, and d."),
+      ]),
+      section("force", "Set the applied force", "applied-force-control", [
+        text("F is the applied-force magnitude. It is not automatically the net force, and it is not the same quantity as work."),
+        predict("pred-f-w", "If you increase F at fixed d and θ = 0°, what should happen to the applied-force work?"),
+      ]),
+      section("angle", "Set the force angle", "angle-control", [
+        text("θ is measured from the displacement to the force. 0° is along d, 90° is perpendicular, 180° opposes d."),
+        action("Change θ to 90° and watch the force arrow."),
+      ]),
+      section("disp", "Set the displacement", "displacement-control", [
+        text("d is the requested endpoint. If negative net work would drive K below zero, the block stops earlier and the lab reports the actual distance s."),
+      ]),
+      section("mass-speed", "Mass and initial speed", "mass-control", [
+        text("Kᵢ = ½ m vᵢ². Mass does not change W when F, d, and θ are fixed. Speed does not go into the work formula."),
+      ]),
+      section("work-panel", "Read the work breakdown", "force-readout", [
+        text("Each included force has its own work. W_net is their sum. “Not included” is different from “included and equal to zero.”"),
+        explain("N and Fg do zero work here because the displacement is horizontal."),
+      ]),
+      section("ke-panel", "Read kinetic energy", "net-force-panel", [
+        text("K uses speed squared. Compare W_net with ΔK after a run. They should agree within numerical tolerance."),
+      ]),
+      section("graphs", "Use graphs and data", "graph-panel", [
+        text("The live graphs show W_net and K versus the displacement already completed. Record trials, then turn on Show exact identity."),
+        action("Choose W vs. F, record several forces, then compare to the identity."),
+      ]),
+      section("playback", "Play, pause, and reset", "playback-controls", [
+        text("Play runs until the block reaches the end or stops. Reset restores the selected initial conditions. Record stores a trial."),
+        predict("pred-zero-work", "If a force is perpendicular to the displacement, what work should that force do?"),
+      ]),
+    ],
+  ),
+  guidedLab: {
+    title: "Guided Lab",
+    jumps: [
+      { sectionId: "start", label: "Initial state" },
+      { sectionId: "predict", label: "Predict A" },
+      { sectionId: "force", label: "Change F" },
+      { sectionId: "disp", label: "Change d" },
+      { sectionId: "angle", label: "Force direction" },
+      { sectionId: "perp", label: "Perpendicular" },
+      { sectionId: "negative", label: "Negative work" },
+      { sectionId: "derive", label: "Derive W_net = ΔK" },
+      { sectionId: "zero-net", label: "Zero net work" },
+      { sectionId: "mass", label: "Mass and K" },
+      { sectionId: "speed", label: "Speed squared" },
+      { sectionId: "angled", label: "F cosθ" },
+      { sectionId: "friction", label: "Friction" },
+      { sectionId: "graphs", label: "Graphs" },
+      { sectionId: "design", label: "Design" },
+      { sectionId: "miscon", label: "Misconceptions" },
+      { sectionId: "transfer", label: "Transfer" },
+      { sectionId: "final", label: "Explain" },
+    ],
+    sections: [
+      section("start", "Establish the initial state", "[data-scenario=\"along\"]", [
+        action("Open Force along d. m = 2 kg, vᵢ = 2 m/s, F = 10 N, θ = 0°, d = 5 m."),
+        predict("pred-ki", "What is Kᵢ?"),
+        predict("pred-sign", "Will the applied force do positive or negative work?"),
+        compare("pred-ki", "4 J"),
+        explain("Kᵢ = ½mvᵢ² depends on mass and speed. Work also needs F, d, and θ."),
+      ]),
+      section("predict", "Predict before running", "force-readout", [
+        action("Keep Preset A. Calculate W = Fd cosθ and then K_f = Kᵢ + W_net before you play."),
+        predict("pred-w", "What is W for F = 10 N, d = 5 m, θ = 0°?"),
+        predict("pred-kf", "What K_f do you expect?"),
+        hint("cos 0° = 1, so W = 50 J. Kᵢ = 4 J."),
+        compare("pred-w", "50 J"),
+        compare("pred-kf", "54 J"),
+        action("Play, then compare with the work and kinetic-energy panels."),
+      ]),
+      section("force", "Change the force magnitude", "relationship-investigation", [
+        action("Choose W vs. F. Hold d = 5 m and θ = 0°. Run F = 5, 10, and 20 N, and record each trial."),
+        predict("pred-prop-f", "If F doubles at fixed d and θ, what should happen to W?"),
+        compare("pred-prop-f", "W doubles"),
+        explain("For constant d and θ, W ∝ F. Mass does not appear in W = Fd cosθ."),
+      ]),
+      section("disp", "Change the displacement", "[data-invest=\"wd\"]", [
+        action("Choose W vs. d. Hold F = 10 N and θ = 0°. Compare at least three displacements."),
+        predict("pred-prop-d", "If d doubles at fixed F and θ, what should happen to W?"),
+        explain("For a constant force at a fixed angle, W ∝ d."),
+      ]),
+      section("angle", "Investigate force direction", "[data-invest=\"wtheta\"]", [
+        action("Hold F and d. Run θ = 0°, 60°, 90°, 120°, and 180°. Record each trial."),
+        predict("pred-90", "Why is the work zero at 90°?"),
+        predict("pred-120", "Is the work at 120° positive, zero, or negative?"),
+        compare("pred-120", "Negative"),
+        explain("Only the component parallel to displacement contributes. Changing θ does not change F itself."),
+      ]),
+      section("perp", "The perpendicular-force case", "[data-scenario=\"perp\"]", [
+        action("Open Perpendicular. F = 12 N at 90°, d = 6 m, vᵢ = 4 m/s."),
+        predict("pred-perp-v", "What final speed do you expect?"),
+        compare("pred-perp-v", "4 m/s, unchanged"),
+        explain("Zero work is not zero force and not zero velocity. The object can keep moving at constant speed."),
+      ]),
+      section("negative", "Investigate negative work", "[data-scenario=\"negative\"]", [
+        action("Open Opposing force. W_net = −24 J, Kᵢ = 36 J."),
+        predict("pred-neg-k", "Does kinetic energy increase or decrease?"),
+        predict("pred-neg-sign", "Can kinetic energy become negative?"),
+        predict("pred-neg-end", "Does the object reach the 3 m endpoint?"),
+        compare("pred-neg-k", "Decreases to 12 J"),
+        compare("pred-neg-sign", "No. K stays ≥ 0"),
+        compare("pred-neg-end", "Yes, v_f ≈ 3.46 m/s"),
+        explain("Negative work decreases K. If K would go below zero, the object stops earlier instead."),
+      ]),
+      section("derive", "Derive the work-energy theorem", "equation-display", [
+        text("Start from F_net = ma and v_f² − vᵢ² = 2ad for constant net force along a straight path."),
+        derive("der-wet", [
+          "F_net = ma",
+          "v_f² − vᵢ² = 2 a d",
+          "½ m (v_f² − vᵢ²) = m a d = F_net d",
+          "K_f − Kᵢ = W_net",
+        ]),
+        explain("This derivation uses constant F_net. The work-energy theorem still holds when net work is computed more generally."),
+      ]),
+      section("zero-net", "Compare individual work with net work", "[data-scenario=\"zero-net\"]", [
+        action("Open Zero net work. F_app = 10 N, F_opp = 10 N, d = 4 m, vᵢ = 3 m/s."),
+        predict("pred-each-w", "What is W_app, W_opp, and W_net?"),
+        compare("pred-each-w", "+40 J, −40 J, 0 J"),
+        predict("pred-zero-v", "Must the object stop when net work is zero?"),
+        compare("pred-zero-v", "No. Speed stays 3 m/s"),
+        explain("Zero net work means ΔK = 0. It does not mean zero speed or zero individual-force work."),
+      ]),
+      section("mass", "Mass and kinetic energy", "[data-invest=\"km\"]", [
+        action("Comparison A: hold vᵢ = 2 m/s and vary mass. Comparison B: keep the same W_net and vᵢ, then compare v_f."),
+        predict("pred-k-m", "At fixed speed, how should K scale with mass?"),
+        compare("pred-k-m", "K ∝ m"),
+        explain("The same net work on a larger mass produces a smaller speed change. Mass does not change W when F, d, and θ stay fixed."),
+      ]),
+      section("speed", "Speed and kinetic energy", "[data-invest=\"kv2\"]", [
+        action("Hold mass constant. Compare several initial speeds."),
+        predict("pred-k-v", "If speed doubles, does K double?"),
+        compare("pred-k-v", "No. K quadruples because K ∝ v²"),
+        explain("Doubling speed multiplies kinetic energy by four."),
+      ]),
+      section("angled", "Force at an angle", "[data-scenario=\"angled\"]", [
+        action("Open Force at 60°. F = 20 N, d = 4 m."),
+        predict("pred-par", "What is F_∥ = F cos60°?"),
+        predict("pred-wang", "What is W?"),
+        compare("pred-par", "10 N"),
+        compare("pred-wang", "40 J"),
+        explain("W = F_∥ d agrees with W = Fd cosθ. The perpendicular component does no work on this displacement."),
+      ]),
+      section("friction", "Friction and net work", "[data-scenario=\"friction\"]", [
+        action("Open Sliding friction. The object is already sliding. μ_k = 0.20, g = 9.8 m/s²."),
+        predict("pred-fk", "Find N, f_k, W_app, W_fric, and W_net before you play."),
+        hint("N = mg = 19.6 N. f_k = 3.92 N."),
+        compare("pred-fk", "W_net = 24.32 J"),
+        explain("Applied-force work is +40 J. Friction work is −15.68 J. Net work, not F_app alone, equals ΔK."),
+      ]),
+      section("graphs", "Interpret the graphs", "graph-panel", [
+        action("Inspect Work vs. displacement, then Kinetic energy vs. displacement."),
+        observe("obs-slope", "What does the slope of W vs. s mean for a fixed force angle?"),
+        observe("obs-flat", "What does a flat W vs. s graph tell you?"),
+        explain("For constant F_net, K(s) = Kᵢ + F_net s until the object stops. A perpendicular force makes W vs. s flat."),
+      ]),
+      section("design", "Design an experiment", "relationship-investigation", [
+        text("Pick one claim: W ∝ F, W ∝ d, W depends on θ, K ∝ m at fixed v, K ∝ v², or W_net = ΔK."),
+        predict("pred-design", "Name the independent variable, the dependent variable, and what you will hold constant."),
+        action("Record enough trials to test the claim, then state the limitation of your design."),
+      ]),
+      section("miscon", "Diagnose a misconception", "force-readout", [
+        choice("ch-force-work", "If a force acts on a moving object, the force must do positive work.", [
+          "True",
+          "False — work uses the component along the displacement",
+        ]),
+        choice("ch-zero-rest", "If net work is zero, the object must be stationary.", [
+          "True",
+          "False — ΔK = 0, so speed can stay constant and nonzero",
+        ]),
+        explain("Work can be positive, zero, or negative. Zero net work is constant kinetic energy, not necessarily rest."),
+      ]),
+      section("transfer", "Transfer problem", "net-force-panel", [
+        text("A 4 kg object moves at 3 m/s. A constant net force does 50 J of work on it."),
+        predict("pred-transfer", "What is v_f?"),
+        hint("Kᵢ = 18 J, so K_f = 68 J."),
+        compare("pred-transfer", "√34 ≈ 5.83 m/s"),
+        explain("Do not add 50 to the speed. Add the work to the kinetic energy, then convert back with v = √(2K/m)."),
+      ]),
+      section("final", "Independent explanation", "force-readout", [
+        observe("obs-final", "In your own words: how does the work-energy theorem connect force, displacement, and kinetic energy? Include direction, net work, and one zero-work or negative-work example."),
+        explain("A complete answer names W = Fd cosθ, W_net = ΣWᵢ = ΔK, and notes that K cannot be negative."),
+      ]),
+    ],
+  },
+};

@@ -3241,7 +3241,7 @@ export function sim29Page() {
           <p class="kicker">Unit 2 · Simulation 2.9</p>
           <h1>Circular Motion</h1>
           <p class="objective">Learning objective: Uniform circular motion has tangent velocity and inward acceleration a<sub>c</sub> = v²/r. The required net inward force is m v²/r, supplied by real forces, not by an extra “centripetal” interaction.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-8" data-link>← 2.8</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <span class="muted">3.1 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-8" data-link>← 2.8</a> · <a href="/simulations/module-2" data-link>Module 2</a> · <a href="/simulations/module-3/3-1" data-link>3.1 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -3419,7 +3419,7 @@ export function sim29Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m still holds. Here F_net points toward the center.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-8" data-link>Review 2.8</a> — a restoring force is not automatically the net force, and it is not automatically centripetal.</p>
-              <p class="conn-card">Next: work and energy (3.1, coming) tracks energy transfers. Circular motion here is still a Newton’s-law story.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-3/3-1" data-link>Open 3.1</a> — work transfers energy. Circular motion here is still a Newton’s-law story.</p>
             </div>
           </aside>
         </div>
@@ -3507,6 +3507,262 @@ export function sim29Page() {
           </section>
           ${trialFitTheory(`
             <p>ac vs. v² at fixed r should be a line through the origin with slope 1/r. ac vs. 1/r at fixed v should have slope v². Fc vs. m at fixed v and r should have slope v²/r.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim31Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 3 · Simulation 3.1</p>
+          <h1>Work and the Work-Energy Theorem</h1>
+          <p class="objective">Learning objective: Work by a constant force is W = Fd cosθ. Net work equals the change in kinetic energy, ΔK = K_f − K_i, with K = ½mv² never negative.</p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-9" data-link>← 2.9</a> · <a href="/simulations/module-3" data-link>Module 3</a> · <span class="muted">3.2 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage work-stage" aria-label="Object on a horizontal track with work and kinetic energy" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Block moving along a displacement with force vectors"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-31">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Work-energy scenarios">
+                  <button type="button" class="chip" data-scenario="along">Force along d</button>
+                  <button type="button" class="chip" data-scenario="perp">Perpendicular</button>
+                  <button type="button" class="chip" data-scenario="negative">Opposing force</button>
+                  <button type="button" class="chip" data-scenario="zero-net">Zero net work</button>
+                  <button type="button" class="chip" data-scenario="angled">Force at 60°</button>
+                  <button type="button" class="chip" data-scenario="friction">Sliding friction</button>
+                  <button type="button" class="chip" data-scenario="stop">Stops early</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="wf">W vs. F</button>
+                  <button type="button" class="chip" data-invest="wd">W vs. d</button>
+                  <button type="button" class="chip" data-invest="wtheta">W vs. θ</button>
+                  <button type="button" class="chip" data-invest="km">K vs. m</button>
+                  <button type="button" class="chip" data-invest="kv2">K vs. v²</button>
+                  <button type="button" class="chip" data-invest="wdk">W_net vs. ΔK</button>
+                </div>
+                <p class="track-help" id="invest-help">Vary one quantity while holding the others constant, then record trials.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs" id="mass-control">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.5" max="20" step="0.1" value="2" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="speed-control">vᵢ<input id="v-input" type="number" min="0" max="15" step="0.1" value="2" aria-label="Initial speed in meters per second" /><span>m/s</span></label>
+                <label class="pos-input" id="applied-force-control">F<input id="f-input" type="number" min="0" max="100" step="0.5" value="10" aria-label="Applied force in newtons" /><span>N</span></label>
+                <label class="pos-input" id="angle-control">θ<input id="ang-input" type="number" min="0" max="360" step="1" value="0" aria-label="Force angle in degrees from the displacement" /><span>°</span></label>
+                <label class="pos-input" id="displacement-control">d<input id="d-input" type="number" min="0" max="20" step="0.1" value="5" aria-label="Requested displacement in meters" /><span>m</span></label>
+              </div>
+              <div class="nudge-row motion-inputs">
+                <label class="switch light" id="kinetic-coefficient-control"><input id="toggle-friction" type="checkbox" /> Kinetic friction (sliding)</label>
+                <label class="pos-input">μ<sub>k</sub><input id="mu-input" type="number" min="0" max="1.5" step="0.05" value="0.2" aria-label="Coefficient of kinetic friction" /></label>
+                <label class="pos-input">F<sub>opp</sub><input id="opp-input" type="number" min="0" max="100" step="0.5" value="0" aria-label="Opposing horizontal force in newtons" /><span>N</span></label>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vectors</label>
+                <label class="switch light"><input id="toggle-net" type="checkbox" checked /> Show net force</label>
+                <label class="switch light" id="velocity-vector"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light" id="acceleration-vector"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+                <label class="switch light"><input id="toggle-trail" type="checkbox" checked /> Trail</label>
+              </div>
+              <p class="track-help">Displacement is to the right. θ is measured from that displacement to the applied force. Friction is kinetic and assumes the object is already sliding. Brown is F<sub>app</sub>. Teal is velocity. Gold is acceleration.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="force-readout">
+              <div class="card-head">
+                <h2>Work</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">RUN TO COMPARE</strong>
+                <span id="eq-net">W_net = 0.00 J</span>
+                <span id="eq-detail">Run the experiment to calculate the final state.</span>
+              </div>
+              <dl class="metrics metrics-wide" id="physics-readouts">
+                <div><dt>W<sub>app</sub> = Fd cosθ</dt><dd id="read-wapp">0.00 J</dd></div>
+                <div><dt>W<sub>fric</sub></dt><dd id="read-wfric">not included</dd></div>
+                <div><dt>W<sub>opp</sub></dt><dd id="read-wopp">not included</dd></div>
+                <div><dt>W<sub>N</sub></dt><dd id="read-wn">0.00 J</dd></div>
+                <div><dt>W<sub>g</sub></dt><dd id="read-wg">0.00 J</dd></div>
+                <div><dt>W<sub>net</sub></dt><dd id="read-wnet">0.00 J</dd></div>
+              </dl>
+              <p class="eq-block" id="equation-display">W = Fd cosθ</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>Kinetic energy</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Kᵢ = ½mvᵢ²</dt><dd id="read-ki">4.00 J</dd></div>
+                <div><dt>K now</dt><dd id="read-k">4.00 J</dd></div>
+                <div><dt>K<sub>f</sub></dt><dd id="read-kf">—</dd></div>
+                <div><dt>ΔK</dt><dd id="read-dk">0.00 J</dd></div>
+              </dl>
+              <p class="muted">Kinetic energy uses speed squared. It cannot be negative.</p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>State</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Mass</dt><dd id="read-m">2.00 kg</dd></div>
+                <div><dt>Speed</dt><dd id="read-v">2.00 m/s</dd></div>
+                <div><dt>v<sub>f</sub></dt><dd id="read-vf">—</dd></div>
+                <div><dt>s / d</dt><dd id="read-s">0.00 m / 5.00 m</dd></div>
+                <div><dt>θ</dt><dd id="read-theta">0°</dd></div>
+                <div><dt>F<sub>∥</sub></dt><dd id="read-fx">10.00 N</dd></div>
+              </dl>
+              <p class="muted">Zero net work means ΔK = 0, not necessarily v = 0.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Work-energy theorem</summary>
+              <p>W_net = ΔK. Individual forces can do nonzero work while the net work is zero. A force perpendicular to the displacement does zero work even if the object is moving.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m. For constant F_net that same law implies W_net = ΔK.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-9" data-link>Review 2.9</a> — a perpendicular force can change direction without changing speed. Here that force does zero work.</p>
+              <p class="conn-card">Next: potential energy (3.2, coming) stores work done against conservative forces. This lab tracks kinetic energy only.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap diagram-wrap fbd-diagram" id="fbd">
+            <h2>Free-body diagram</h2>
+            <canvas id="fbd-canvas" width="960" height="240" aria-label="Free-body diagram of forces on the block"></canvas>
+            <p class="caption">N and Fg are vertical, so they do no work on a horizontal displacement. Velocity is not a force.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Work vs. displacement</h2>
+              <canvas id="graph-xt" width="640" height="220" aria-label="Net work versus displacement completed"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Kinetic energy vs. displacement</h2>
+              <canvas id="graph-vt" width="640" height="220" aria-label="Kinetic energy versus displacement completed"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <div id="graph-panel">
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · W vs. F",
+          heightTitle: "Your Trials · ΔK vs. W_net",
+          rangeCaption: "For fixed d and θ, W vs F is a line through the origin. A perpendicular force makes a flat line.",
+          heightCaption: "At the end of a valid run, ΔK should match W_net. The identity is the line ΔK = W_net.",
+          columns: ["Trial", "m", "vᵢ", "F", "θ", "d", "s", "W_net", "Kᵢ", "K", "ΔK", "end"],
+          emptyCols: 12,
+        })}
+        </div>
+        </div>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Work transfers kinetic energy</h2>
+            <p>
+              Work is energy transferred by a force acting through a displacement. For a constant force,
+              only the component along the displacement contributes. The work-energy theorem says the
+              <em>net</em> work equals the change in kinetic energy.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. Work by a constant force</h3>
+            <p>Displacement is to the right. θ is the angle from that displacement to the force. Work is a scalar, in joules.</p>
+            <p class="eq-block">W = F d cosθ = F<sub>∥</sub> d</p>
+            <p>At 0°, work is +Fd. At 90° or 270°, work is zero. At 180°, work is −Fd.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Kinetic energy</h3>
+            <p>K depends on mass and the square of the speed. Signed velocity does not go into K. K is never negative.</p>
+            <p class="eq-block">K = ½ m v²</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Work-energy theorem</h3>
+            <p>For the object as a particle:</p>
+            <p class="eq-block">W<sub>net</sub> = ΔK = K<sub>f</sub> − Kᵢ</p>
+            <p>Then v<sub>f</sub>² = vᵢ² + 2 W_net / m, only if the object can actually complete that process with nonnegative K.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Net work is a sum</h3>
+            <p>W_net = Σ Wᵢ. Applied-force work is not automatically net work. On this horizontal track, N and Fg do zero work. Kinetic friction, when included, does negative work while the object slides forward.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Zero net work is not rest</h3>
+            <p>If two horizontal forces do +40 J and −40 J, W_net = 0 and speed stays constant. The object can keep moving. Zero work by one force is also not zero force and not zero velocity.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Stopping before the endpoint</h3>
+            <p>If negative net work would drive K below zero, the object stops where K = 0. Report the actual distance traveled. Do not invent an imaginary final speed or claim the requested endpoint was reached.</p>
+          </section>
+          <section class="theory-block">
+            <h3>7. From Newton’s second law</h3>
+            <p>For constant F_net along a straight path, a = F_net / m and v<sub>f</sub>² − vᵢ² = 2 a d. Multiplying by ½m recovers W_net = ΔK. The theorem is more general than this constant-force derivation.</p>
+          </section>
+          <section class="theory-block">
+            <h3>8. Mistakes to avoid</h3>
+            <p>Do not say any force on a moving object does positive work. Do not say zero net work means the object is at rest. Do not use signed velocity in K. Do not let K go negative. Do not treat F_app as F_net when friction or an opposing force is present.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>W vs F at fixed d and θ should be a line through the origin with slope d cosθ. W vs d should have slope F cosθ. K vs v² at fixed m should have slope ½m. ΔK vs W_net should hug the identity ΔK = W_net.</p>
           `)}
         </article>
       </div>

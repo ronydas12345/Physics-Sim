@@ -10,7 +10,7 @@ const PAGES = readFileSync(join(ROOT, "public", "js", "platform", "pages.js"), "
 const LAB_KIT = readFileSync(join(ROOT, "public", "js", "platform", "lab-kit.js"), "utf8");
 const APP = readFileSync(join(ROOT, "public", "js", "platform", "app.js"), "utf8");
 
-const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5", "2-6", "2-7", "2-8", "2-9"];
+const IDS = ["1-1", "1-2", "1-3", "1-4", "2-1", "2-2", "2-3", "2-4", "2-5", "2-6", "2-7", "2-8", "2-9", "3-1"];
 const PAGE_FNS = {
   "1-1": "sim11Page",
   "1-2": "sim12Page",
@@ -25,6 +25,7 @@ const PAGE_FNS = {
   "2-7": "sim27Page",
   "2-8": "sim28Page",
   "2-9": "sim29Page",
+  "3-1": "sim31Page",
 };
 const TARGET_ALIASES = {
   scene: "axis-canvas",

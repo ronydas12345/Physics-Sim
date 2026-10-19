@@ -724,7 +724,8 @@ html.is-fullscreen #page-root,
 .secondlaw-stage #axis-canvas,
 .firstlaw-stage #axis-canvas,
 .friction-stage #axis-canvas,
-.spring-stage #axis-canvas {
+.spring-stage #axis-canvas,
+.work-stage #axis-canvas {
   height: 340px;
 }
 
