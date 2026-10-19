@@ -725,8 +725,15 @@ html.is-fullscreen #page-root,
 .firstlaw-stage #axis-canvas,
 .friction-stage #axis-canvas,
 .spring-stage #axis-canvas,
-.work-stage #axis-canvas {
+.work-stage #axis-canvas,
+.variable-stage #axis-canvas {
   height: 340px;
+}
+
+.graph-fx-wrap #graph-fx-canvas {
+  height: 280px;
+  width: 100%;
+  display: block;
 }
 
 .gravity-stage #axis-canvas {

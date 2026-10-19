@@ -3522,7 +3522,7 @@ export function sim31Page() {
           <p class="kicker">Unit 3 · Simulation 3.1</p>
           <h1>Work and the Work-Energy Theorem</h1>
           <p class="objective">Learning objective: Work by a constant force is W = Fd cosθ. Net work equals the change in kinetic energy, ΔK = K_f − K_i, with K = ½mv² never negative.</p>
-          <p class="sim-nav"><a href="/simulations/module-2/2-9" data-link>← 2.9</a> · <a href="/simulations/module-3" data-link>Module 3</a> · <span class="muted">3.2 coming</span></p>
+          <p class="sim-nav"><a href="/simulations/module-2/2-9" data-link>← 2.9</a> · <a href="/simulations/module-3" data-link>Module 3</a> · <a href="/simulations/module-3/3-2" data-link>3.2 →</a></p>
         </div>
         <div class="sim-toolbar">
           ${labIconToolbar()}
@@ -3673,7 +3673,7 @@ export function sim31Page() {
             <div class="conn-cards">
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-5" data-link>Review 2.5</a> — a = F_net / m. For constant F_net that same law implies W_net = ΔK.</p>
               <p class="conn-card">Previously: <a href="/simulations/module-2/2-9" data-link>Review 2.9</a> — a perpendicular force can change direction without changing speed. Here that force does zero work.</p>
-              <p class="conn-card">Next: potential energy (3.2, coming) stores work done against conservative forces. This lab tracks kinetic energy only.</p>
+              <p class="conn-card">Next: <a href="/simulations/module-3/3-2" data-link>Open 3.2</a> — when force changes with position, work is the signed area under Fₓ vs. x, not one force value times the whole displacement.</p>
             </div>
           </aside>
         </div>
@@ -3763,6 +3763,307 @@ export function sim31Page() {
           </section>
           ${trialFitTheory(`
             <p>W vs F at fixed d and θ should be a line through the origin with slope d cosθ. W vs d should have slope F cosθ. K vs v² at fixed m should have slope ½m. ΔK vs W_net should hug the identity ΔK = W_net.</p>
+          `)}
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+export function sim32Page() {
+  return `
+    <section class="sim-shell">
+      <header class="sim-header">
+        <div>
+          <p class="kicker">Unit 3 · Simulation 3.2</p>
+          <h1>Work by Variable Forces</h1>
+          <p class="objective">Learning objective: When force changes with position, work is the signed area under an Fₓ-versus-x graph, W = ∫ Fₓ(x) dx. Net work still equals ΔK, and kinetic energy is never negative.</p>
+          <p class="sim-nav"><a href="/simulations/module-3/3-1" data-link>← 3.1</a> · <a href="/simulations/module-3" data-link>Module 3</a> · <span class="muted">3.3 coming</span></p>
+        </div>
+        <div class="sim-toolbar">
+          ${labIconToolbar()}
+        </div>
+      </header>
+
+      ${labTablist()}
+
+      <div id="panel-lab" role="tabpanel" aria-labelledby="tab-btn-lab">
+        <div class="workspace">
+          <section class="stage track-stage motion-stage firstlaw-stage work-stage variable-stage" aria-label="Object on a track with a position-dependent force" id="simulation-canvas">
+            <canvas id="axis-canvas" width="960" height="340" aria-label="Block moving along a track with a force that can change with position"></canvas>
+            <div class="transport" id="playback-controls">
+              <button type="button" class="btn primary" id="btn-play">Play</button>
+              <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
+              <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
+              <button type="button" class="btn" id="btn-check-32">Check</button>
+              <span class="transport-gap"></span>
+              <label class="switch light">
+                <input id="auto-record" type="checkbox" />
+                Auto-record
+              </label>
+              <button type="button" class="btn" id="btn-reset-run">Reset</button>
+              <button type="button" class="btn" id="btn-record">Record Trial</button>
+              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+            </div>
+            <div class="track-controls">
+              <div class="control" id="scenario-selector">
+                <div class="control-head"><span>Scenario</span></div>
+                <div class="presets" role="group" aria-label="Variable-force scenarios">
+                  <button type="button" class="chip" data-scenario="constant">Constant F</button>
+                  <button type="button" class="chip" data-scenario="triangle">Triangle</button>
+                  <button type="button" class="chip" data-scenario="trapezoid">Trapezoid</button>
+                  <button type="button" class="chip" data-scenario="negative">Negative work</button>
+                  <button type="button" class="chip" data-scenario="signed">+ and − areas</button>
+                  <button type="button" class="chip" data-scenario="cancel">Zero net work</button>
+                  <button type="button" class="chip" data-scenario="curved">Curved F = 2x</button>
+                  <button type="button" class="chip" data-scenario="stop">Stops early</button>
+                  <button type="button" class="chip" data-scenario="crossing">Zero crossing</button>
+                  <button type="button" class="chip" data-scenario="custom">Custom</button>
+                </div>
+              </div>
+              <div class="control" id="function-selector">
+                <div class="control-head"><span>Force function</span></div>
+                <div class="presets" role="group" aria-label="Force function type">
+                  <button type="button" class="chip" data-fn="constant">Constant</button>
+                  <button type="button" class="chip" data-fn="piecewise-constant">Piecewise const.</button>
+                  <button type="button" class="chip" data-fn="piecewise-linear">Piecewise linear</button>
+                  <button type="button" class="chip" data-fn="proportional">F = c x</button>
+                  <button type="button" class="chip" data-fn="quadratic">Quadratic</button>
+                  <button type="button" class="chip" data-fn="spring">Spring −kx</button>
+                  <button type="button" class="chip" data-fn="sine">Sinusoidal</button>
+                </div>
+              </div>
+              <div class="control" id="relationship-investigation">
+                <div class="control-head"><span>Investigation</span></div>
+                <div class="presets" role="group" aria-label="Investigation mode">
+                  <button type="button" class="chip" data-invest="off">Free explore</button>
+                  <button type="button" class="chip" data-invest="xinterval">W vs. interval</button>
+                  <button type="button" class="chip" data-invest="areas">Signed areas</button>
+                  <button type="button" class="chip" data-invest="approx">Approx. vs exact</button>
+                  <button type="button" class="chip" data-invest="wdk">W_net vs. ΔK</button>
+                </div>
+                <p class="track-help" id="invest-help">Change one setting, then record trials. Work is signed area, not peak force times Δx.</p>
+                <div class="presets" id="invest-values" role="group" aria-label="Investigation values" hidden></div>
+              </div>
+              <div class="control">
+                <div class="control-head"><span>Playback speed</span></div>
+                <div class="presets" role="group" aria-label="Playback speed">
+                  <button type="button" class="chip" data-speed="0.25">0.25×</button>
+                  <button type="button" class="chip" data-speed="0.5">0.5×</button>
+                  <button type="button" class="chip" data-speed="1">1×</button>
+                  <button type="button" class="chip" data-speed="2">2×</button>
+                  <button type="button" class="chip" data-speed="4">4×</button>
+                </div>
+              </div>
+              <div id="camera-host">${cameraModeControls(1)}</div>
+              <div class="nudge-row motion-inputs" id="mass-control">
+                <label class="pos-input">Mass<input id="mass-input" type="number" min="0.5" max="20" step="0.1" value="2" aria-label="Mass in kilograms" /><span>kg</span></label>
+                <label class="pos-input" id="speed-control">vᵢ<input id="v-input" type="number" min="0" max="15" step="0.1" value="2" aria-label="Initial speed in meters per second" /><span>m/s</span></label>
+                <span class="nudge-row motion-inputs" id="interval-control">
+                  <label class="pos-input" id="displacement-control">xᵢ<input id="xi-input" type="number" min="-4" max="16" step="0.1" value="0" aria-label="Initial position in meters" /><span>m</span></label>
+                  <label class="pos-input">x_f<input id="xf-input" type="number" min="-4" max="16" step="0.1" value="4" aria-label="Final position in meters" /><span>m</span></label>
+                </span>
+              </div>
+              <div class="nudge-row motion-inputs" id="force-params">
+                <span data-fn-panel="constant" id="applied-force-control">
+                  <label class="pos-input">Fₓ<input id="f-input" type="number" min="-80" max="80" step="0.5" value="6" aria-label="Constant force in newtons" /><span>N</span></label>
+                </span>
+                <span data-fn-panel="piecewise-constant" hidden>
+                  <label class="pos-input">F₁<input id="f1-input" type="number" min="-80" max="80" step="0.5" value="6" aria-label="Force on the first segment in newtons" /><span>N</span></label>
+                  <label class="pos-input">x split<input id="split-input" type="number" min="-4" max="16" step="0.1" value="2" aria-label="Segment boundary in meters" /><span>m</span></label>
+                  <label class="pos-input">F₂<input id="f2-input" type="number" min="-80" max="80" step="0.5" value="-3" aria-label="Force on the second segment in newtons" /><span>N</span></label>
+                </span>
+                <span data-fn-panel="piecewise-linear" hidden>
+                  <label class="pos-input">x₀<input id="p0x-input" type="number" min="-4" max="16" step="0.1" value="0" aria-label="First graph point position" /><span>m</span></label>
+                  <label class="pos-input">F₀<input id="p0f-input" type="number" min="-80" max="80" step="0.5" value="0" aria-label="First graph point force" /><span>N</span></label>
+                  <label class="pos-input">x₁<input id="p1x-input" type="number" min="-4" max="16" step="0.1" value="2" aria-label="Second graph point position" /><span>m</span></label>
+                  <label class="pos-input">F₁<input id="p1f-input" type="number" min="-80" max="80" step="0.5" value="6" aria-label="Second graph point force" /><span>N</span></label>
+                  <label class="pos-input">x₂<input id="p2x-input" type="number" min="-4" max="16" step="0.1" value="4" aria-label="Third graph point position" /><span>m</span></label>
+                  <label class="pos-input">F₂<input id="p2f-input" type="number" min="-80" max="80" step="0.5" value="2" aria-label="Third graph point force" /><span>N</span></label>
+                </span>
+                <span data-fn-panel="proportional" hidden>
+                  <label class="pos-input">c<input id="c-input" type="number" min="-20" max="20" step="0.1" value="2" aria-label="Force per meter for F equals c x" /><span>N/m</span></label>
+                </span>
+                <span data-fn-panel="quadratic" hidden>
+                  <label class="pos-input">a<input id="a-input" type="number" min="-20" max="20" step="0.05" value="0.75" aria-label="Quadratic force coefficient" /><span>N/m²</span></label>
+                </span>
+                <span data-fn-panel="spring" hidden>
+                  <label class="pos-input">k<input id="k-input" type="number" min="0" max="20" step="0.1" value="4" aria-label="Spring constant" /><span>N/m</span></label>
+                </span>
+                <span data-fn-panel="sine" hidden>
+                  <label class="pos-input">F₀<input id="f0-input" type="number" min="-80" max="80" step="0.5" value="6" aria-label="Sinusoidal force amplitude" /><span>N</span></label>
+                  <label class="pos-input">q<input id="q-input" type="number" min="0.1" max="4" step="0.05" value="0.785" aria-label="Spatial wave number in inverse meters" /><span>1/m</span></label>
+                </span>
+              </div>
+              <div class="nudge-row motion-inputs" id="approx-control">
+                <span>Rectangles</span>
+                <div class="presets" role="group" aria-label="Approximation resolution">
+                  <button type="button" class="chip" data-n="2">n = 2</button>
+                  <button type="button" class="chip" data-n="4">n = 4</button>
+                  <button type="button" class="chip" data-n="8">n = 8</button>
+                  <button type="button" class="chip" data-n="16">n = 16</button>
+                  <button type="button" class="chip" data-n="32">n = 32</button>
+                </div>
+                <div class="presets" role="group" aria-label="Approximation method">
+                  <button type="button" class="chip" data-method="left">Left</button>
+                  <button type="button" class="chip" data-method="midpoint">Midpoint</button>
+                  <button type="button" class="chip" data-method="trapezoid">Trapezoid</button>
+                </div>
+              </div>
+              <div class="nudge-row motion-inputs fbd-toggles">
+                <label class="switch light" id="force-vector-toggle"><input id="toggle-vectors" type="checkbox" checked /> Force vector</label>
+                <label class="switch light" id="velocity-vector"><input id="toggle-velocity" type="checkbox" checked /> Show velocity</label>
+                <label class="switch light" id="acceleration-vector"><input id="toggle-accel" type="checkbox" checked /> Show acceleration</label>
+                <label class="switch light"><input id="toggle-trail" type="checkbox" checked /> Trail</label>
+                <label class="switch light"><input id="toggle-areas" type="checkbox" checked /> Shade signed area</label>
+                <label class="switch light"><input id="toggle-approx" type="checkbox" checked /> Show rectangles</label>
+              </div>
+              <p class="track-help">The graph below is Fₓ versus x. Area above the axis is positive work when the object moves toward larger x. Area below is negative work. Do not multiply the final force by the whole displacement unless Fₓ is actually constant.</p>
+            </div>
+          </section>
+
+          <aside class="rail">
+            <section class="card values-card" id="force-readout">
+              <div class="card-head">
+                <h2>Work</h2>
+                ${teacherSwitch()}
+              </div>
+              <div class="eq-status" id="eq-status" role="status">
+                <strong id="eq-label">RUN TO COMPARE</strong>
+                <span id="eq-net">W_net = 0.00 J</span>
+                <span id="eq-detail">Run the experiment to calculate the final state.</span>
+              </div>
+              <dl class="metrics metrics-wide" id="physics-readouts">
+                <div><dt>W₊</dt><dd id="read-wpos">0.00 J</dd></div>
+                <div><dt>W₋</dt><dd id="read-wneg">0.00 J</dd></div>
+                <div><dt>W_net (path)</dt><dd id="read-wnet">0.00 J</dd></div>
+                <div><dt>W exact (interval)</dt><dd id="read-wfull">0.00 J</dd></div>
+                <div><dt>W approx</dt><dd id="read-wapprox">0.00 J</dd></div>
+                <div><dt>Method</dt><dd id="read-method">midpoint n = 8</dd></div>
+              </dl>
+              <p class="eq-block" id="equation-display">W = Fₓ Δx</p>
+              <p id="debug-line" class="debug" hidden></p>
+            </section>
+
+            <section class="card values-card" id="net-force-panel">
+              <div class="card-head">
+                <h2>Kinetic energy</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Kᵢ = ½mvᵢ²</dt><dd id="read-ki">4.00 J</dd></div>
+                <div><dt>K now</dt><dd id="read-k">4.00 J</dd></div>
+                <div><dt>K<sub>f</sub></dt><dd id="read-kf">—</dd></div>
+                <div><dt>ΔK</dt><dd id="read-dk">0.00 J</dd></div>
+              </dl>
+              <p class="muted">W_net = ΔK even when Fₓ changes with x. K cannot be negative.</p>
+            </section>
+
+            <section class="card values-card" id="acceleration-panel">
+              <div class="card-head">
+                <h2>State</h2>
+              </div>
+              <dl class="metrics metrics-wide">
+                <div><dt>Mass</dt><dd id="read-m">2.00 kg</dd></div>
+                <div><dt>Speed</dt><dd id="read-v">2.00 m/s</dd></div>
+                <div><dt>v<sub>f</sub></dt><dd id="read-vf">—</dd></div>
+                <div><dt>x / x_f</dt><dd id="read-x">0.00 m / 4.00 m</dd></div>
+                <div><dt>Fₓ now</dt><dd id="read-fx">6.00 N</dd></div>
+                <div><dt>aₓ now</dt><dd id="read-a">3.00 m/s²</dd></div>
+              </dl>
+              <p class="muted">Zero net work means ΔK = 0, not necessarily v = 0.</p>
+            </section>
+
+            ${challengeCard()}
+            ${theoryLink()}
+
+            <details class="why-cancel" id="law-panel">
+              <summary>Variable-force work</summary>
+              <p>W = ∫ Fₓ dx is signed area. Rectangles, triangles, and trapezoids can be added. A force that changes with x is not F_final × Δx unless that force is constant.</p>
+            </details>
+
+            <div class="conn-cards">
+              <p class="conn-card">Previously: <a href="/simulations/module-3/3-1" data-link>Review 3.1</a> — for a constant force, W = Fd cosθ and W_net = ΔK. This lab keeps the theorem and generalizes the work calculation.</p>
+              <p class="conn-card">Previously: <a href="/simulations/module-2/2-8" data-link>Review 2.8</a> — a spring force F = −kx is the position-dependent case W = ∫ −kx dx.</p>
+              <p class="conn-card">Next: potential energy (3.3, coming) stores work done against conservative forces such as gravity and ideal springs.</p>
+            </div>
+          </aside>
+        </div>
+
+        <section class="lab-bottom">
+          <div class="graph-wrap graph-fx-wrap" id="graph-fx">
+            <h2>Force vs. position</h2>
+            <canvas id="graph-fx-canvas" width="960" height="280" aria-label="Force versus position with signed area for the selected interval"></canvas>
+            <p class="caption" id="area-breakdown">Shaded area is only the selected interval. Labels show each region’s signed work. The current-position marker matches the block on the track.</p>
+          </div>
+        </section>
+
+        <section class="lab-bottom motion-graphs">
+          <div class="graphs">
+            <div class="graph-wrap" id="wrap-x">
+              <h2>Accumulated work vs. position</h2>
+              <canvas id="graph-xt" width="640" height="220" aria-label="Net work versus position"></canvas>
+            </div>
+            <div class="graph-wrap" id="wrap-v">
+              <h2>Kinetic energy vs. position</h2>
+              <canvas id="graph-vt" width="640" height="220" aria-label="Kinetic energy versus position"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <div id="graph-panel">
+        <div id="data-table">
+        ${trialSection({
+          rangeTitle: "Your Trials · W vs. interval",
+          heightTitle: "Your Trials · ΔK vs. W_net",
+          rangeCaption: "Changing the interval on the same force graph changes the signed area. Peak force alone does not decide work.",
+          heightCaption: "At the end of a valid run, ΔK should match W_net along the actual path. The identity is the line ΔK = W_net.",
+          columns: ["Trial", "type", "xᵢ", "x_f", "n", "W₊", "W₋", "W_net", "W approx", "Kᵢ", "K", "end"],
+          emptyCols: 12,
+        })}
+        </div>
+        </div>
+      </div>
+
+      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
+        <article class="theory">
+          <header class="theory-hero">
+            <p class="kicker">Read this, then return to the lab</p>
+            <h2>Work is signed area under Fₓ vs. x</h2>
+            <p>
+              When force is not constant, you cannot grab one force value and multiply by the whole displacement.
+              On a graph of the force component along the motion versus position, work is the signed area.
+            </p>
+          </header>
+          <section class="theory-block">
+            <h3>1. The integral is area</h3>
+            <p>For a one-dimensional force along the track:</p>
+            <p class="eq-block">W = ∫<sub>xᵢ</sub><sup>x_f</sup> Fₓ(x) dx</p>
+            <p>If Fₓ is constant, this collapses to W = Fₓ Δx, a rectangle. Students do not need a general integration technique to finish the lab — they need graph geometry.</p>
+          </section>
+          <section class="theory-block">
+            <h3>2. Rectangles, triangles, trapezoids</h3>
+            <p>Piecewise-constant graphs are stacked rectangles: W = Σ Fᵢ Δxᵢ. A triangle of base b and height h has area ½bh. A linear segment is a trapezoid: W = ½(Fᵢ + F_f) Δx, which is also F_avg Δx.</p>
+          </section>
+          <section class="theory-block">
+            <h3>3. Signs</h3>
+            <p>When the interval runs toward increasing x, area above the axis is positive work and area below is negative work. Net work is the sum of those signed pieces. Cancellation is allowed. Zero net work does not require every piece to be zero, and it does not mean the object is at rest.</p>
+          </section>
+          <section class="theory-block">
+            <h3>4. Variable force and kinetic energy</h3>
+            <p>The work-energy theorem does not require constant force:</p>
+            <p class="eq-block">W_net = ΔK = K_f − Kᵢ &nbsp; with &nbsp; K = ½ m v²</p>
+            <p>If the proposed interval would drive K below zero, the object stops where K = 0. Report that stopping position. Do not invent an endpoint that was never reached.</p>
+          </section>
+          <section class="theory-block">
+            <h3>5. Approximating a curve</h3>
+            <p>For a nonlinear Fₓ(x), rectangles or trapezoids estimate the area. Finer partitions generally get closer for the smooth functions in this lab. A numerical estimate is not exact. Compare it with the analytical value when one is available, as in Fₓ = 2x from 0 to 4 m, where W = 16 J exactly.</p>
+          </section>
+          <section class="theory-block">
+            <h3>6. Mistakes to avoid</h3>
+            <p>The graph with the highest peak force does not automatically do the most work. Area below the axis is negative work for the standard Fₓ-versus-x convention with Δx &gt; 0. W = F_final Δx is only valid when F is constant. Zero net work is constant kinetic energy, not rest.</p>
+          </section>
+          ${trialFitTheory(`
+            <p>Trials that change only the interval on one graph should not all give the same W. ΔK vs W_net should hug the identity after valid runs. Coarse left rectangles on an increasing F = 2x graph underestimate 16 J; finer n moves closer.</p>
           `)}
         </article>
       </div>
