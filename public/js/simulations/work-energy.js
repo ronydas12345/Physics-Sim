@@ -410,6 +410,8 @@ export function mountWorkEnergy(root) {
       yLabel: "W_net (J)",
       color: COLOR.work,
       showFit: false,
+      showPointLabels: false,
+      connect: true,
       xMin: 0,
       xMax: Math.max(state.d, 1),
     });
@@ -420,6 +422,8 @@ export function mountWorkEnergy(root) {
       yLabel: "K (J)",
       color: COLOR.energy,
       showFit: false,
+      showPointLabels: false,
+      connect: true,
       xMin: 0,
       xMax: Math.max(state.d, 1),
     });

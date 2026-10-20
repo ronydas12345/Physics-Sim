@@ -162,6 +162,8 @@ export function renderXYScatter(canvas, points, options = {}) {
     fitXName = "x",
     showFit = true,
     identity = null,
+    showPointLabels = true,
+    connect = false,
   } = options;
   const surface = setup(canvas);
   if (!surface) return;
@@ -208,10 +210,23 @@ export function renderXYScatter(canvas, points, options = {}) {
   }
   drawOverlayLabels(ctx, box, overlayLabelLines({ fit, showFit, hasPoints: list.length > 0, fitYName, fitXName, identity }));
   const last = list[list.length - 1];
+  if (connect && pairs.length) {
+    strokeSampledCurve(ctx, box, pairs, lo, hi, yLo, yHi, { color, width: 2.4 });
+    if (last) {
+      const x = mapPlotX(last[xKey], lo, hi, box);
+      const y = mapPlotY(last[yKey], yLo, yHi, box);
+      ctx.fillStyle = NOW;
+      ctx.beginPath();
+      ctx.arc(x, y, 5.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    return;
+  }
 
   ctx.font = "600 10px Figtree, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
+  const labeled = [];
   for (const point of list) {
     const x = mapPlotX(point[xKey], lo, hi, box);
     const y = mapPlotY(point[yKey], yLo, yHi, box);
@@ -220,8 +235,13 @@ export function renderXYScatter(canvas, points, options = {}) {
     ctx.beginPath();
     ctx.arc(x, y, latest ? 5.6 : 4.2, 0, Math.PI * 2);
     ctx.fill();
+    const label = point.id == null || point.id === "" ? "" : `#${point.id}`;
+    if (!showPointLabels || !label) continue;
+    const tooClose = labeled.some((prior) => Math.hypot(x - prior.x, y - prior.y) < 22);
+    if (tooClose && !latest) continue;
     ctx.fillStyle = pointColor();
-    ctx.fillText(`#${point.id}`, x + 6, y - 4);
+    ctx.fillText(label, x + 6, y - 4);
+    labeled.push({ x, y });
   }
 }
 
