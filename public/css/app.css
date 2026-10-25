@@ -513,14 +513,29 @@ h2 {
   margin-bottom: 10px;
 }
 
+.theory-eq-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(200px, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.theory-eq-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  gap: 10px;
+}
+
 .theory-visual {
-  margin: 0 0 10px;
+  margin: 0;
 }
 
 .theory-visual canvas {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 240px;
   background: color-mix(in srgb, var(--field-bg) 70%, var(--panel));
   border: var(--control-border-width, 1px) solid var(--line);
   border-radius: 14px;
@@ -532,6 +547,116 @@ h2 {
   font-size: 0.95rem;
   font-weight: 650;
   line-height: 1.35;
+}
+
+.eq-display {
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--field-bg);
+  color: var(--field-ink);
+  border: var(--control-border-width, 1px) solid var(--line);
+  border-radius: 14px;
+  font-family: var(--mono);
+  font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.eq-display p {
+  margin: 0;
+}
+
+.eq-display p + p {
+  margin-top: 0.35em;
+}
+
+.eq-display sub,
+.eq-display sup {
+  font-size: 0.68em;
+}
+
+.eq-sym {
+  display: inline-block;
+  padding: 0 0.18em;
+  border-radius: 0.28em;
+  font-weight: 800;
+}
+
+.eq-sym-d,
+.eq-sym-v,
+.eq-sym-n {
+  color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 18%, transparent);
+}
+
+.eq-sym-dx,
+.eq-sym-a,
+.eq-sym-f,
+.eq-sym-th,
+.eq-sym-g {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.eq-sym-m,
+.eq-sym-w,
+.eq-sym-ok {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 18%, transparent);
+}
+
+.eq-sym-k,
+.eq-sym-t,
+.eq-sym-r,
+.eq-sym-check,
+.eq-sym-mu {
+  color: var(--check);
+  background: color-mix(in srgb, var(--check) 18%, transparent);
+}
+
+.eq-sym-x {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.eq-vars {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.eq-vars > div {
+  display: contents;
+}
+
+.eq-vars dt {
+  font-family: var(--mono);
+  font-size: 1.02rem;
+  line-height: 1.35;
+}
+
+.eq-vars dd {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.eq-unit {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  color: var(--ink);
+}
+
+.theory-graphs-block .muted {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 700px) {
+  .theory-eq-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .workspace {

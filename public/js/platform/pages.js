@@ -10,7 +10,7 @@ import {
   theoryLink,
   trialSection,
 } from "./lab-kit.js";
-import { theoryPage } from "./theory-visuals.js";
+import { eqLines, eqVar, S, theoryPage } from "./theory-visuals.js";
 
 export function homePage() {
   const first = modules[0].simulations[0];
@@ -434,20 +434,44 @@ export function sim11Page() {
           {
             title: "Distance vs. displacement",
             anim: "distance-displacement",
-            caption: "Go out, then back. Distance keeps growing. Displacement is just where you are minus where you started.",
-            eq: "D = Σ |Δx<sub>i</sub>|<br />Δx = x<sub>f</sub> − x<sub>i</sub>",
+            caption: `${S.d("Teal D")} is the whole path and keeps growing on the way back. ${S.dx("Orange Δx")} is only the signed shortcut from start to now.`,
+            eq: eqLines(
+              `${S.d()} = Σ |${S.dx()}<sub>i</sub>|`,
+              `${S.dx()} = ${S.x()}<sub>f</sub> − ${S.x()}<sub>i</sub>`,
+            ),
+            vars: [
+              eqVar("d", "D", "distance — total path length", "m"),
+              eqVar("dx", "Δx", "displacement — signed shortcut", "m"),
+              eqVar("x", "x", "position on the axis", "m"),
+            ],
           },
           {
             title: "Sign is a direction choice",
             anim: "signed-vector",
-            caption: "On a line, + and − are the two directions. Flip the convention and the numbers flip; the motion does not.",
-            eq: "+ = right<br />− = left",
+            caption: `${S.w("Green +")} and ${S.a("orange −")} are the two directions. Flip the convention and the numbers flip; the motion does not.`,
+            eq: eqLines(`${S.w("+")} = right`, `${S.a("−")} = left`),
+            vars: [
+              eqVar("w", "+", "the chosen positive direction"),
+              eqVar("a", "−", "the opposite direction"),
+              eqVar("dx", "Δx", "signed displacement in that convention", "m"),
+            ],
           },
           {
             title: "Why D ≥ |Δx|",
             anim: "d-ge-dx",
-            caption: "Signed steps can cancel. Absolute steps cannot. Equality only if the object never turned around.",
-            eq: "|Δx| = |Σ Δx<sub>i</sub>| ≤ Σ |Δx<sub>i</sub>| = D",
+            caption: `The ${S.d("teal path")} cannot shrink. ${S.dx("Orange signed steps")} can cancel, so the point sits on or above the V.`,
+            eq: eqLines(`|${S.dx()}| = |Σ ${S.dx()}<sub>i</sub>| ≤ Σ |${S.dx()}<sub>i</sub>| = ${S.d()}`),
+            vars: [
+              eqVar("dx", "Δx", "signed step, can cancel", "m"),
+              eqVar("d", "D", "absolute steps, cannot cancel", "m"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "d-vs-dx",
+            title: "D vs. Δx",
+            caption: "The identity is the V: D = |Δx|. One-way runs sit on it; reversals sit above it.",
           },
         ],
         fit: `<p>One-way runs hug D ≈ |Δx|. After a reversal the points rise above that V.</p>`,
@@ -640,20 +664,49 @@ export function sim12Page() {
           {
             title: "v = v₀ + at",
             anim: "v-equals-v0-at",
-            caption: "Negative a is not automatically “moving left.” Watch v fall through zero, then reverse.",
-            eq: "v(t) = v₀ + a t",
+            caption: `${S.v("Teal v")} follows ${S.a("orange a")}. Negative a is not automatically “moving left” — watch v fall through zero, then reverse.`,
+            eq: eqLines(`${S.v()}(${S.t()}) = ${S.v("v₀")} + ${S.a()} ${S.t()}`),
+            vars: [
+              eqVar("v", "v", "velocity at that instant", "m/s"),
+              eqVar("v", "v₀", "velocity at t = 0", "m/s"),
+              eqVar("a", "a", "constant acceleration", "m/s²"),
+              eqVar("t", "t", "elapsed time", "s"),
+            ],
           },
           {
             title: "Speeding up vs. slowing down",
             anim: "speeding-slowing",
-            caption: "Speed grows when v and a share a sign. Speed shrinks when they oppose.",
-            eq: "same signs → speeding up<br />opposite signs → slowing down",
+            caption: `Speed grows when ${S.v("teal v")} and ${S.a("orange a")} share a sign. Speed shrinks when they oppose.`,
+            eq: eqLines("same signs → speeding up", "opposite signs → slowing down"),
+            vars: [
+              eqVar("v", "v", "signed velocity", "m/s"),
+              eqVar("a", "a", "signed acceleration", "m/s²"),
+            ],
           },
           {
             title: "Position is the area under v vs. t",
             anim: "x-from-vt-area",
-            caption: "The shaded area is Δx. A linear v(t) makes that area a rectangle plus a triangle.",
-            eq: "x(t) = x₀ + v₀ t + ½ a t²",
+            caption: `The ${S.v("teal shaded area")} under v vs. t is ${S.dx("orange Δx")}. A linear v(t) makes a rectangle plus a triangle.`,
+            eq: eqLines(`${S.x()}(${S.t()}) = ${S.x("x₀")} + ${S.v("v₀")} ${S.t()} + ½ ${S.a()} ${S.t()}²`),
+            vars: [
+              eqVar("x", "x", "position", "m"),
+              eqVar("x", "x₀", "position at t = 0", "m"),
+              eqVar("v", "v₀", "initial velocity", "m/s"),
+              eqVar("a", "a", "constant acceleration", "m/s²"),
+              eqVar("t", "t", "elapsed time", "s"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "v-vs-t",
+            title: "v vs. t",
+            caption: "For constant a, v(t) is a straight line. This example is v = 8 − 2t.",
+          },
+          {
+            id: "x-vs-t",
+            title: "x vs. t",
+            caption: "The same motion: x is the accumulated area under v vs. t, a parabola.",
           },
         ],
         fit: `<p>Hold a constant and record at several times: v<sub>avg</sub> vs. t should fit a line with slope a/2.</p>`,
@@ -865,20 +918,50 @@ export function sim13Page() {
           {
             title: "Equal time, not equal distance",
             anim: "motion-diagram",
-            caption: "Each dot is 0.50 s later. Wider gaps mean faster in that interval.",
-            eq: "spacing ∝ speed &nbsp;&nbsp;(equal Δt)",
+            caption: `Each ${S.t("dot")} is 0.50 s later. Wider gaps mean larger ${S.v("speed")} in that interval.`,
+            eq: eqLines(`spacing ∝ ${S.v("speed")} &nbsp;&nbsp;(equal ${S.t("Δt")})`),
+            vars: [
+              eqVar("t", "Δt", "equal time between dots", "s"),
+              eqVar("v", "speed", "how far the next gap stretches", "m/s"),
+            ],
           },
           {
             title: "Slopes and area",
             anim: "xt-vt-at",
-            caption: "Slope of x vs. t is v. Slope of v vs. t is a. Area under v vs. t is Δx.",
-            eq: "v = Δx/Δt<br />a = Δv/Δt<br />Δx = area under v(t)",
+            caption: `${S.w("Green x(t)")} slope is ${S.v("teal v")}. ${S.v("v(t)")} slope is ${S.a("orange a")}. Area under v(t) is ${S.dx("Δx")}.`,
+            eq: eqLines(
+              `${S.v()} = ${S.dx()} / ${S.t("Δt")}`,
+              `${S.a()} = ${S.v("Δv")} / ${S.t("Δt")}`,
+              `${S.dx()} = area under ${S.v()}(${S.t()})`,
+            ),
+            vars: [
+              eqVar("x", "x", "position", "m"),
+              eqVar("v", "v", "velocity — slope of x vs. t", "m/s"),
+              eqVar("a", "a", "acceleration — slope of v vs. t", "m/s²"),
+              eqVar("t", "t", "time", "s"),
+            ],
           },
           {
             title: "Speeding up vs. slowing down",
             anim: "speeding-slowing",
-            caption: "Speed is |v|. Same-sign v and a increase speed; opposite signs decrease it.",
-            eq: "speed ↑ when v and a share a sign",
+            caption: `Speed is |${S.v("v")}|. Same-sign ${S.v("v")} and ${S.a("a")} increase speed; opposite signs decrease it.`,
+            eq: eqLines(`speed ↑ when ${S.v()} and ${S.a()} share a sign`),
+            vars: [
+              eqVar("v", "v", "signed velocity", "m/s"),
+              eqVar("a", "a", "signed acceleration", "m/s²"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "v-vs-t",
+            title: "v vs. t",
+            caption: "Slope of this line is a. Area between the line and the t-axis is Δx.",
+          },
+          {
+            id: "d-vs-dx",
+            title: "D vs. Δx",
+            caption: "The same path, recorded as distance vs. displacement, still respects D ≥ |Δx|.",
           },
         ],
         fit: `<p>Live graphs are the motion itself. Recorded D vs. Δx should still respect D ≥ |Δx|.</p>`,
@@ -1091,14 +1174,31 @@ export function sim14Page() {
           {
             title: "Relative velocity",
             anim: "relative-velocity",
-            caption: "How fast A looks from B is the difference of their ground velocities.",
-            eq: "v<sub>A/B</sub> = v<sub>A</sub> − v<sub>B</sub>",
+            caption: `${S.v("Teal ground velocities")} minus each other give ${S.a("orange v_A/B")} — how fast A looks from B.`,
+            eq: eqLines(`${S.v("v")}<sub>A/B</sub> = ${S.v("v")}<sub>A</sub> − ${S.v("v")}<sub>B</sub>`),
+            vars: [
+              eqVar("v", "v_A", "velocity of A relative to the ground", "m/s"),
+              eqVar("v", "v_B", "velocity of B relative to the ground", "m/s"),
+              eqVar("a", "v_A/B", "velocity of A as seen from B", "m/s"),
+            ],
           },
           {
             title: "Same velocity, two stories",
             anim: "same-v-two-frames",
-            caption: "On the ground both move. In A’s frame, B sits still. Both are correct.",
-            eq: "v<sub>A</sub> = v<sub>B</sub> ⇒ v<sub>A/B</sub> = 0",
+            caption: `On the ground both move. In A’s frame, ${S.k("v_A/B = 0")} so B sits still. Both are correct.`,
+            eq: eqLines(`${S.v("v")}<sub>A</sub> = ${S.v("v")}<sub>B</sub> ⇒ ${S.v("v")}<sub>A/B</sub> = 0`),
+            vars: [
+              eqVar("v", "v_A", "A relative to the ground", "m/s"),
+              eqVar("v", "v_B", "B relative to the ground", "m/s"),
+              eqVar("k", "v_A/B", "relative velocity in A’s frame", "m/s"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "xab-vs-t",
+            title: "x_A/B vs. t",
+            caption: "Relative position changes at constant v_A/B. This example is x_A/B = 12 − 5t.",
           },
         ],
         fit: `<p>Separation vs. time is a V that touches zero at the meeting. After they pass, a single straight fit looks worse.</p>`,
@@ -1267,14 +1367,31 @@ export function sim21Page() {
           {
             title: "Mass-weighted average",
             anim: "center-of-mass",
-            caption: "Equal masses sit halfway. Increase B and the diamond slides toward B.",
-            eq: "x<sub>CM</sub> = Σ m<sub>i</sub> x<sub>i</sub> / Σ m<sub>i</sub>",
+            caption: `${S.m("Green masses")} pull the ${S.k("purple CM diamond")}. Increase ${S.a("orange m_B")} and the diamond slides toward B.`,
+            eq: eqLines(`${S.x("x")}<sub>CM</sub> = Σ ${S.m()}<sub>i</sub> ${S.x()}<sub>i</sub> / Σ ${S.m()}<sub>i</sub>`),
+            vars: [
+              eqVar("x", "x_CM", "center of mass of the system", "m"),
+              eqVar("m", "m_i", "mass of each piece", "kg"),
+              eqVar("x", "x_i", "position of each piece", "m"),
+            ],
           },
           {
             title: "Internal vs. external",
             anim: "internal-vs-external",
-            caption: "A push-apart pair accelerates A and B oppositely. The CM stays put.",
-            eq: "F<sub>ext</sub> = M a<sub>CM</sub>",
+            caption: `A push-apart ${S.f("internal pair")} accelerates A and B oppositely. The ${S.k("CM")} stays put unless ${S.f("F_ext")} is unbalanced.`,
+            eq: eqLines(`${S.f("F")}<sub>ext</sub> = ${S.m("M")} ${S.a("a")}<sub>CM</sub>`),
+            vars: [
+              eqVar("f", "F_ext", "net external force on the system", "N"),
+              eqVar("m", "M", "total mass Σ m_i", "kg"),
+              eqVar("a", "a_CM", "acceleration of the center of mass", "m/s²"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "xcm-vs-mb",
+            title: "x_CM vs. m_B",
+            caption: "Hold A at −10 m (2 kg) and B at +10 m. Heavier B pulls x_CM toward +10 m.",
           },
         ],
         fit: `<p>CM vs. mass of B follows the two-body identity if you keep x_A, x_B, and m_A fixed.</p>`,
@@ -1473,14 +1590,30 @@ export function sim22Page() {
           {
             title: "Free-body diagram",
             anim: "fbd",
-            caption: "Draw only forces on the object you chose. Gravity down, normal up, applied to the side.",
-            eq: "FBD = external forces on one object",
+            caption: `Draw only forces on the object you chose: ${S.a("orange Fg")} down, ${S.v("teal N")} up, ${S.k("purple F_app")} to the side.`,
+            eq: eqLines(`FBD = external ${S.f("forces")} on one object`),
+            vars: [
+              eqVar("a", "F_g", "gravitational force on the object", "N"),
+              eqVar("v", "N", "normal force from the surface", "N"),
+              eqVar("k", "F_app", "applied force you chose", "N"),
+            ],
           },
           {
             title: "Net force",
             anim: "net-force",
-            caption: "Add the vectors. The leftover arrow is F_net, and that is what changes motion.",
-            eq: "F<sub>net</sub> = Σ F<sub>i</sub>",
+            caption: `Add the vectors. The leftover ${S.f("orange F_net")} is what changes motion — not any single arrow.`,
+            eq: eqLines(`${S.f("F")}<sub>net</sub> = Σ ${S.f("F")}<sub>i</sub>`),
+            vars: [
+              eqVar("f", "F_i", "each external force on this object", "N"),
+              eqVar("f", "F_net", "vector sum — leftover force", "N"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "fnet-vs-unbalanced",
+            title: "|F_net| vs. unbalanced size",
+            caption: "A balanced diagram sits at the origin. Unbalanced leftovers sit on the identity |F_net| = leftover size.",
           },
         ],
         fit: `<p>Record several force lists. |F_net| vs. unbalanced size should rise; a balanced diagram sits at 0.</p>`,
@@ -1690,14 +1823,30 @@ export function sim23Page() {
           {
             title: "The pair identity",
             anim: "third-law",
-            caption: "A on B and B on A are one interaction. They have equal size and opposite direction.",
-            eq: "F<sub>A on B</sub> = − F<sub>B on A</sub>",
+            caption: `${S.f("Orange F_A on B")} and ${S.v("teal F_B on A")} are one interaction: equal size, opposite direction, two objects.`,
+            eq: eqLines(`${S.f("F")}<sub>A on B</sub> = − ${S.v("F")}<sub>B on A</sub>`),
+            vars: [
+              eqVar("f", "F_A on B", "force on B from A", "N"),
+              eqVar("v", "F_B on A", "force on A from B", "N"),
+            ],
           },
           {
             title: "Equal force is not equal acceleration",
             anim: "f-ma",
-            caption: "The pair is equal. The accelerations are not, if the masses differ.",
-            eq: "a = F / m",
+            caption: `The pair is equal. ${S.a("Orange a")} is not, if the ${S.m("green masses")} differ.`,
+            eq: eqLines(`${S.a()} = ${S.f()} / ${S.m()}`),
+            vars: [
+              eqVar("a", "a", "acceleration of that object", "m/s²"),
+              eqVar("f", "F", "net force on that object", "N"),
+              eqVar("m", "m", "that object’s mass", "kg"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "pair-opposite",
+            title: "F_B on A vs. F_A on B",
+            caption: "Every third-law pair sits on the line y = −x. Same size, opposite sign.",
           },
         ],
         fit: `<p>The pair magnitude vs. the interaction strength should be a line through the origin with slope 1.</p>`,
@@ -1933,14 +2082,30 @@ export function sim24Page() {
           {
             title: "Coast when F_net = 0",
             anim: "first-law-coast",
-            caption: "No leftover force, so v stays. That includes sitting still.",
-            eq: "ΣF = 0 ⇒ a = 0 ⇒ v constant",
+            caption: `No leftover ${S.f("F_net")}, so ${S.v("teal v")} stays — including sitting still.`,
+            eq: eqLines(`Σ${S.f("F")} = 0 ⇒ ${S.a()} = 0 ⇒ ${S.v()} constant`),
+            vars: [
+              eqVar("f", "ΣF", "net force on the object", "N"),
+              eqVar("a", "a", "acceleration", "m/s²"),
+              eqVar("v", "v", "velocity — stays if a = 0", "m/s"),
+            ],
           },
           {
             title: "Balanced forces are still forces",
             anim: "net-force",
-            caption: "Two large opposite arrows can cancel. The object does not need a net push to keep moving.",
-            eq: "balanced ≠ zero forces",
+            caption: `Two large opposite arrows can cancel. ${S.f("F_net")} can be zero without the forces themselves being zero.`,
+            eq: eqLines(`balanced ≠ zero ${S.f("forces")}`),
+            vars: [
+              eqVar("f", "F_i", "real forces that may cancel", "N"),
+              eqVar("f", "F_net", "leftover after adding them", "N"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "a-vs-fnet-zero",
+            title: "a vs. F_net when balanced",
+            caption: "First law is the origin: F_net = 0 keeps a = 0, so v does not change.",
           },
         ],
         fit: `<p>Runs with F_net = 0 should keep v. A fitted a vs. F_net line should pass near the origin.</p>`,
@@ -2189,14 +2354,31 @@ export function sim25Page() {
           {
             title: "a = F_net / m",
             anim: "f-ma",
-            caption: "Watch a grow with F and shrink as m grows. The ratio is the acceleration.",
-            eq: "a = F<sub>net</sub> / m",
+            caption: `${S.a("Orange a")} grows with ${S.f("F_net")} and shrinks as ${S.m("green m")} grows. The ratio is the acceleration.`,
+            eq: eqLines(`${S.a()} = ${S.f("F")}<sub>net</sub> / ${S.m()}`),
+            vars: [
+              eqVar("a", "a", "acceleration of the object", "m/s²"),
+              eqVar("f", "F_net", "vector sum of external forces", "N"),
+              eqVar("m", "m", "mass of that object", "kg"),
+            ],
           },
           {
             title: "Force does not set velocity",
             anim: "speeding-slowing",
-            caption: "F_net sets a, which changes v. A force to the right can still be slowing an object that is moving left.",
-            eq: "F_net ↔ a, not v",
+            caption: `${S.f("F_net")} sets ${S.a("a")}, which changes ${S.v("v")}. A force to the right can still be slowing an object that is moving left.`,
+            eq: eqLines(`${S.f("F")}<sub>net</sub> ↔ ${S.a()}, not ${S.v()}`),
+            vars: [
+              eqVar("f", "F_net", "sets acceleration, not speed", "N"),
+              eqVar("a", "a", "how fast velocity is changing", "m/s²"),
+              eqVar("v", "v", "velocity — history plus a Δt", "m/s"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "a-vs-fnet",
+            title: "a vs. F_net",
+            caption: "At fixed m = 2 kg the identity is a line through the origin with slope 1/m = 0.5 kg⁻¹.",
           },
         ],
         fit: `<p>a vs. F_net at fixed m is a line through the origin with slope 1/m. a vs. 1/m at fixed F_net has slope F_net.</p>`,
@@ -2401,14 +2583,32 @@ export function sim26Page() {
           {
             title: "Inverse-square pull",
             anim: "gravity-inverse-square",
-            caption: "Spread the masses and Fg shrinks fast. The pair stays equal and opposite.",
-            eq: "F<sub>g</sub> = G m<sub>1</sub> m<sub>2</sub> / r²",
+            caption: `Spread the ${S.m("masses")} and ${S.f("orange F_g")} shrinks as 1/${S.r("r")}². The pair stays equal and opposite.`,
+            eq: eqLines(`${S.f("F")}<sub>g</sub> = G ${S.m()}<sub>1</sub> ${S.m()}<sub>2</sub> / ${S.r()}²`),
+            vars: [
+              eqVar("f", "F_g", "gravitational force on each mass", "N"),
+              eqVar("m", "m₁, m₂", "the two interacting masses", "kg"),
+              eqVar("r", "r", "center-to-center separation", "m"),
+              eqVar("k", "G", "universal constant", "N·m²/kg²"),
+            ],
           },
           {
             title: "Equal force, different acceleration",
             anim: "f-ma",
-            caption: "Earth and the apple share Fg. The apple’s a is huge; Earth’s is tiny.",
-            eq: "a = F<sub>g</sub> / m",
+            caption: `Earth and the apple share ${S.f("F_g")}. The apple’s ${S.a("a")} is huge; Earth’s is tiny because ${S.m("m")} differs.`,
+            eq: eqLines(`${S.a()} = ${S.f("F")}<sub>g</sub> / ${S.m()}`),
+            vars: [
+              eqVar("a", "a", "acceleration of that mass", "m/s²"),
+              eqVar("f", "F_g", "same size on both objects", "N"),
+              eqVar("m", "m", "that object’s mass", "kg"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "fg-vs-r",
+            title: "F_g vs. r",
+            caption: "At fixed masses, F_g falls as 1/r². Doubling r cuts the force by four.",
           },
         ],
         fit: `<p>Fg vs. 1/r² at fixed masses should be a line. Doubling one mass doubles Fg.</p>`,
@@ -2631,14 +2831,36 @@ export function sim27Page() {
           {
             title: "Stuck, then sliding",
             anim: "static-kinetic",
-            caption: "F_app rises. The block stays until fs,max. Then it slides and fk takes over.",
-            eq: "f<sub>s</sub> ≤ μ<sub>s</sub> N<br />f<sub>k</sub> = μ<sub>k</sub> N",
+            caption: `${S.f("Orange F_app")} rises. ${S.v("Teal f_s")} matches it until ${S.k("μ_s N")}. Then the block slides and ${S.a("f_k")} takes over.`,
+            eq: eqLines(
+              `${S.v("f")}<sub>s</sub> ≤ ${S.mu("μ")}<sub>s</sub> ${S.n()}`,
+              `${S.a("f")}<sub>k</sub> = ${S.mu("μ")}<sub>k</sub> ${S.n()}`,
+            ),
+            vars: [
+              eqVar("v", "f_s", "static friction — matches F_app up to a max", "N"),
+              eqVar("a", "f_k", "kinetic friction once sliding", "N"),
+              eqVar("mu", "μ_s, μ_k", "static and kinetic coefficients"),
+              eqVar("n", "N", "normal force", "N"),
+            ],
           },
           {
             title: "Net force is still ma",
             anim: "f-ma",
-            caption: "While stuck, F_net = 0. While sliding, a = (F_app − f_k)/m.",
-            eq: "F<sub>net</sub> = F<sub>app</sub> − f",
+            caption: `While stuck, ${S.f("F_net")} = 0. While sliding, ${S.a("a")} = (${S.f("F_app")} − ${S.a("f_k")})/${S.m("m")}.`,
+            eq: eqLines(`${S.f("F")}<sub>net</sub> = ${S.f("F")}<sub>app</sub> − ${S.a("f")}`),
+            vars: [
+              eqVar("f", "F_app", "applied push", "N"),
+              eqVar("a", "f", "friction opposing that push", "N"),
+              eqVar("f", "F_net", "leftover horizontal force", "N"),
+              eqVar("m", "m", "mass of the block", "kg"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "fs-vs-fapp",
+            title: "friction vs. F_app",
+            caption: "Static friction rises with the push until μ_s N, then kinetic friction is a lower plateau.",
           },
         ],
         fit: `<p>Below threshold, a stays 0. Above it, a vs. F_app should have slope 1/m.</p>`,
@@ -2861,14 +3083,31 @@ export function sim28Page() {
           {
             title: "Hooke’s law",
             anim: "hooke",
-            caption: "Displacement right, force left. Larger |x| means a larger restoring force.",
-            eq: "F<sub>s</sub> = −k x",
+            caption: `${S.x("Displacement")} right, ${S.f("orange F_s")} left. Larger |x| means a larger restoring force.`,
+            eq: eqLines(`${S.f("F")}<sub>s</sub> = −${S.k("k")} ${S.x()}`),
+            vars: [
+              eqVar("f", "F_s", "spring force — toward equilibrium", "N"),
+              eqVar("k", "k", "stiffness, not the force", "N/m"),
+              eqVar("x", "x", "signed displacement from equilibrium", "m"),
+            ],
           },
           {
             title: "Release and oscillate",
             anim: "hooke",
-            caption: "Hold, then let go. The block passes equilibrium with speed and comes back.",
-            eq: "T = 2π √(m/k)",
+            caption: `Hold, then let go. The block passes ${S.x("x = 0")} with speed and comes back. Period grows with ${S.m("m")} and shrinks with ${S.k("k")}.`,
+            eq: eqLines(`${S.t("T")} = 2π √(${S.m()} / ${S.k("k")})`),
+            vars: [
+              eqVar("t", "T", "period of one cycle", "s"),
+              eqVar("m", "m", "mass on the spring", "kg"),
+              eqVar("k", "k", "spring stiffness", "N/m"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "fs-vs-x",
+            title: "F_s vs. x",
+            caption: "An ideal spring is a line through the origin with slope −k. This example uses k = 20 N/m.",
           },
         ],
         fit: `<p>Fs vs. x should be a line through the origin with slope −k.</p>`,
@@ -3114,14 +3353,32 @@ export function sim29Page() {
           {
             title: "Tangent v, inward a",
             anim: "circular",
-            caption: "v is along the circle. a points at the center. Speed can stay the same the whole way around.",
-            eq: "a<sub>c</sub> = v² / r",
+            caption: `${S.v("Teal v")} is along the circle. ${S.a("Orange a_c")} points at the center. Speed can stay the same the whole way around.`,
+            eq: eqLines(`${S.a("a")}<sub>c</sub> = ${S.v()}² / ${S.r()}`),
+            vars: [
+              eqVar("a", "a_c", "centripetal acceleration, toward the center", "m/s²"),
+              eqVar("v", "v", "tangential speed", "m/s"),
+              eqVar("r", "r", "radius of the circle", "m"),
+            ],
           },
           {
             title: "Double v, quadruple ac",
             anim: "ac-scales-v2",
-            caption: "At fixed r, ac grows with v². Mass does not change ac; it changes the force required.",
-            eq: "F<sub>net,inward</sub> = m v² / r",
+            caption: `At fixed ${S.r("r")}, ${S.a("a_c")} grows with ${S.v("v")}². ${S.m("Mass")} does not change a_c; it changes the ${S.f("force")} required.`,
+            eq: eqLines(`${S.f("F")}<sub>net,inward</sub> = ${S.m()} ${S.v()}² / ${S.r()}`),
+            vars: [
+              eqVar("f", "F_net,inward", "real net force toward the center", "N"),
+              eqVar("m", "m", "mass of the object", "kg"),
+              eqVar("v", "v", "tangential speed", "m/s"),
+              eqVar("r", "r", "radius", "m"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "ac-vs-v2",
+            title: "a_c vs. v²",
+            caption: "At fixed r = 4 m the identity is a line through the origin with slope 1/r.",
           },
         ],
         fit: `<p>ac vs. v² at fixed r is a line through the origin with slope 1/r.</p>`,
@@ -3336,14 +3593,41 @@ export function sim31Page() {
           {
             title: "W = Fd cosθ",
             anim: "work-cos-theta",
-            caption: "Sweep θ. Work is full at 0°, zero at 90°, negative at 180°.",
-            eq: "W = F d cosθ",
+            caption: `Sweep ${S.th("orange θ")}. ${S.w("Green W")} is full at 0°, zero at 90°, negative at 180° — only the component along ${S.d("d")} counts.`,
+            eq: eqLines(`${S.w()} = ${S.f()} ${S.d("d")} cos${S.th()}`),
+            vars: [
+              eqVar("w", "W", "work done by that force", "J"),
+              eqVar("f", "F", "magnitude of the force", "N"),
+              eqVar("d", "d", "displacement the force acts through", "m"),
+              eqVar("th", "θ", "angle between F and the displacement", "°"),
+            ],
           },
           {
             title: "W_net = ΔK",
             anim: "wnet-equals-dk",
-            caption: "The leftover work after adding every force is exactly how much K changes.",
-            eq: "W<sub>net</sub> = ΔK = K<sub>f</sub> − Kᵢ<br />K = ½ m v²",
+            caption: `The leftover ${S.w("green W_net")} after adding every force is exactly how much ${S.k("purple K")} changes.`,
+            eq: eqLines(
+              `${S.w("W")}<sub>net</sub> = Δ${S.k()} = ${S.k()}<sub>f</sub> − ${S.k()}ᵢ`,
+              `${S.k()} = ½ ${S.m()} ${S.v()}²`,
+            ),
+            vars: [
+              eqVar("w", "W_net", "sum of work by every force", "J"),
+              eqVar("k", "K", "kinetic energy", "J"),
+              eqVar("m", "m", "mass", "kg"),
+              eqVar("v", "v", "speed", "m/s"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "w-vs-theta",
+            title: "W vs. θ",
+            caption: "For fixed F and d, work follows cosθ: full, then zero, then negative.",
+          },
+          {
+            id: "dk-vs-w",
+            title: "ΔK vs. W_net",
+            caption: "The work–energy theorem is the identity ΔK = W_net.",
           },
         ],
         fit: `<p>W vs F at fixed d and θ is a line with slope d cosθ. ΔK vs W_net hugs the identity.</p>`,
@@ -3613,14 +3897,36 @@ export function sim32Page() {
           {
             title: "The integral is area",
             anim: "area-under-fx",
-            caption: "The shaded region under Fx vs. x is the work done so far.",
-            eq: "W = ∫ Fₓ(x) dx",
+            caption: `The ${S.w("green shaded region")} under ${S.f("Fₓ")} vs. ${S.x("x")} is the ${S.w("work")} done so far.`,
+            eq: eqLines(`${S.w()} = ∫ ${S.f("F")}<sub>x</sub>(${S.x()}) d${S.x()}`),
+            vars: [
+              eqVar("w", "W", "work — signed area under Fₓ vs. x", "J"),
+              eqVar("f", "Fₓ", "force component along the path", "N"),
+              eqVar("x", "x", "position along that path", "m"),
+            ],
           },
           {
             title: "Signs can cancel",
             anim: "signed-area",
-            caption: "Area above the axis is +W. Area below is −W. Zero net work is not rest.",
-            eq: "W_net = W₊ + W₋ = ΔK",
+            caption: `${S.w("Area above")} the axis is +W. ${S.a("Area below")} is −W. Zero ${S.w("W_net")} is not rest — it is ΔK = 0.`,
+            eq: eqLines(`${S.w("W")}<sub>net</sub> = ${S.w("W")}₊ + ${S.a("W")}₋ = Δ${S.k()}`),
+            vars: [
+              eqVar("w", "W₊", "positive area, speeding up", "J"),
+              eqVar("a", "W₋", "negative area, slowing down", "J"),
+              eqVar("k", "ΔK", "change in kinetic energy", "J"),
+            ],
+          },
+        ],
+        graphs: [
+          {
+            id: "w-vs-x-quad",
+            title: "W vs. x for Fₓ = 2x",
+            caption: "Variable force: the accumulated area is x², not one F times the whole Δx.",
+          },
+          {
+            id: "dk-vs-w",
+            title: "ΔK vs. W_net",
+            caption: "Even with a changing force, the leftover signed area still equals ΔK.",
           },
         ],
         fit: `<p>Changing only the interval on one graph changes W. ΔK vs W_net still hugs the identity.</p>`,

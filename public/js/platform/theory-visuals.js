@@ -1,14 +1,52 @@
 /**
  * Visual Theory kit used by every lab.
  *
- * Future simulations should build the Theory tab with theoryPage({ title, lead, cards }),
- * where each card has a short title, one equation, a one-line caption, and an `anim` id
- * from ANIMATIONS. bindLabTabs starts the looping canvases automatically.
+ * Future simulations should build the Theory tab with theoryPage({ title, lead, cards, graphs }).
+ * Each card: short title, anim id, color-coded eq via S/eqLines, vars list, caption that
+ * names the matching colors in the animation. graphs: [{ id, title, caption }] from THEORY_GRAPHS.
  */
 
 import { themeVar } from "./theme.js";
 
 export const ANIMATIONS = {};
+
+export const S = {
+  d: (t = "D") => `<span class="eq-sym eq-sym-d">${t}</span>`,
+  dx: (t = "Δx") => `<span class="eq-sym eq-sym-dx">${t}</span>`,
+  x: (t = "x") => `<span class="eq-sym eq-sym-x">${t}</span>`,
+  v: (t = "v") => `<span class="eq-sym eq-sym-v">${t}</span>`,
+  a: (t = "a") => `<span class="eq-sym eq-sym-a">${t}</span>`,
+  t: (t = "t") => `<span class="eq-sym eq-sym-t">${t}</span>`,
+  f: (t = "F") => `<span class="eq-sym eq-sym-f">${t}</span>`,
+  m: (t = "m") => `<span class="eq-sym eq-sym-m">${t}</span>`,
+  w: (t = "W") => `<span class="eq-sym eq-sym-w">${t}</span>`,
+  k: (t = "K") => `<span class="eq-sym eq-sym-k">${t}</span>`,
+  th: (t = "θ") => `<span class="eq-sym eq-sym-th">${t}</span>`,
+  g: (t = "g") => `<span class="eq-sym eq-sym-g">${t}</span>`,
+  r: (t = "r") => `<span class="eq-sym eq-sym-r">${t}</span>`,
+  n: (t = "N") => `<span class="eq-sym eq-sym-n">${t}</span>`,
+  mu: (t = "μ") => `<span class="eq-sym eq-sym-mu">${t}</span>`,
+};
+
+export function eqLines(...lines) {
+  return lines.map((line) => `<p>${line}</p>`).join("");
+}
+
+export function eqVar(kind, sym, name, unit) {
+  return { kind, sym, name, unit };
+}
+
+function eqVars(items) {
+  if (!items?.length) return "";
+  return `<dl class="eq-vars">${items
+    .map(
+      (item) =>
+        `<div><dt class="eq-sym eq-sym-${item.kind}">${item.sym}</dt><dd>${item.name}${
+          item.unit ? ` <span class="eq-unit">${item.unit}</span>` : ""
+        }</dd></div>`,
+    )
+    .join("")}</dl>`;
+}
 
 export function theoryVisual(id, caption) {
   return `
@@ -18,17 +56,21 @@ export function theoryVisual(id, caption) {
     </figure>`;
 }
 
-export function theoryCard({ title, eq, caption, anim, extra = "" }) {
+export function theoryCard({ title, eq, caption, anim, vars = [], extra = "" }) {
+  const formula = eq ? `<div class="eq-display">${eq}</div>` : "";
+  const side = formula || vars.length ? `<div class="theory-eq-side">${formula}${eqVars(vars)}</div>` : "";
   return `
           <section class="theory-block theory-visual-card">
             <h3>${title}</h3>
-            ${anim ? theoryVisual(anim, caption) : caption ? `<p>${caption}</p>` : ""}
-            ${eq ? `<p class="eq-block">${eq}</p>` : ""}
+            <div class="theory-eq-row">
+              ${anim ? theoryVisual(anim, caption) : caption ? `<p>${caption}</p>` : "<div></div>"}
+              ${side}
+            </div>
             ${extra}
           </section>`;
 }
 
-export function theoryPage({ title, lead, cards, fit }) {
+export function theoryPage({ title, lead, cards, graphs = [], fit }) {
   return `
       <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
         <article class="theory theory-visual-page">
@@ -38,10 +80,214 @@ export function theoryPage({ title, lead, cards, fit }) {
             ${lead ? `<p>${lead}</p>` : ""}
           </header>
           ${cards.map((card) => theoryCard(card)).join("")}
+          ${graphs.length ? theoryGraphSection(graphs) : ""}
           ${fit ? theoryFit(fit) : ""}
         </article>
       </div>`;
 }
+
+function theoryGraphSection(graphs) {
+  return `
+          <section class="theory-block theory-graphs-block">
+            <h3>Identities on a graph</h3>
+            <p class="muted">Closed-form curves for this lab — the same relationships the animations are showing.</p>
+            <div class="graphs theory-graphs">
+              ${graphs
+                .map(
+                  (graph) => `
+                <div class="graph-wrap">
+                  <h4>${graph.title}</h4>
+                  <canvas data-theory-graph="${graph.id}" width="640" height="280" aria-label="${graph.title}"></canvas>
+                  <p class="caption">${graph.caption || ""}</p>
+                </div>`,
+                )
+                .join("")}
+            </div>
+          </section>`;
+}
+
+export const THEORY_GRAPHS = {
+  "d-vs-dx": {
+    xLabel: "Δx (m)",
+    yLabel: "D (m)",
+    xMin: -8,
+    xMax: 8,
+    yMin: 0,
+    yMax: 9,
+    yOfX: (x) => Math.abs(x),
+    label: "D = |Δx|",
+  },
+  "v-vs-t": {
+    xLabel: "t (s)",
+    yLabel: "v (m/s)",
+    xMin: 0,
+    xMax: 6,
+    yMin: -6,
+    yMax: 10,
+    yOfX: (t) => 8 - 2 * t,
+    label: "v = 8 − 2t",
+  },
+  "x-vs-t": {
+    xLabel: "t (s)",
+    yLabel: "x (m)",
+    xMin: 0,
+    xMax: 6,
+    yMin: -4,
+    yMax: 18,
+    yOfX: (t) => 8 * t - t * t,
+    label: "x = 8t − t²",
+  },
+  "xab-vs-t": {
+    xLabel: "t (s)",
+    yLabel: "x_A/B (m)",
+    xMin: 0,
+    xMax: 8,
+    yMin: -10,
+    yMax: 20,
+    yOfX: (t) => 12 - 5 * t,
+    label: "x_A/B = 12 − 5t",
+  },
+  "xcm-vs-mb": {
+    xLabel: "m_B (kg)",
+    yLabel: "x_CM (m)",
+    xMin: 0.5,
+    xMax: 10,
+    yMin: -10,
+    yMax: 10,
+    yOfX: (mb) => (2 * -10 + mb * 10) / (2 + mb),
+    label: "x_CM = (m_A x_A + m_B x_B)/M",
+  },
+  "fnet-vs-unbalanced": {
+    xLabel: "unbalanced F (N)",
+    yLabel: "|F_net| (N)",
+    xMin: 0,
+    xMax: 20,
+    yMin: 0,
+    yMax: 22,
+    yOfX: (f) => f,
+    label: "|F_net| = unbalanced size",
+  },
+  "pair-opposite": {
+    xLabel: "F_A on B (N)",
+    yLabel: "F_B on A (N)",
+    xMin: -20,
+    xMax: 20,
+    yMin: -22,
+    yMax: 22,
+    yOfX: (f) => -f,
+    label: "F_B on A = −F_A on B",
+  },
+  "a-vs-fnet": {
+    xLabel: "F_net (N)",
+    yLabel: "a (m/s²)",
+    xMin: -10,
+    xMax: 20,
+    yMin: -6,
+    yMax: 12,
+    yOfX: (f) => f / 2,
+    label: "a = F_net / 2 kg",
+  },
+  "a-vs-fnet-zero": {
+    xLabel: "F_net (N)",
+    yLabel: "a (m/s²)",
+    xMin: -5,
+    xMax: 5,
+    yMin: -2,
+    yMax: 2,
+    yOfX: () => 0,
+    label: "a = 0 when F_net = 0",
+  },
+  "fg-vs-r": {
+    xLabel: "r (m)",
+    yLabel: "F_g (N)",
+    xMin: 1,
+    xMax: 8,
+    yMin: 0,
+    yMax: 1.2,
+    yOfX: (r) => 1 / (r * r),
+    label: "F_g ∝ 1/r²",
+  },
+  "fs-vs-fapp": {
+    xLabel: "F_app (N)",
+    yLabel: "friction (N)",
+    xMin: 0,
+    xMax: 16,
+    yMin: 0,
+    yMax: 12,
+    yOfX: (f) => Math.min(f, 8),
+    label: "f_s = F_app until μ_s N",
+  },
+  "fs-vs-x": {
+    xLabel: "x (m)",
+    yLabel: "F_s (N)",
+    xMin: -0.2,
+    xMax: 0.2,
+    yMin: -5,
+    yMax: 5,
+    yOfX: (x) => -20 * x,
+    label: "F_s = −kx",
+  },
+  "ac-vs-v2": {
+    xLabel: "v² (m²/s²)",
+    yLabel: "a_c (m/s²)",
+    xMin: 0,
+    xMax: 40,
+    yMin: 0,
+    yMax: 12,
+    yOfX: (v2) => v2 / 4,
+    label: "a_c = v² / 4 m",
+  },
+  "w-vs-theta": {
+    xLabel: "θ (°)",
+    yLabel: "W (J)",
+    xMin: 0,
+    xMax: 180,
+    yMin: -12,
+    yMax: 12,
+    yOfX: (deg) => 10 * Math.cos((deg * Math.PI) / 180),
+    label: "W = Fd cosθ",
+  },
+  "dk-vs-w": {
+    xLabel: "W_net (J)",
+    yLabel: "ΔK (J)",
+    xMin: -20,
+    xMax: 50,
+    yMin: -22,
+    yMax: 52,
+    yOfX: (w) => w,
+    label: "ΔK = W_net",
+  },
+  "w-vs-x-quad": {
+    xLabel: "x (m)",
+    yLabel: "W (J)",
+    xMin: 0,
+    xMax: 4,
+    yMin: 0,
+    yMax: 18,
+    yOfX: (x) => x * x,
+    label: "W = ∫ 2x dx = x²",
+  },
+  "range-vs-theta": {
+    xLabel: "θ (°)",
+    yLabel: "R (m)",
+    xMin: 0,
+    xMax: 90,
+    yMin: 0,
+    yMax: 45,
+    yOfX: (deg) => (400 / 9.8) * Math.sin((2 * deg * Math.PI) / 180),
+    label: "R = v₀² sin(2θ)/g",
+  },
+  "height-vs-theta": {
+    xLabel: "θ (°)",
+    yLabel: "H (m)",
+    xMin: 0,
+    xMax: 90,
+    yMin: 0,
+    yMax: 22,
+    yOfX: (deg) => ((400 / (2 * 9.8)) * Math.sin((deg * Math.PI) / 180) ** 2),
+    label: "H = v₀² sin²θ/(2g)",
+  },
+};
 
 export function theoryFit(html) {
   return `
@@ -60,15 +306,60 @@ export function bindTheoryVisuals(root) {
   if (typeof document === "undefined" || !root?.querySelectorAll) return () => {};
   const panel = root.querySelector("#panel-theory");
   const figures = [...root.querySelectorAll("[data-theory-anim]")];
-  if (!figures.length) return () => {};
+  const graphCanvases = [...root.querySelectorAll("[data-theory-graph]")];
+  if (!figures.length && !graphCanvases.length) return () => {};
   let raf = 0;
+  let graphsReady = false;
+  let graphsPainting = false;
+  let graphLoad = null;
   const t0 = performance.now();
   const reduced =
     typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  function paintIdentityGraphs() {
+    if (graphsReady || graphsPainting || !graphCanvases.length) return;
+    if (!graphLoad) graphLoad = import("../graphs.js");
+    graphsPainting = true;
+    graphLoad
+      .then(({ renderXYScatter }) => {
+        graphsPainting = false;
+        if (panel && panel.hidden) return;
+        let painted = 0;
+        for (const canvas of graphCanvases) {
+          const spec = THEORY_GRAPHS[canvas.dataset.theoryGraph];
+          if (!spec) continue;
+          renderXYScatter(canvas, [], {
+            xKey: "x",
+            yKey: "y",
+            xLabel: spec.xLabel,
+            yLabel: spec.yLabel,
+            xMin: spec.xMin,
+            xMax: spec.xMax,
+            yMin: spec.yMin,
+            yMax: spec.yMax,
+            identity: {
+              yOfX: spec.yOfX,
+              xMin: spec.xMin,
+              xMax: spec.xMax,
+              label: spec.label,
+            },
+            showFit: false,
+            showPointLabels: false,
+          });
+          if (canvas.clientWidth >= 40) painted += 1;
+        }
+        if (painted === graphCanvases.length) graphsReady = true;
+      })
+      .catch(() => {
+        graphsPainting = false;
+        graphLoad = null;
+      });
+  }
+
   function tick(now) {
     if (!root.isConnected) return;
     const live = panel && !panel.hidden;
+    if (!live) graphsReady = false;
     if (live) {
       const t = reduced ? 1.2 : (now - t0) / 1000;
       for (const figure of figures) {
@@ -76,6 +367,7 @@ export function bindTheoryVisuals(root) {
         const draw = ANIMATIONS[figure.dataset.theoryAnim];
         if (canvas && draw) draw(canvas, t);
       }
+      paintIdentityGraphs();
     }
     raf = requestAnimationFrame(tick);
   }

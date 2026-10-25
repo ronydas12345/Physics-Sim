@@ -279,23 +279,52 @@
 
           <section class="theory-block theory-visual-card">
             <h3>Two independent motions</h3>
-            <figure class="theory-visual" data-theory-anim="projectile-split">
-              <canvas width="720" height="240" aria-label="Projectile path with vx constant and vy changing"></canvas>
-              <figcaption>v<sub>x</sub> never changes. v<sub>y</sub> falls, is zero at the top, and is equally large downward at landing.</figcaption>
-            </figure>
-            <p class="eq-block">v<sub>x</sub> = v<sub>0</sub> cos θ &nbsp; (constant)<br />v<sub>y</sub> = v<sub>0</sub> sin θ − g t</p>
+            <div class="theory-eq-row">
+              <figure class="theory-visual" data-theory-anim="projectile-split">
+                <canvas width="720" height="240" aria-label="Projectile path with vx constant and vy changing"></canvas>
+                <figcaption><span class="eq-sym eq-sym-v">Teal v<sub>x</sub></span> never changes. <span class="eq-sym eq-sym-a">Orange v<sub>y</sub></span> falls, is zero at the top, and is equally large downward at landing.</figcaption>
+              </figure>
+              <div class="theory-eq-side">
+                <div class="eq-display">
+                  <p><span class="eq-sym eq-sym-v">v</span><sub>x</sub> = <span class="eq-sym eq-sym-v">v</span><sub>0</sub> cos <span class="eq-sym eq-sym-th">θ</span> &nbsp; (constant)</p>
+                  <p><span class="eq-sym eq-sym-a">v</span><sub>y</sub> = <span class="eq-sym eq-sym-v">v</span><sub>0</sub> sin <span class="eq-sym eq-sym-th">θ</span> − <span class="eq-sym eq-sym-g">g</span> <span class="eq-sym eq-sym-t">t</span></p>
+                </div>
+                <dl class="eq-vars">
+                  <div><dt class="eq-sym eq-sym-v">v<sub>x</sub></dt><dd>horizontal velocity, constant <span class="eq-unit">m/s</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-a">v<sub>y</sub></dt><dd>vertical velocity, changed by gravity <span class="eq-unit">m/s</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-v">v<sub>0</sub></dt><dd>launch speed <span class="eq-unit">m/s</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-th">θ</dt><dd>launch angle above horizontal <span class="eq-unit">°</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-g">g</dt><dd>gravitational field strength <span class="eq-unit">m/s²</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-t">t</dt><dd>time after launch <span class="eq-unit">s</span></dd></div>
+                </dl>
+              </div>
+            </div>
           </section>
 
           <section class="theory-block theory-visual-card">
             <h3>Range peaks at 45°</h3>
-            <figure class="theory-visual" data-theory-anim="range-vs-angle">
-              <canvas width="720" height="240" aria-label="Range versus launch angle"></canvas>
-              <figcaption>Sweep θ. Range is largest at 45°. 30° and 60° land equally far; 60° just goes higher.</figcaption>
-            </figure>
-            <p class="eq-block">R = v<sub>0</sub>² sin(2θ) / g<br />H = v<sub>0</sub>² sin²θ / (2g)</p>
+            <div class="theory-eq-row">
+              <figure class="theory-visual" data-theory-anim="range-vs-angle">
+                <canvas width="720" height="240" aria-label="Range versus launch angle"></canvas>
+                <figcaption>Sweep <span class="eq-sym eq-sym-th">θ</span>. <span class="eq-sym eq-sym-d">Range R</span> is largest at 45°. 30° and 60° land equally far; 60° just goes higher.</figcaption>
+              </figure>
+              <div class="theory-eq-side">
+                <div class="eq-display">
+                  <p><span class="eq-sym eq-sym-d">R</span> = <span class="eq-sym eq-sym-v">v</span><sub>0</sub>² sin(2<span class="eq-sym eq-sym-th">θ</span>) / <span class="eq-sym eq-sym-g">g</span></p>
+                  <p><span class="eq-sym eq-sym-k">H</span> = <span class="eq-sym eq-sym-v">v</span><sub>0</sub>² sin²<span class="eq-sym eq-sym-th">θ</span> / (2<span class="eq-sym eq-sym-g">g</span>)</p>
+                </div>
+                <dl class="eq-vars">
+                  <div><dt class="eq-sym eq-sym-d">R</dt><dd>horizontal range on flat ground <span class="eq-unit">m</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-k">H</dt><dd>maximum height <span class="eq-unit">m</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-v">v<sub>0</sub></dt><dd>launch speed <span class="eq-unit">m/s</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-th">θ</dt><dd>launch angle <span class="eq-unit">°</span></dd></div>
+                  <div><dt class="eq-sym eq-sym-g">g</dt><dd>gravitational field strength <span class="eq-unit">m/s²</span></dd></div>
+                </dl>
+              </div>
+            </div>
           </section>
 
-          <section class="theory-block">
+          <section class="theory-block theory-graphs-block">
             <h3>Predicted graphs for these example conditions</h3>
             <p class="muted theory-conditions">v<sub>0</sub> = 20 m/s · g = 9.8 m/s² · no air resistance · equal launch and landing height</p>
             <div class="graphs theory-graphs">
