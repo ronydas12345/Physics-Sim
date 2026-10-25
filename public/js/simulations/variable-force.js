@@ -31,7 +31,7 @@ import {
   stepTo,
   teacherReport,
 } from "/lib/variableforce.js";
-import { DT, scaleForceMagnitude } from "/lib/forces.js";
+import { DT, forceArrowSpan, scaleForceMagnitude } from "/lib/forces.js";
 import { renderXYScatter, timeAtPointer } from "../graphs.js";
 import { sceneForGravity } from "/lib/planets.js";
 import {
@@ -204,11 +204,12 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
   drawBox(ctx, boxX, boxY);
   if (state.showVectors && Math.abs(live.F) > 0.001) {
     const len = scaleForceMagnitude(Math.abs(live.F));
-    drawArrow(ctx, boxX, boxY, boxX + Math.sign(live.F) * len, boxY, COLOR.applied, 3);
+    const span = forceArrowSpan(boxX, boxY, live.F >= 0 ? 0 : 180, len, { halfW: 22, halfH: 22 });
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, COLOR.applied, 3);
     ctx.fillStyle = COLOR.applied;
     ctx.font = "700 11px Figtree, sans-serif";
     ctx.textAlign = live.F >= 0 ? "left" : "right";
-    ctx.fillText(`Fₓ ${formatSigned(live.F, "N")}`, boxX + Math.sign(live.F) * (len + 6), boxY - 8);
+    ctx.fillText(`Fₓ ${formatSigned(live.F, "N")}`, span.x2 + (live.F >= 0 ? 6 : -6), span.y2 - 8);
   }
   if (state.showVelocity && Math.abs(live.vx) > 0.05) {
     const len = 18 + Math.min(48, Math.abs(live.vx) * 6);

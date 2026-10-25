@@ -34,6 +34,7 @@ import {
   teacherReport,
 } from "/lib/circular.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
+import { forceArrowSpan } from "/lib/forces.js";
 import { sceneForGravity } from "/lib/planets.js";
 import {
   bindCameraMode,
@@ -212,28 +213,25 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
   ctx.textBaseline = "middle";
   ctx.fillText(formatUnsigned(live.mass, "kg"), px, py);
 
+  const bodyR = 16;
   const vLen = arrowLen(live.speed, 28, 72, 10);
   if (state.showVelocity && vLen > 0) {
-    const s = Math.hypot(live.vx, live.vy) || 1;
-    const vxPx = (live.vx / s) * vLen;
-    const vyPx = -(live.vy / s) * vLen;
-    drawArrow(ctx, px, py, px + vxPx, py + vyPx, COLOR.velocity, 3);
+    const span = forceArrowSpan(px, py, (Math.atan2(live.vy, live.vx) * 180) / Math.PI, vLen, { radius: bodyR });
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, COLOR.velocity, 3);
     ctx.fillStyle = COLOR.velocity;
     ctx.font = "700 11px Figtree, sans-serif";
-    ctx.textAlign = vxPx >= 0 ? "left" : "right";
-    ctx.fillText(`v ${formatUnsigned(live.speed, "m/s")}`, px + vxPx + (vxPx >= 0 ? 6 : -6), py + vyPx);
+    ctx.textAlign = span.x2 >= px ? "left" : "right";
+    ctx.fillText(`v ${formatUnsigned(live.speed, "m/s")}`, span.x2 + (span.x2 >= px ? 6 : -6), span.y2);
   }
 
   const aLen = arrowLen(live.ac, 24, 64, 4);
   if (state.showAccel && aLen > 0) {
-    const s = Math.hypot(live.ax, live.ay) || 1;
-    const axPx = (live.ax / s) * aLen;
-    const ayPx = -(live.ay / s) * aLen;
-    drawArrow(ctx, px, py, px + axPx, py + ayPx, COLOR.accel, 3);
+    const span = forceArrowSpan(px, py, (Math.atan2(live.ay, live.ax) * 180) / Math.PI, aLen, { radius: bodyR });
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, COLOR.accel, 3);
     ctx.fillStyle = COLOR.accel;
     ctx.font = "700 11px Figtree, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`ac ${formatUnsigned(live.ac, "m/s²")}`, px + axPx, py + ayPx - 8);
+    ctx.fillText(`ac ${formatUnsigned(live.ac, "m/s²")}`, span.x2, span.y2 - 8);
   }
 
   if (state.showVectors && live.Fc > 0.001) {
@@ -243,11 +241,12 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
     if (fLen > 0) {
       const ux = (ox - px) / (Math.hypot(ox - px, oy - py) || 1);
       const uy = (oy - py) / (Math.hypot(ox - px, oy - py) || 1);
-      drawArrow(ctx, px, py, px + ux * fLen, py + uy * fLen, color, 3);
+      const span = forceArrowSpan(px, py, (Math.atan2(-uy, ux) * 180) / Math.PI, fLen, { radius: bodyR });
+      drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, color, 3);
       ctx.fillStyle = color;
       ctx.font = "700 11px Figtree, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`${live.inwardLabel} ${formatUnsigned(inward, "N")}`, px + ux * fLen, py + uy * fLen + 14);
+      ctx.fillText(`${live.inwardLabel} ${formatUnsigned(inward, "N")}`, span.x2, span.y2 + 14);
     }
   }
 

@@ -32,7 +32,7 @@ import {
   stepTo,
   teacherReport,
 } from "/lib/workenergy.js";
-import { scaleForceMagnitude } from "/lib/forces.js";
+import { forceArrowSpan, scaleForceMagnitude } from "/lib/forces.js";
 import { renderXYScatter, timeAtPointer } from "../graphs.js";
 import { sceneForGravity } from "/lib/planets.js";
 import {
@@ -161,32 +161,30 @@ function forceList(live) {
   return list;
 }
 
-function drawForceArrows(ctx, originX, originY, live, showNet) {
+function drawForceArrows(ctx, originX, originY, live, showNet, body) {
   for (const force of forceList(live)) {
     if (force.magnitude < 0.001) continue;
     const len = scaleForceMagnitude(force.magnitude);
-    const rad = (force.direction * Math.PI) / 180;
-    const x2 = originX + len * Math.cos(rad);
-    const y2 = originY - len * Math.sin(rad);
-    drawArrow(ctx, originX, originY, x2, y2, COLOR[force.type] || COLOR.applied, 3);
+    const span = forceArrowSpan(originX, originY, force.direction, len, body);
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, COLOR[force.type] || COLOR.applied, 3);
     ctx.fillStyle = COLOR[force.type] || COLOR.applied;
     ctx.font = "700 11px Figtree, sans-serif";
-    ctx.textAlign = x2 >= originX ? "left" : "right";
-    ctx.textBaseline = y2 <= originY ? "bottom" : "top";
-    ctx.fillText(`${force.symbol} ${formatUnsigned(force.magnitude, "N")}`, x2 + (x2 >= originX ? 6 : -6), y2);
+    ctx.textAlign = span.x2 >= originX ? "left" : "right";
+    ctx.textBaseline = span.y2 <= originY ? "bottom" : "top";
+    ctx.fillText(`${force.symbol} ${formatUnsigned(force.magnitude, "N")}`, span.x2 + (span.x2 >= originX ? 6 : -6), span.y2);
   }
   if (showNet && Math.abs(live.Fnetx) > 0.001) {
     const len = scaleForceMagnitude(Math.abs(live.Fnetx));
-    const x2 = originX + Math.sign(live.Fnetx) * len;
+    const span = forceArrowSpan(originX, originY, live.Fnetx >= 0 ? 0 : 180, len, body);
     ctx.save();
     ctx.setLineDash([6, 4]);
-    drawArrow(ctx, originX, originY, x2, originY, COLOR.net, 2.4);
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, COLOR.net, 2.4);
     ctx.restore();
     ctx.fillStyle = COLOR.net;
     ctx.font = "700 11px IBM Plex Mono, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(`Fnet ${formatSigned(live.Fnetx, "N")}`, (originX + x2) / 2, originY + 10);
+    ctx.fillText(`Fnet ${formatSigned(live.Fnetx, "N")}`, (span.x1 + span.x2) / 2, originY + 10);
   }
 }
 
@@ -243,7 +241,7 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
 
   const boxX = xOf(live.x, view);
   drawBox(ctx, boxX, boxY);
-  if (state.showVectors) drawForceArrows(ctx, boxX, boxY, live, state.showNet);
+  if (state.showVectors) drawForceArrows(ctx, boxX, boxY, live, state.showNet, { halfW: 22, halfH: 22 });
   if (state.showVelocity && Math.abs(live.vx) > 0.05) {
     const len = 18 + Math.min(48, Math.abs(live.vx) * 6);
     drawArrow(ctx, boxX, boxY - 38, boxX + Math.sign(live.vx) * len, boxY - 38, COLOR.velocity, 3);

@@ -36,7 +36,7 @@ import {
   stepTo,
   teacherReport,
 } from "/lib/firstlaw.js";
-import { scaleForceMagnitude } from "/lib/forces.js";
+import { forceArrowSpan, scaleForceMagnitude } from "/lib/forces.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import { sceneForGravity } from "/lib/planets.js";
 import {
@@ -102,35 +102,31 @@ function sizeCanvas(canvas) {
   return { cssW, cssH, dpr };
 }
 
-function drawForceArrows(ctx, originX, originY, forces, { showNet, net }) {
+function drawForceArrows(ctx, originX, originY, forces, { showNet, net, body }) {
   for (const force of enabledForces(forces)) {
     const len = scaleForceMagnitude(force.magnitude);
-    const rad = (force.direction * Math.PI) / 180;
-    const x2 = originX + len * Math.cos(rad);
-    const y2 = originY - len * Math.sin(rad);
-    drawArrow(ctx, originX, originY, x2, y2, colorOf(force.type), 3);
+    const span = forceArrowSpan(originX, originY, force.direction, len, body);
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, colorOf(force.type), 3);
     ctx.fillStyle = colorOf(force.type);
     ctx.font = "700 11px Figtree, sans-serif";
-    ctx.textAlign = x2 >= originX ? "left" : "right";
-    ctx.textBaseline = y2 <= originY ? "bottom" : "top";
+    ctx.textAlign = span.x2 >= originX ? "left" : "right";
+    ctx.textBaseline = span.y2 <= originY ? "bottom" : "top";
     const info = directionInfo(force.direction);
-    ctx.fillText(`${force.symbol} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, x2 + (x2 >= originX ? 6 : -6), y2);
+    ctx.fillText(`${force.symbol} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, span.x2 + (span.x2 >= originX ? 6 : -6), span.y2);
   }
   if (showNet && net && net.magnitude > 0.001) {
     const len = scaleForceMagnitude(net.magnitude);
-    const rad = (net.direction * Math.PI) / 180;
-    const x2 = originX + len * Math.cos(rad);
-    const y2 = originY - len * Math.sin(rad);
+    const span = forceArrowSpan(originX, originY, net.direction, len, body);
     ctx.save();
     ctx.setLineDash([6, 4]);
-    drawArrow(ctx, originX, originY, x2, y2, FORCE_COLOR.net, 2.4);
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, FORCE_COLOR.net, 2.4);
     ctx.restore();
     ctx.fillStyle = FORCE_COLOR.net;
     ctx.font = "700 11px IBM Plex Mono, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     const info = netDirection(net);
-    ctx.fillText(`Fnet ${formatUnsigned(net.magnitude, "N")} ${info.arrow}`, (originX + x2) / 2, Math.max(y2, originY) + 8);
+    ctx.fillText(`Fnet ${formatUnsigned(net.magnitude, "N")} ${info.arrow}`, (span.x1 + span.x2) / 2, Math.max(span.y1, span.y2) + 8);
   }
 }
 
@@ -269,8 +265,8 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
     drawBox(ctx, ax, boxY, 70, 46, "A");
     drawBox(ctx, bx, boxY, 86, 52, "B");
     const dummy = [{ type: "applied", magnitude: state.force, direction: 0, enabled: true, symbol: "F", name: "F" }];
-    drawForceArrows(ctx, ax, boxY, dummy, { showNet: false, net: null });
-    drawForceArrows(ctx, bx, boxY, dummy, { showNet: false, net: null });
+    drawForceArrows(ctx, ax, boxY, dummy, { showNet: false, net: null, body: { halfW: 35, halfH: 23 } });
+    drawForceArrows(ctx, bx, boxY, dummy, { showNet: false, net: null, body: { halfW: 43, halfH: 26 } });
     if (state.showVelocity) {
       drawVelocityArrow(ctx, ax, boxY, live.vxA);
       drawVelocityArrow(ctx, bx, boxY, live.vxB);
@@ -292,7 +288,7 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
     ctx.fillText("SYSTEM", boxX - 50, boxY - 78);
     ctx.globalAlpha = 1;
     drawBox(ctx, boxX, boxY, 74, 48, "Box");
-    drawForceArrows(ctx, boxX, boxY, state.forces, { showNet: state.showNetForce, net: live.net });
+    drawForceArrows(ctx, boxX, boxY, state.forces, { showNet: state.showNetForce, net: live.net, body: { halfW: 37, halfH: 24 } });
     if (state.showVelocity) drawVelocityArrow(ctx, boxX, boxY, live.vx);
   }
 

@@ -18,6 +18,7 @@ import {
   netDirection,
   removeForce,
   reset as resetState,
+  forceArrowSpan,
   scaleForceMagnitude,
   setForce,
   setGravity,
@@ -87,37 +88,33 @@ function sizeCanvas(canvas) {
   return { cssW, cssH, dpr };
 }
 
-function drawForceArrows(ctx, originX, originY, forces, { showNet, net, showLabels = true, dashedNet = true }) {
+function drawForceArrows(ctx, originX, originY, forces, { showNet, net, showLabels = true, dashedNet = true, body }) {
   for (const force of enabledForces(forces)) {
     const len = scaleForceMagnitude(force.magnitude);
-    const rad = (force.direction * Math.PI) / 180;
-    const x2 = originX + len * Math.cos(rad);
-    const y2 = originY - len * Math.sin(rad);
-    drawArrow(ctx, originX, originY, x2, y2, colorOf(force.type), 3);
+    const span = forceArrowSpan(originX, originY, force.direction, len, body);
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, colorOf(force.type), 3);
     if (showLabels) {
       ctx.fillStyle = colorOf(force.type);
       ctx.font = "700 11px Figtree, sans-serif";
-      ctx.textAlign = x2 >= originX ? "left" : "right";
-      ctx.textBaseline = y2 <= originY ? "bottom" : "top";
+      ctx.textAlign = span.x2 >= originX ? "left" : "right";
+      ctx.textBaseline = span.y2 <= originY ? "bottom" : "top";
       const info = directionInfo(force.direction);
-      ctx.fillText(`${force.symbol} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, x2 + (x2 >= originX ? 6 : -6), y2);
+      ctx.fillText(`${force.symbol} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, span.x2 + (span.x2 >= originX ? 6 : -6), span.y2);
     }
   }
   if (showNet && net && net.magnitude > 0.001) {
     const len = scaleForceMagnitude(net.magnitude);
-    const rad = (net.direction * Math.PI) / 180;
-    const x2 = originX + len * Math.cos(rad);
-    const y2 = originY - len * Math.sin(rad);
+    const span = forceArrowSpan(originX, originY, net.direction, len, body);
     ctx.save();
     if (dashedNet) ctx.setLineDash([6, 4]);
-    drawArrow(ctx, originX, originY, x2, y2, FORCE_COLOR.net, 2.4);
+    drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, FORCE_COLOR.net, 2.4);
     ctx.restore();
     ctx.fillStyle = FORCE_COLOR.net;
     ctx.font = "700 11px IBM Plex Mono, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     const info = netDirection(net);
-    ctx.fillText(`Fnet ${formatUnsigned(net.magnitude, "N")} ${info.arrow}`, (originX + x2) / 2, Math.max(y2, originY) + 8);
+    ctx.fillText(`Fnet ${formatUnsigned(net.magnitude, "N")} ${info.arrow}`, (span.x1 + span.x2) / 2, Math.max(span.y1, span.y2) + 8);
   }
 }
 
@@ -380,6 +377,7 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
   drawForceArrows(ctx, boxX, boxY, state.forces, {
     showNet: state.showNetForce,
     net: live.net,
+    body: { halfW: 37, halfH: 24 },
   });
 
   ctx.fillStyle = scene.ink;

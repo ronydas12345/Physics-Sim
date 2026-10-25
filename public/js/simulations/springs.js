@@ -30,7 +30,7 @@ import {
   stepTo,
   teacherReport,
 } from "/lib/springs.js";
-import { scaleForceMagnitude } from "/lib/forces.js";
+import { forceArrowSpan, scaleForceMagnitude } from "/lib/forces.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import { sceneForGravity } from "/lib/planets.js";
 import {
@@ -195,13 +195,13 @@ function labelForce(ctx, x2, y2, originX, originY, text, color) {
   ctx.fillText(text, x2 + (x2 >= originX ? 6 : -6), y2);
 }
 
-function drawSignedForce(ctx, ox, oy, value, axis, color, label, unit) {
+function drawSignedForce(ctx, ox, oy, value, axis, color, label, unit, body) {
   if (Math.abs(value) < 0.001) return;
   const len = scaleForceMagnitude(Math.abs(value));
-  const x2 = axis === "x" ? ox + Math.sign(value) * len : ox;
-  const y2 = axis === "y" ? oy - Math.sign(value) * len : oy;
-  drawArrow(ctx, ox, oy, x2, y2, color, 3);
-  labelForce(ctx, x2, y2, ox, oy, `${label} ${formatUnsigned(Math.abs(value), unit)}`, color);
+  const direction = axis === "x" ? (value >= 0 ? 0 : 180) : value >= 0 ? 90 : 270;
+  const span = forceArrowSpan(ox, oy, direction, len, body);
+  drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, color, 3);
+  labelForce(ctx, span.x2, span.y2, ox, oy, `${label} ${formatUnsigned(Math.abs(value), unit)}`, color);
 }
 
 function drawSideArrow(ctx, x, y, value, color, label, unit, lift) {
@@ -216,27 +216,27 @@ function drawSideArrow(ctx, x, y, value, color, label, unit, lift) {
   ctx.fillText(`${label} ${formatSigned(value, unit)}`, (x + x2) / 2, y + lift + (lift < 0 ? -4 : 6));
 }
 
-function drawForces(ctx, ox, oy, live, { showVectors, showNet }) {
+function drawForces(ctx, ox, oy, live, { showVectors, showNet, body }) {
   if (!showVectors) return;
-  drawSignedForce(ctx, ox, oy, -live.W, "y", COLOR.gravity, "W", "N");
-  drawSignedForce(ctx, ox, oy, live.N, "y", COLOR.normal, "N", "N");
-  drawSignedForce(ctx, ox, oy, live.Fs, "x", COLOR.spring, "Fs", "N");
-  drawSignedForce(ctx, ox, oy, live.Fapp, "x", COLOR.applied, "Fapp", "N");
-  if (live.held) drawSignedForce(ctx, ox, oy, live.holding, "x", COLOR.hold, "hold", "N");
+  drawSignedForce(ctx, ox, oy, -live.W, "y", COLOR.gravity, "W", "N", body);
+  drawSignedForce(ctx, ox, oy, live.N, "y", COLOR.normal, "N", "N", body);
+  drawSignedForce(ctx, ox, oy, live.Fs, "x", COLOR.spring, "Fs", "N", body);
+  drawSignedForce(ctx, ox, oy, live.Fapp, "x", COLOR.applied, "Fapp", "N", body);
+  if (live.held) drawSignedForce(ctx, ox, oy, live.holding, "x", COLOR.hold, "hold", "N", body);
   const net = live.held ? live.Ffree : live.Fnet;
   if (showNet && Math.abs(net) > 0.001 && !live.held) {
     const len = scaleForceMagnitude(Math.abs(net));
-    const x2 = ox + Math.sign(net) * len;
     const y2 = oy + 18;
+    const span = forceArrowSpan(ox, y2, net >= 0 ? 0 : 180, len, body ? { halfW: body.halfW } : undefined);
     ctx.save();
     ctx.setLineDash([6, 4]);
-    drawArrow(ctx, ox, y2, x2, y2, COLOR.net, 2.4);
+    drawArrow(ctx, span.x1, y2, span.x2, y2, COLOR.net, 2.4);
     ctx.restore();
     ctx.fillStyle = COLOR.net;
     ctx.font = "700 11px IBM Plex Mono, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(`Fnet ${formatSigned(net, "N")}`, (ox + x2) / 2, y2 + 6);
+    ctx.fillText(`Fnet ${formatSigned(net, "N")}`, (span.x1 + span.x2) / 2, y2 + 6);
   }
 }
 
@@ -288,7 +288,7 @@ function renderScene(canvas, state, scene, cameraOpts = {}) {
   const boxX = xOf(visX, view);
   drawSpring(ctx, wallPx, boxY, boxX - 38, live.x >= 0 ? 12 : 8);
   drawBox(ctx, boxX, boxY, 74, 48, formatUnsigned(state.mass, "kg"));
-  drawForces(ctx, boxX, boxY, live, { showVectors: state.showVectors, showNet: state.showNet });
+  drawForces(ctx, boxX, boxY, live, { showVectors: state.showVectors, showNet: state.showNet, body: { halfW: 37, halfH: 24 } });
   if (state.showVelocity) drawSideArrow(ctx, boxX, boxY, live.vx, COLOR.velocity, "v", "m/s", -38);
   if (state.showAccel) drawSideArrow(ctx, boxX, boxY, live.held ? live.aFree : live.ax, COLOR.accel, "a", "m/s²", 36);
 

@@ -29,6 +29,7 @@ import {
   teacherReport,
 } from "/lib/gravity.js";
 import { renderXYScatter } from "../graphs.js";
+import { forceArrowSpan } from "/lib/forces.js";
 import {
   bindCameraMode,
   bindChallenge,
@@ -422,12 +423,15 @@ export function mountGravity(root) {
     const fLen = forcePx(live.magnitude);
     const ux = (bx - ax) / (Math.hypot(bx - ax, by - ay) || 1);
     const uy = (by - ay) / (Math.hypot(bx - ax, by - ay) || 1);
-    drawArrow(ctx, ax, ay, ax + ux * fLen, ay + uy * fLen, COLOR_F, 3);
-    drawArrow(ctx, bx, by, bx - ux * fLen, by - uy * fLen, COLOR_F, 3);
+    const deg = (Math.atan2(-uy, ux) * 180) / Math.PI;
+    const spanA = forceArrowSpan(ax, ay, deg, fLen, { radius: pxA });
+    const spanB = forceArrowSpan(bx, by, deg + 180, fLen, { radius: pxB });
+    drawArrow(ctx, spanA.x1, spanA.y1, spanA.x2, spanA.y2, COLOR_F, 3);
+    drawArrow(ctx, spanB.x1, spanB.y1, spanB.x2, spanB.y2, COLOR_F, 3);
     ctx.fillStyle = COLOR_F;
     ctx.font = "700 11px Figtree, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(`Fg ${formatCompact(live.magnitude, "N", state.sci)}`, ax + ux * fLen + 6, ay + uy * fLen - 6);
+    ctx.fillText(`Fg ${formatCompact(live.magnitude, "N", state.sci)}`, spanA.x2 + 6, spanA.y2 - 6);
 
     function velArrow(body, px, py, fallback) {
       const vx = body.vx || fallback.x;

@@ -24,7 +24,7 @@ import {
   stepTo,
   teacherReport,
 } from "/lib/thirdlaw.js";
-import { scaleForceMagnitude } from "/lib/forces.js";
+import { forceArrowSpan, scaleForceMagnitude } from "/lib/forces.js";
 import { renderTimeSeries, renderXYScatter, timeAtPointer } from "../graphs.js";
 import {
   bindCameraMode,
@@ -157,18 +157,16 @@ function drawBody(ctx, x, y, color, label, mass) {
   return r;
 }
 
-function drawForceOn(ctx, ox, oy, force, color) {
+function drawForceOn(ctx, ox, oy, force, color, body) {
   const len = scaleForceMagnitude(force.magnitude);
-  const rad = (force.direction * Math.PI) / 180;
-  const x2 = ox + len * Math.cos(rad);
-  const y2 = oy - len * Math.sin(rad);
-  drawArrow(ctx, ox, oy, x2, y2, color, 3);
+  const span = forceArrowSpan(ox, oy, force.direction, len, body);
+  drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, color, 3);
   ctx.fillStyle = color;
   ctx.font = "700 11px Figtree, sans-serif";
-  ctx.textAlign = x2 >= ox ? "left" : "right";
-  ctx.textBaseline = y2 <= oy ? "bottom" : "top";
+  ctx.textAlign = span.x2 >= ox ? "left" : "right";
+  ctx.textBaseline = span.y2 <= oy ? "bottom" : "top";
   const info = directionInfo(force.direction);
-  ctx.fillText(`${force.label} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, x2 + (x2 >= ox ? 6 : -6), y2);
+  ctx.fillText(`${force.label} ${formatUnsigned(force.magnitude, "N")} ${info.arrow}`, span.x2 + (span.x2 >= ox ? 6 : -6), span.y2);
 }
 
 function renderScene(canvas, state, cameraOpts = {}) {
@@ -229,25 +227,25 @@ function renderScene(canvas, state, cameraOpts = {}) {
     ctx.stroke();
   }
 
-  drawBody(ctx, ax, ay, COLOR_A, live.A.name, live.A.mass);
-  drawBody(ctx, bx, by, COLOR_B, live.B.name, live.B.mass);
-  drawForceOn(ctx, ax, ay, live.pair.forceBonA, COLOR_A);
-  drawForceOn(ctx, bx, by, live.pair.forceAonB, COLOR_B);
+  const rA = drawBody(ctx, ax, ay, COLOR_A, live.A.name, live.A.mass);
+  const rB = drawBody(ctx, bx, by, COLOR_B, live.B.name, live.B.mass);
+  drawForceOn(ctx, ax, ay, live.pair.forceBonA, COLOR_A, { radius: rA });
+  drawForceOn(ctx, bx, by, live.pair.forceAonB, COLOR_B, { radius: rB });
   if (state.showNetForce) {
     if (live.A.net.magnitude > 0.05) {
       const len = scaleForceMagnitude(live.A.net.magnitude, 56);
-      const rad = (live.A.net.direction * Math.PI) / 180;
+      const span = forceArrowSpan(ax, ay, live.A.net.direction, len, { radius: rA });
       ctx.save();
       ctx.setLineDash([5, 4]);
-      drawArrow(ctx, ax, ay, ax + len * Math.cos(rad), ay - len * Math.sin(rad), "#1b2430", 2);
+      drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, "#1b2430", 2);
       ctx.restore();
     }
     if (live.B.net.magnitude > 0.05) {
       const len = scaleForceMagnitude(live.B.net.magnitude, 56);
-      const rad = (live.B.net.direction * Math.PI) / 180;
+      const span = forceArrowSpan(bx, by, live.B.net.direction, len, { radius: rB });
       ctx.save();
       ctx.setLineDash([5, 4]);
-      drawArrow(ctx, bx, by, bx + len * Math.cos(rad), by - len * Math.sin(rad), "#1b2430", 2);
+      drawArrow(ctx, span.x1, span.y1, span.x2, span.y2, "#1b2430", 2);
       ctx.restore();
     }
   }
