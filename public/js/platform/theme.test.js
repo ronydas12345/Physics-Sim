@@ -2,19 +2,20 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { THEMES, normalizeTheme, themeCanvas, themeVar } from "./theme.js";
 
-test("appearance settings include beige, light, dark, and high contrast", () => {
+test("appearance settings include arcade comic, beige, light, dark, and high contrast", () => {
   assert.deepEqual(
     THEMES.map((theme) => theme.id),
-    ["beige", "light", "dark", "contrast"],
+    ["arcade", "beige", "light", "dark", "contrast"],
   );
 });
 
-test("unknown appearance falls back to dark", () => {
+test("unknown appearance falls back to arcade", () => {
+  assert.equal(normalizeTheme("arcade"), "arcade");
   assert.equal(normalizeTheme("beige"), "beige");
   assert.equal(normalizeTheme("dark"), "dark");
   assert.equal(normalizeTheme("contrast"), "contrast");
-  assert.equal(normalizeTheme("neon"), "dark");
-  assert.equal(normalizeTheme(""), "dark");
+  assert.equal(normalizeTheme("neon"), "arcade");
+  assert.equal(normalizeTheme(""), "arcade");
 });
 
 test("theme canvas colors fall back without a document", () => {

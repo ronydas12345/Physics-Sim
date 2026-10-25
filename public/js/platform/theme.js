@@ -1,6 +1,7 @@
 const STORAGE_KEY = "ap1-theme";
 
 export const THEMES = [
+  { id: "arcade", label: "Arcade Comic" },
   { id: "beige", label: "Beige" },
   { id: "light", label: "Light" },
   { id: "dark", label: "Dark" },
@@ -10,16 +11,16 @@ export const THEMES = [
 const IDS = new Set(THEMES.map((theme) => theme.id));
 
 export function normalizeTheme(id) {
-  return IDS.has(id) ? id : "dark";
+  return IDS.has(id) ? id : "arcade";
 }
 
 export function currentTheme() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return "dark";
+    if (!stored) return "arcade";
     return normalizeTheme(stored);
   } catch {
-    return "dark";
+    return "arcade";
   }
 }
 

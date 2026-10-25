@@ -1051,18 +1051,19 @@ html.is-fullscreen #page-root,
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
-  border-radius: 18px;
-  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  border: var(--control-border-width, 1px) solid var(--line);
   background: var(--stage-canvas);
-  box-shadow: inset 0 0 48px rgba(0, 0, 0, 0.28);
 }
 
 .sim-shell .transport {
   grid-column: 1;
   grid-row: 2;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  padding: 10px 12px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  border: var(--control-border-width, 1px) solid var(--line);
+  border-bottom: 0;
+  padding: 10px 12px 8px;
+  margin-bottom: 0;
 }
 
 .sim-shell .rail {
@@ -1071,17 +1072,19 @@ html.is-fullscreen #page-root,
 }
 
 .sim-shell .rail .metrics-wide {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 .sim-shell .track-controls {
   grid-column: 1;
   grid-row: 3;
-  background: var(--panel);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px 18px 14px;
+  background: var(--well-bg);
+  color: var(--well-ink);
+  border: var(--control-border-width, 1px) solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 8px 18px 16px;
+  margin-top: -14px;
   box-shadow: var(--shadow);
 }
 
@@ -1090,42 +1093,11 @@ html.is-fullscreen #page-root,
 .sim-shell .track-controls .motion-inputs .pos-input,
 .sim-shell .track-controls .switch.light,
 .sim-shell .track-controls .planet-bg-switch {
-  color: var(--ink);
+  color: var(--well-ink);
 }
 
 .sim-shell .track-controls .track-help {
-  color: var(--ink-soft);
-}
-
-.sim-shell .track-controls .chip:not([data-planet]) {
-  background: var(--raised);
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-.sim-shell .track-controls .chip:not([data-planet]):hover {
-  background: var(--raised-hover);
-  border-color: var(--accent);
-  color: var(--accent-dark);
-}
-
-.sim-shell .track-controls .chip:not([data-planet]).active {
-  background: var(--chip-active-bg);
-  border-color: var(--accent);
-  color: var(--accent-dark);
-}
-
-.sim-shell .track-controls .force-table {
-  color: var(--ink);
-}
-
-.sim-shell .track-controls .force-table th {
-  color: var(--ink-soft);
-}
-
-.sim-shell .track-controls .force-table th,
-.sim-shell .track-controls .force-table td {
-  border-bottom-color: var(--line);
+  color: var(--well-soft);
 }
 
 .sim-shell .rail .metrics dd {
@@ -1218,6 +1190,8 @@ html.is-fullscreen #page-root,
   .sim-shell .transport {
     grid-column: 1;
     grid-row: 2;
+    border-radius: var(--radius);
+    border-bottom: var(--control-border-width, 1px) solid var(--line);
   }
 
   .sim-shell .rail {
@@ -1228,6 +1202,9 @@ html.is-fullscreen #page-root,
   .sim-shell .track-controls {
     grid-column: 1;
     grid-row: 4;
+    margin-top: 0;
+    border-top: var(--control-border-width, 1px) solid var(--line);
+    border-radius: var(--radius);
   }
 
   .sim-shell .rail .metrics-wide {
@@ -1240,4 +1217,146 @@ html.is-fullscreen #page-root,
   .fbd-pair {
     grid-template-columns: 1fr;
   }
+}
+
+[data-theme="arcade"] .hero {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 8px 0 4px;
+}
+
+[data-theme="arcade"] .hero-visual {
+  background: var(--raised);
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 6px 6px 0 var(--ink);
+  padding-top: 28px;
+}
+
+[data-theme="arcade"] .hero-visual::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 16px 0 #febc2e, 32px 0 #28c840;
+  z-index: 2;
+}
+
+[data-theme="arcade"] .btn.primary {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+[data-theme="arcade"] .btn.ghost-paper {
+  background: var(--raised);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+}
+
+[data-theme="arcade"] .featured-card,
+[data-theme="arcade"] .how-card,
+[data-theme="arcade"] .module-card,
+[data-theme="arcade"] .legacy-note,
+[data-theme="arcade"] .card,
+[data-theme="arcade"] .sim-header,
+[data-theme="arcade"] .graph-wrap,
+[data-theme="arcade"] .table-wrap,
+[data-theme="arcade"] .lab-steps,
+[data-theme="arcade"] .topic-list,
+[data-theme="arcade"] .faq-item {
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+[data-theme="arcade"] .challenge-card {
+  background: #fff4c2;
+}
+
+[data-theme="arcade"] .rail .metrics > div {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--raised);
+}
+
+[data-theme="arcade"] .rail .metrics > div:nth-child(4n + 1) {
+  background: #d9f6fb;
+}
+
+[data-theme="arcade"] .rail .metrics > div:nth-child(4n + 2) {
+  background: #ffe4cc;
+}
+
+[data-theme="arcade"] .rail .metrics > div:nth-child(4n + 3) {
+  background: #d9f8e8;
+}
+
+[data-theme="arcade"] .rail .metrics > div:nth-child(4n + 4) {
+  background: #ead9ff;
+}
+
+[data-theme="arcade"] .rail .metrics dt {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+[data-theme="arcade"] .sim-shell .stage > canvas,
+[data-theme="arcade"] .sim-shell .transport,
+[data-theme="arcade"] .sim-shell .track-controls {
+  border-color: var(--ink);
+}
+
+[data-theme="arcade"] .transport .btn.action-play,
+[data-theme="arcade"] .track-controls .btn.action-play,
+[data-theme="arcade"] .transport .btn.action-launch,
+[data-theme="arcade"] .track-controls .btn.action-launch {
+  background-color: var(--play);
+  background-image: none;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+[data-theme="arcade"] .transport .btn.action-pause,
+[data-theme="arcade"] .track-controls .btn.action-pause {
+  background: var(--pause);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+[data-theme="arcade"] .transport .btn.action-check,
+[data-theme="arcade"] .track-controls .btn.action-check {
+  background-color: var(--check);
+  background-image: none;
+  border-color: var(--ink);
+  color: #fff;
+}
+
+[data-theme="arcade"] .transport .btn.action-record,
+[data-theme="arcade"] .track-controls .btn.action-record,
+[data-theme="arcade"] .transport .btn.action-step,
+[data-theme="arcade"] .track-controls .btn.action-step {
+  background: var(--record);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+[data-theme="arcade"] .transport .btn.action-reset,
+[data-theme="arcade"] .track-controls .btn.action-reset {
+  background: var(--well-btn);
+  border-color: var(--ink);
+  color: var(--well-ink);
+}
+
+[data-theme="arcade"] .kicker {
+  font-weight: 700;
 }

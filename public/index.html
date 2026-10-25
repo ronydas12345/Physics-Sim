@@ -8,10 +8,16 @@
       (function () {
         try {
           var theme = localStorage.getItem("ap1-theme");
-          if (theme === "beige" || theme === "light" || theme === "dark" || theme === "contrast") {
+          if (
+            theme === "arcade" ||
+            theme === "beige" ||
+            theme === "light" ||
+            theme === "dark" ||
+            theme === "contrast"
+          ) {
             document.documentElement.setAttribute("data-theme", theme);
           } else {
-            document.documentElement.setAttribute("data-theme", "dark");
+            document.documentElement.setAttribute("data-theme", "arcade");
           }
         } catch (e) {}
       })();
