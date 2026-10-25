@@ -27,6 +27,7 @@ import {
   labIconToolbar,
   setButtonLabel,
 } from "./platform/lab-kit.js";
+import { bindTheoryVisuals } from "./platform/theory-visuals.js";
 import { planetById, planetChipStyle, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
@@ -669,6 +670,8 @@ function onLanded() {
     describeChallengeFeedback();
   }
 }
+
+bindTheoryVisuals(document);
 
 function showTab(name) {
   activeTab = name;

@@ -1,6 +1,8 @@
 /**
- * Shared lab chrome used by 1.1, 1.2, and later simulations:
+ * Shared lab chrome used by every simulation:
  * Lab/Theory tabs, teacher view, challenge card, trial table, icon toolbar.
+ * Theory tabs use theoryPage() from theory-visuals.js so future labs inherit
+ * the image-first, microanimated layout automatically.
  */
 
 import {
@@ -12,6 +14,7 @@ import {
 } from "/lib/camera.js";
 import { fileForFormat, triggerDownload } from "/lib/export-trials.js";
 import { PLANET_CHIP_ORDER, planetById, planetChipStyle, planetIcon } from "/lib/planets.js";
+import { bindTheoryVisuals } from "./theory-visuals.js";
 
 function iconSvg(name, inner) {
   return `<svg class="btn-icon btn-icon-${name}" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">${inner}</svg>`;
@@ -293,6 +296,7 @@ export function bindLabTabs(root, onChange) {
   const panelLab = root.querySelector("#panel-lab");
   const panelTheory = root.querySelector("#panel-theory");
   const openTheory = root.querySelector("#open-theory");
+  bindTheoryVisuals(root);
 
   function showTab(name) {
     const lab = name === "lab";

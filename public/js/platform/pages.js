@@ -10,20 +10,7 @@ import {
   theoryLink,
   trialSection,
 } from "./lab-kit.js";
-
-function trialFitTheory(compareHtml) {
-  return `
-          <section class="theory-block">
-            <h3>Fit your recorded trials</h3>
-            <p>
-              After you record at least two trials with different x-values, each “Your Trials” graph draws a dashed
-              least-squares curve and prints the fitted equation with R². Two points always give a perfect line
-              (R² = 1). Record several different runs, then compare the fitted shape to the identities derived on this tab.
-              Turn on <strong>Show exact identity</strong> to overlay the closed-form curve as a solid line.
-            </p>
-            ${compareHtml}
-          </section>`;
-}
+import { theoryPage } from "./theory-visuals.js";
 
 export function homePage() {
   const first = modules[0].simulations[0];
@@ -440,56 +427,31 @@ export function sim11Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Scalars and vectors on a line</h2>
-            <p>
-              One-dimensional motion is the place to lock down magnitude versus direction. Everything later — velocity,
-              acceleration, and two-dimensional projectiles — reuses this sign convention.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Scalars have magnitude only</h3>
-            <p>A scalar is fully described by a number and a unit. Distance, speed, and time are scalars. They never carry a plus or minus that means direction.</p>
-            <p>Distance is the length of the actual path. Split the motion into segments that do not reverse, take the length of each segment, and add:</p>
-            <p class="eq-block">D = Σ |Δx<sub>i</sub>| = |x<sub>1</sub> − x<sub>0</sub>| + |x<sub>2</sub> − x<sub>1</sub>| + ⋯</p>
-            <p>The absolute values drop the signs, so a 3 m trip left and a 3 m trip right both add 3 m to D.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Vectors have magnitude and direction</h3>
-            <p>On a line, direction is a sign. Displacement, velocity, and acceleration are vectors. Displacement is the change in position, not the length of the journey:</p>
-            <p class="eq-block">Δx = x<sub>f</sub> − x<sub>i</sub></p>
-            <p>That is the definition of a change: final minus initial. If the object returns to its start, x<sub>f</sub> = x<sub>i</sub>, so Δx = 0 even if it traveled a long path. The magnitude of the displacement is the straight-line gap |Δx|; the direction is the sign of Δx.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Why D ≥ |Δx|</h3>
-            <p>Each segment contributes |Δx<sub>i</sub>| to distance, but those signed pieces can cancel when you add them as a net change:</p>
-            <p class="eq-block">Δx = Σ Δx<sub>i</sub><br />|Δx| = |Σ Δx<sub>i</sub>| ≤ Σ |Δx<sub>i</sub>| = D</p>
-            <p>Equality holds only when every segment has the same sign — the object never turned around. On the Distance vs. Displacement graph, every point must sit on or above the V-shaped floor D = |Δx|. A fitted line through mixed out-and-back trials will not be D = |Δx|; that mismatch is the result, not a bug.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Sign convention is a choice</h3>
-            <p>This lab usually takes right as positive:</p>
-            <p class="eq-block">+ = right<br />− = left</p>
-            <p>Flip the convention and the displayed signs change. The object’s motion on the track does not. Teacher view shows both the screen-right world coordinate and the displayed coordinate.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Worked experiment</h3>
-            <p>Start at 0, move to +5 m, then to +2 m.</p>
-            <p class="eq-block">
-              Δx<sub>1</sub> = +5 m, Δx<sub>2</sub> = −3 m<br />
-              D = |+5| + |−3| = 8 m<br />
-              Δx = (+5) + (−3) = +2 m
-            </p>
-            <p>Record that path as a trial, then try a round trip: out and back to 0. Displacement vanishes; distance does not.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>On Distance vs. Displacement, a one-way run should hug D ≈ |Δx| (slope about +1 or −1 depending on direction). After a reversal the points rise above that V. Position vs. Distance has no single required slope: the same D can end at many x values, so a weak R² is physically honest.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Scalars and vectors on a line",
+        lead: "Distance adds every meter of the path. Displacement is only the shortcut, with a sign.",
+        cards: [
+          {
+            title: "Distance vs. displacement",
+            anim: "distance-displacement",
+            caption: "Go out, then back. Distance keeps growing. Displacement is just where you are minus where you started.",
+            eq: "D = Σ |Δx<sub>i</sub>|<br />Δx = x<sub>f</sub> − x<sub>i</sub>",
+          },
+          {
+            title: "Sign is a direction choice",
+            anim: "signed-vector",
+            caption: "On a line, + and − are the two directions. Flip the convention and the numbers flip; the motion does not.",
+            eq: "+ = right<br />− = left",
+          },
+          {
+            title: "Why D ≥ |Δx|",
+            anim: "d-ge-dx",
+            caption: "Signed steps can cancel. Absolute steps cannot. Equality only if the object never turned around.",
+            eq: "|Δx| = |Σ Δx<sub>i</sub>| ≤ Σ |Δx<sub>i</sub>| = D",
+          },
+        ],
+        fit: `<p>One-way runs hug D ≈ |Δx|. After a reversal the points rise above that V.</p>`,
+      })}
     </section>
   `;
 }
@@ -671,70 +633,31 @@ export function sim12Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Motion over an interval</h2>
-            <p>
-              Simulation 1.1 asked where an object is. This lab asks how that location changes with time.
-              Velocity is displacement per unit time. Acceleration is the change in velocity per unit time.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Position, displacement, and distance</h3>
-            <p>Position is the location on the axis. Displacement is the signed shortcut from the start. Distance is every meter actually traveled, including the return trip after a reversal.</p>
-            <p class="eq-block">Δx = x − x₀<br />D = Σ |Δx<sub>i</sub>|</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Average and instantaneous velocity</h3>
-            <p>Average velocity over an interval is displacement divided by elapsed time, by definition:</p>
-            <p class="eq-block">v<sub>avg</sub> = Δx / Δt = (x − x₀) / t</p>
-            <p>Instantaneous velocity is the value of v at one instant — the limit of that ratio as Δt shrinks, which is the slope of x vs. t at that moment. Do not label the average as the instantaneous value unless the velocity never changed. Signs still mean direction: +v is toward +x.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Constant acceleration gives v = v₀ + at</h3>
-            <p>Average acceleration is the change in velocity per unit time. If a is constant, that average is the acceleration itself:</p>
-            <p class="eq-block">a = Δv / Δt = (v − v₀) / t<br />v − v₀ = a t<br />v(t) = v₀ + a t</p>
-            <p>An object with v₀ = +8 m/s and a = −2 m/s² is still moving in the positive direction until t = 4 s, when v = 0. After that it reverses. Negative acceleration is not automatically “moving left.”</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Integrating velocity gives x(t)</h3>
-            <p>Velocity is the rate of change of position, so position is the accumulation of velocity. With v(t) = v₀ + at, the area under that line from 0 to t is a rectangle plus a triangle:</p>
-            <p class="eq-block">
-              Δx = v₀ t + ½ a t²<br />
-              x(t) = x₀ + v₀ t + ½ a t²
-            </p>
-            <p>The same algebra from Δx = v<sub>avg</sub> t, using the fact that a linear v(t) has average (v₀ + v)/2:</p>
-            <p class="eq-block">
-              v<sub>avg</sub> = (v₀ + v) / 2 = (v₀ + v₀ + a t) / 2 = v₀ + ½ a t<br />
-              Δx = (v₀ + ½ a t) t = v₀ t + ½ a t²
-            </p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Graph shapes</h3>
-            <p>Constant velocity: x vs. t is linear, v vs. t is horizontal, a vs. t is zero. Constant acceleration: x vs. t is a parabola, v vs. t is a sloped line, a vs. t is horizontal.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Quantity comparison</h3>
-            <table class="compare-table">
-              <thead>
-                <tr><th>Quantity</th><th>Meaning</th><th>Unit</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Position</td><td>Location</td><td>m</td></tr>
-                <tr><td>Displacement</td><td>Change in position</td><td>m</td></tr>
-                <tr><td>Distance</td><td>Total path traveled</td><td>m</td></tr>
-                <tr><td>Velocity</td><td>Change in position / time</td><td>m/s</td></tr>
-                <tr><td>Acceleration</td><td>Change in velocity / time</td><td>m/s²</td></tr>
-              </tbody>
-            </table>
-          </section>
-          ${trialFitTheory(`
-            <p>Hold a constant and record at several times: v<sub>avg</sub> vs. t should fit a line with slope a/2, because v<sub>avg</sub> = v₀ + ½ a t. A horizontal fit (slope ≈ 0) means a ≈ 0. Distance vs. displacement still follows D ≥ |Δx| from Simulation 1.1.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Motion over an interval",
+        lead: "Velocity is how position changes with time. Acceleration is how velocity changes with time.",
+        cards: [
+          {
+            title: "v = v₀ + at",
+            anim: "v-equals-v0-at",
+            caption: "Negative a is not automatically “moving left.” Watch v fall through zero, then reverse.",
+            eq: "v(t) = v₀ + a t",
+          },
+          {
+            title: "Speeding up vs. slowing down",
+            anim: "speeding-slowing",
+            caption: "Speed grows when v and a share a sign. Speed shrinks when they oppose.",
+            eq: "same signs → speeding up<br />opposite signs → slowing down",
+          },
+          {
+            title: "Position is the area under v vs. t",
+            anim: "x-from-vt-area",
+            caption: "The shaded area is Δx. A linear v(t) makes that area a rectangle plus a triangle.",
+            eq: "x(t) = x₀ + v₀ t + ½ a t²",
+          },
+        ],
+        fit: `<p>Hold a constant and record at several times: v<sub>avg</sub> vs. t should fit a line with slope a/2.</p>`,
+      })}
     </section>
   `;
 }
@@ -935,49 +858,31 @@ export function sim13Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>One motion, several pictures</h2>
-            <p>
-              The object, the motion diagram, and the three graphs are not separate problems.
-              They are translations of the same x(t), v(t), and a(t).
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Motion diagrams use equal time, not equal distance</h3>
-            <p>Each dot is taken 0.50 s after the last. In a fixed interval Δt, the gap between dots is the distance covered in that interval:</p>
-            <p class="eq-block">Δx<sub>dot</sub> ≈ v Δt<br />spacing ∝ speed &nbsp;&nbsp;(equal Δt)</p>
-            <p>Wider gaps mean the object covered more distance in that same interval, so it was moving faster. Dots piling up means it is slowing or at rest.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Graph slopes from the definitions</h3>
-            <p>A slope is a rise over a run. On a position–time graph the rise is displacement and the run is time, which is average velocity over that interval. Shrinking the interval gives instantaneous velocity:</p>
-            <p class="eq-block">slope of x vs. t = Δx / Δt = v</p>
-            <p>On a velocity–time graph the rise is the change in velocity:</p>
-            <p class="eq-block">slope of v vs. t = Δv / Δt = a</p>
-            <p>A horizontal x–t graph means the object is at rest. A horizontal v–t graph means acceleration is zero.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Area under v vs. t is displacement</h3>
-            <p>For a short interval at nearly constant velocity, the rectangle under the graph has area (height)×(width) = v Δt, which is Δx. Adding those rectangles (or using a trapezoid when v changes linearly) reconstructs the net displacement. Area below the time axis is negative because v is negative:</p>
-            <p class="eq-block">Δx = area under v(t)</p>
-            <p>Distance is the total area counting both sides as positive: D = Σ |v| Δt. That is why a round trip can have Δx = 0 and D &gt; 0 on the same v–t graph.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Speeding up vs. slowing down</h3>
-            <p>Speed is |v|. Speed increases when velocity and acceleration have the same sign (both positive, or both negative), because then |v| is growing. Speed decreases when v and a have opposite signs. Negative acceleration is not automatically “moving left.”</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Collisions</h3>
-            <p>Turn on <strong>Allow collisions</strong> to place elastic walls at ±20 m. On impact the wall does not move, so the object’s velocity reverses (v → −v) while the programmed acceleration keeps its value. Distance still counts every meter of the path, including the return from the wall.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>The live x–t, v–t, and a–t graphs are the motion itself. The recorded scatters test the same identities across several runs: D vs. Δx should respect D ≥ |Δx|, and v<sub>avg</sub> vs. t should be linear with slope a/2 when a is constant and you have not yet bounced.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "One motion, several pictures",
+        lead: "The object, the dots, and the graphs are the same x(t), v(t), and a(t) drawn three ways.",
+        cards: [
+          {
+            title: "Equal time, not equal distance",
+            anim: "motion-diagram",
+            caption: "Each dot is 0.50 s later. Wider gaps mean faster in that interval.",
+            eq: "spacing ∝ speed &nbsp;&nbsp;(equal Δt)",
+          },
+          {
+            title: "Slopes and area",
+            anim: "xt-vt-at",
+            caption: "Slope of x vs. t is v. Slope of v vs. t is a. Area under v vs. t is Δx.",
+            eq: "v = Δx/Δt<br />a = Δv/Δt<br />Δx = area under v(t)",
+          },
+          {
+            title: "Speeding up vs. slowing down",
+            anim: "speeding-slowing",
+            caption: "Speed is |v|. Same-sign v and a increase speed; opposite signs decrease it.",
+            eq: "speed ↑ when v and a share a sign",
+          },
+        ],
+        fit: `<p>Live graphs are the motion itself. Recorded D vs. Δx should still respect D ≥ |Δx|.</p>`,
+      })}
     </section>
   `;
 }
@@ -1179,52 +1084,25 @@ export function sim14Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Motion is measured from a frame</h2>
-            <p>
-              A reference frame is the coordinate system you use to report position and velocity.
-              Changing frames changes the numbers, not the event.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Relative velocity from relative position</h3>
-            <p>Define the position of A relative to B as the difference of their ground positions. Relative velocity is how that difference changes with time:</p>
-            <p class="eq-block">
-              x<sub>A/B</sub> = x<sub>A</sub> − x<sub>B</sub><br />
-              v<sub>A/B</sub> = d x<sub>A/B</sub> / dt = v<sub>A</sub> − v<sub>B</sub>
-            </p>
-            <p>Swapping the labels flips the sign, so v<sub>B/A</sub> = −v<sub>A/B</sub>. If both trains move east, a passenger on the slower train still sees the faster train moving east, but more slowly.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Same velocity, different stories</h3>
-            <p>If v<sub>A</sub> = v<sub>B</sub> = +5 m/s, then v<sub>A/B</sub> = 0. The ground observer sees both objects move. In A's frame, B is at rest. Both descriptions are correct.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Positions in a moving frame</h3>
-            <p>Each object follows x = x₀ + v t on the ground (constant velocity). Subtract those two lines:</p>
-            <p class="eq-block">
-              x<sub>A/B</sub>(t) = (x<sub>A0</sub> + v<sub>A</sub> t) − (x<sub>B0</sub> + v<sub>B</sub> t)<br />
-              x<sub>A/B</sub>(t) = x<sub>A0</sub> − x<sub>B0</sub> + (v<sub>A</sub> − v<sub>B</sub>) t
-            </p>
-            <p>When you choose Object A as the frame, A is drawn at x = 0. B's displayed position is how far B is from A. The slope of x<sub>A/B</sub> vs. t is exactly v<sub>A/B</sub>.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Meeting time</h3>
-            <p>They meet when they occupy the same ground position, which is the same statement as x<sub>A/B</sub> = 0:</p>
-            <p class="eq-block">
-              0 = (x<sub>A0</sub> − x<sub>B0</sub>) + (v<sub>A</sub> − v<sub>B</sub>) t<br />
-              t = (x<sub>B0</sub> − x<sub>A0</sub>) / (v<sub>A</sub> − v<sub>B</sub>)
-            </p>
-            <p>If relative velocity is zero and they start apart, the denominator is zero and they never meet. They pass through each other; this lab does not bounce them. Separation on the trial graph is the absolute value s = |x<sub>A/B</sub>|, so s vs. t is a V that touches zero at the meeting time.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>x<sub>A/B</sub> vs. v<sub>A/B</sub> at mixed times is not a required line: relative position also depends on the starting gap and on t. A near-zero slope is common if you change speed without changing the snapshot time much. Separation vs. time should fit a line while they close or recede without meeting; after they pass, s starts increasing and a single straight fit will look worse (lower R²).</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Motion is measured from a frame",
+        lead: "Changing frames changes the numbers, not the event.",
+        cards: [
+          {
+            title: "Relative velocity",
+            anim: "relative-velocity",
+            caption: "How fast A looks from B is the difference of their ground velocities.",
+            eq: "v<sub>A/B</sub> = v<sub>A</sub> − v<sub>B</sub>",
+          },
+          {
+            title: "Same velocity, two stories",
+            anim: "same-v-two-frames",
+            caption: "On the ground both move. In A’s frame, B sits still. Both are correct.",
+            eq: "v<sub>A</sub> = v<sub>B</sub> ⇒ v<sub>A/B</sub> = 0",
+          },
+        ],
+        fit: `<p>Separation vs. time is a V that touches zero at the meeting. After they pass, a single straight fit looks worse.</p>`,
+      })}
     </section>
   `;
 }
@@ -1382,60 +1260,25 @@ export function sim21Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Many objects, one system</h2>
-            <p>
-              Dynamics starts by choosing what counts as the system. Once that choice is made, the center of mass
-              describes the system's overall translational motion, even when the pieces inside it move differently.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Defining the system</h3>
-            <p>A system is the collection of objects you have decided to analyze together. Everything else is the environment. The dashed box in the lab is that choice made visible. Switching from A + B to A only does not change the objects; it changes which forces count as internal.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Center-of-mass position</h3>
-            <p>The center of mass is the mass-weighted average position. For any number of particles:</p>
-            <p class="eq-block">x<sub>CM</sub> = Σ m<sub>i</sub> x<sub>i</sub> / Σ m<sub>i</sub></p>
-            <p>For two objects that is x<sub>CM</sub> = (m<sub>A</sub> x<sub>A</sub> + m<sub>B</sub> x<sub>B</sub>) / (m<sub>A</sub> + m<sub>B</sub>). If the masses are equal, x<sub>CM</sub> sits halfway between them. If m<sub>B</sub> &gt; m<sub>A</sub>, the center of mass lies closer to B. It is not a third physical object; it is a derived location.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Center-of-mass velocity</h3>
-            <p>Differentiate the position identity, or average the velocities the same way:</p>
-            <p class="eq-block">v<sub>CM</sub> = Σ m<sub>i</sub> v<sub>i</sub> / Σ m<sub>i</sub></p>
-            <p>Total momentum of the selected system is p = Σ m<sub>i</sub> v<sub>i</sub>, so p = M v<sub>CM</sub>. Equal-and-opposite momenta give v<sub>CM</sub> = 0: the objects can rush apart while the diamond stays put.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Internal forces do not move the CM</h3>
-            <p>Newton’s third law pairs inside the system cancel in the sum of forces. If A pushes B to the right, B pushes A to the left with the same magnitude. Those two forces change a<sub>A</sub> and a<sub>B</sub> but not a<sub>CM</sub> of A + B. The Internal push-apart preset starts both objects at rest; they accelerate oppositely and the diamond does not move.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. External forces do move the CM</h3>
-            <p>The net force from outside the boundary accelerates the center of mass as if the total mass sat there:</p>
-            <p class="eq-block">F<sub>ext</sub> = M a<sub>CM</sub><br />a<sub>CM</sub> = F<sub>ext</sub> / M</p>
-            <p>This lab applies F_ext to the selected system and shares it in proportion to mass, so every member gets that same a<sub>CM</sub>. Rearranging A and B without changing M or F_ext leaves a<sub>CM</sub> unchanged. Later Newton’s-law labs will draw the individual forces; the identity is the same.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. The same force, two stories</h3>
-            <p>The A↔B interaction is internal when the system is A + B and external when the system is A only (or B only). Select A only with a nonzero A↔B force: a<sub>CM</sub> of that smaller system is no longer zero, because the force from B now comes from outside the boundary.</p>
-          </section>
-          <section class="theory-block">
-            <h3>7. Motion in time</h3>
-            <p>With constant accelerations,</p>
-            <p class="eq-block">
-              x<sub>i</sub>(t) = x<sub>i0</sub> + v<sub>i0</sub> t + ½ a<sub>i</sub> t²<br />
-              x<sub>CM</sub>(t) = x<sub>CM0</sub> + v<sub>CM0</sub> t + ½ a<sub>CM</sub> t²
-            </p>
-            <p>The marker is always recalculated from the current object states. It is never interpolated on its own.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>Center of mass vs. mass of B should follow the two-body identity if you keep x_A, x_B, and m_A fixed. Center of mass vs. time should match x_CM0 + v_CM t + ½ a_CM t² for the current F_ext. Two points always give R² = 1; record several runs before you trust the fit.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Many objects, one system",
+        lead: "The center of mass tracks the system. Internal pairs rearrange the pieces; they do not move the diamond.",
+        cards: [
+          {
+            title: "Mass-weighted average",
+            anim: "center-of-mass",
+            caption: "Equal masses sit halfway. Increase B and the diamond slides toward B.",
+            eq: "x<sub>CM</sub> = Σ m<sub>i</sub> x<sub>i</sub> / Σ m<sub>i</sub>",
+          },
+          {
+            title: "Internal vs. external",
+            anim: "internal-vs-external",
+            caption: "A push-apart pair accelerates A and B oppositely. The CM stays put.",
+            eq: "F<sub>ext</sub> = M a<sub>CM</sub>",
+          },
+        ],
+        fit: `<p>CM vs. mass of B follows the two-body identity if you keep x_A, x_B, and m_A fixed.</p>`,
+      })}
     </section>
   `;
 }
@@ -1623,58 +1466,25 @@ export function sim22Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Forces on one selected object</h2>
-            <p>
-              A free-body diagram is a simplified picture of every external force acting on the object you chose to analyze.
-              The scene, the FBD, and the force list are three views of the same list.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. What a force is</h3>
-            <p>A force is an interaction that can change an object’s motion. It has magnitude (newtons) and direction. Velocity and acceleration are not forces, so they never appear as arrows on the FBD.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. The free-body diagram rule</h3>
-            <p>Draw only forces acting <em>on</em> the selected object. Do not draw the floor, the rope, or the force the box exerts back on the table. Simulation 2.1’s dashed system box is the same idea: anything from outside the boundary is external.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Common forces</h3>
-            <p class="eq-block">
-              F<sub>g</sub> = mg, downward (Earth or other planet → box)<br />
-              F<sub>N</sub> perpendicular to the surface (surface → box)<br />
-              F<sub>f</sub> opposes sliding or attempted sliding (surface → box)<br />
-              F<sub>T</sub> along the rope, away from the box (rope → box)<br />
-              F<sub>app</sub> depends on the push or pull
-            </p>
-            <p>On a horizontal table at rest, F<sub>N</sub> often equals F<sub>g</sub>, but this lab lets you unbalance them so you can see they are not the same force.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Net force</h3>
-            <p>Add the vectors:</p>
-            <p class="eq-block">
-              F<sub>net,x</sub> = Σ F<sub>x</sub><br />
-              F<sub>net,y</sub> = Σ F<sub>y</sub><br />
-              |F<sub>net</sub>| = √(F<sub>net,x</sub>² + F<sub>net,y</sub>²)
-            </p>
-            <p>0° is right, 90° is up, 180° is left, 270° is down. If |F<sub>net</sub>| is zero, the forces are balanced. That does not mean the object is at rest — it can coast at constant velocity.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Force is not motion</h3>
-            <p>A box on a table has gravity and a normal force even when it is not moving. A box with F<sub>net</sub> = 0 and v = 5 m/s keeps moving. Force is related to <em>changes</em> in motion. Newton’s second law, ΣF = ma, is the compact statement; Simulation 2.5 will make it the main lesson. Motion mode here is optional practice.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Mistakes to avoid</h3>
-            <p>Do not draw velocity or acceleration as forces. Do not put both sides of a Newton’s-third-law pair on the same FBD (that is Simulation 2.3). Do not treat the table itself as a force — the normal force is the force from the table.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>Weight vs. mass should follow F<sub>g</sub> = mg for the current g. a<sub>x</sub> vs. |F<sub>net</sub>| should follow a = F<sub>net</sub>/m if you keep mass fixed and change the horizontal forces. Two points always give R² = 1; record several runs before you trust the fit.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Forces on one selected object",
+        lead: "The scene, the FBD, and the force list are the same external forces.",
+        cards: [
+          {
+            title: "Free-body diagram",
+            anim: "fbd",
+            caption: "Draw only forces on the object you chose. Gravity down, normal up, applied to the side.",
+            eq: "FBD = external forces on one object",
+          },
+          {
+            title: "Net force",
+            anim: "net-force",
+            caption: "Add the vectors. The leftover arrow is F_net, and that is what changes motion.",
+            eq: "F<sub>net</sub> = Σ F<sub>i</sub>",
+          },
+        ],
+        fit: `<p>Record several force lists. |F_net| vs. unbalanced size should rise; a balanced diagram sits at 0.</p>`,
+      })}
     </section>
   `;
 }
@@ -1873,53 +1683,25 @@ export function sim23Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Forces come in interaction pairs</h2>
-            <p>
-              When two objects interact, they exert forces on each other that are equal in magnitude and opposite in direction.
-              Those two forces never appear on the same free-body diagram.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. The pair identity</h3>
-            <p class="eq-block">F(A on B) = −F(B on A)</p>
-            <p>The minus sign is opposite direction, not “they cancel.” A on B acts on B. B on A acts on A. Simulation 2.2 taught you to draw only forces on the selected object; this lab shows the missing partner on the other object.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Four checks</h3>
-            <p>A Newton’s third-law pair must:</p>
-            <p class="eq-block">same interaction · equal |F| · opposite direction · different objects</p>
-            <p>Gravity on a box and the normal force on that box fail the last two checks that matter most: they are not the same interaction, and they both act on the box. The partner of “Earth on box” is “box on Earth.”</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Equal force is not equal acceleration</h3>
-            <p>If the pair is isolated,</p>
-            <p class="eq-block">
-              |a_A| = F / m_A<br />
-              |a_B| = F / m_B
-            </p>
-            <p>For m_A = 2 kg, m_B = 8 kg, and F = 24 N, a_A = 12 m/s² and a_B = 3 m/s². The forces stay 24 N and 24 N. Simulation 2.5 will make ΣF = ma the main story; here it only explains why the lighter object moves more.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Extra forces change net force, not the pair</h3>
-            <p>Add 30 N right on A while B on A is 20 N left. Then F_net,A = 10 N right and F_net,B is still 20 N right. The interaction pair remains 20 N / 20 N. Net force is a sum on one object; the third-law pair is an interaction between two objects.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Gravity as a pair</h3>
-            <p>This lab uses an educational constant G = 10 N·m²/kg² so F = G m_A m_B / r² is readable. Changing either mass or the distance updates both forces together. Earth is drawn with a scaled mass so you can see a_Earth ≪ a_object without using 10<sup>24</sup> kg.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Mistakes to avoid</h3>
-            <p>Do not put both members of the pair on one FBD. Do not say the forces cancel. Do not assume the heavier object exerts a larger force. Do not treat gravity and the normal force as a third-law pair.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>|a_A| vs. 1/m_A should follow |a_A| = F / m_A if you keep the interaction force fixed. B on A vs. A on B should be the identity y = x. Two points always give R² = 1; record several mass and force combinations before you trust the fit.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Forces come in interaction pairs",
+        lead: "Equal magnitude, opposite direction, two objects — never two arrows on the same FBD.",
+        cards: [
+          {
+            title: "The pair identity",
+            anim: "third-law",
+            caption: "A on B and B on A are one interaction. They have equal size and opposite direction.",
+            eq: "F<sub>A on B</sub> = − F<sub>B on A</sub>",
+          },
+          {
+            title: "Equal force is not equal acceleration",
+            anim: "f-ma",
+            caption: "The pair is equal. The accelerations are not, if the masses differ.",
+            eq: "a = F / m",
+          },
+        ],
+        fit: `<p>The pair magnitude vs. the interaction strength should be a line through the origin with slope 1.</p>`,
+      })}
     </section>
   `;
 }
@@ -2144,53 +1926,25 @@ export function sim24Page() {
         })}
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Constant velocity when the net force is zero</h2>
-            <p>
-              Newton’s first law is not “objects at rest stay at rest and objects in motion stay in motion” as a slogan.
-              It is a statement about <em>net</em> force: if ΣF = 0, acceleration is zero, so velocity does not change.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. The quantity that matters</h3>
-            <p>Individual forces can exist while the object is in equilibrium. Equilibrium means the vector sum is zero, not that the force list is empty, and not that the object is sitting still.</p>
-            <p class="eq-block">F<sub>net</sub> = ΣF</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. From net force to constant velocity</h3>
-            <p>Use the second-law relation as a tool, not as this lab’s main story:</p>
-            <p class="eq-block">
-              F<sub>net</sub> = 0<br />
-              a = F<sub>net</sub> / m = 0<br />
-              a = Δv / Δt ⇒ Δv = 0<br />
-              v<sub>f</sub> = v<sub>i</sub>
-            </p>
-            <p>If v<sub>i</sub> is already zero, the object remains at rest. If v<sub>i</sub> is +5 m/s, it stays +5 m/s. Those are the same law.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Balanced forces are still forces</h3>
-            <p>20 N right and 20 N left still appear as two arrows. The net is 0 N. Do not erase the arrows because they add to zero. The free-body diagram is the list of interactions, not the leftover after canceling.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Why everyday objects seem to “need a push”</h3>
-            <p>On a rough table, friction is a real external force. When you stop pushing, friction often becomes the unbalanced force that slows the object. The object does not stop because motion is unnatural. It stops because a net force changed its velocity.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Inertia is not a force</h3>
-            <p>Inertia is the tendency of velocity to remain unchanged unless a net external force acts. Mass measures that resistance. The same 16 N on 2 kg and 8 kg gives 8 m/s² and 2 m/s². Nothing in that comparison is an “inertia arrow.”</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Mistakes to avoid</h3>
-            <p>Do not say objects naturally stop. Do not say no force means no motion. Do not say balanced forces mean the object is not moving. Do not draw inertia or velocity as forces. Do not treat gravity and the normal force as a reason the first law fails — they can sum to zero while the object coasts.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>a vs. F_net should follow a = F_net / m if you keep mass fixed. Record both F_net = 0 (a should be 0) and unbalanced runs. Two points always give R² = 1; record several before you trust the fit.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Constant velocity when the net force is zero",
+        lead: "If ΣF = 0, acceleration is zero, so velocity does not change. Rest is just v = 0.",
+        cards: [
+          {
+            title: "Coast when F_net = 0",
+            anim: "first-law-coast",
+            caption: "No leftover force, so v stays. That includes sitting still.",
+            eq: "ΣF = 0 ⇒ a = 0 ⇒ v constant",
+          },
+          {
+            title: "Balanced forces are still forces",
+            anim: "net-force",
+            caption: "Two large opposite arrows can cancel. The object does not need a net push to keep moving.",
+            eq: "balanced ≠ zero forces",
+          },
+        ],
+        fit: `<p>Runs with F_net = 0 should keep v. A fitted a vs. F_net line should pass near the origin.</p>`,
+      })}
     </section>
   `;
 }
@@ -2428,46 +2182,25 @@ export function sim25Page() {
         <p class="caption invest-linearize"><label><input type="checkbox" id="toggle-inv-mass" /> Linearize mass: plot a vs 1/m</label></p>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Acceleration from net force and mass</h2>
-            <p>
-              Newton’s second law is not a slogan to memorize. It is the observed relationship: acceleration is
-              proportional to net force and inversely proportional to mass.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. The force that belongs in the equation</h3>
-            <p>Individual forces can be large while the leftover after adding them is small. The equation uses the vector sum:</p>
-            <p class="eq-block">F<sub>net</sub> = ΣF<br />a = F<sub>net</sub> / m<br />F<sub>net</sub> = ma</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. What the experiments show</h3>
-            <p>Hold mass fixed and double F<sub>net</sub>: a doubles. Hold F<sub>net</sub> fixed and double mass: a halves. Those two statements together are a ∝ F<sub>net</sub>/m.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Direction</h3>
-            <p>Acceleration always points with F<sub>net</sub>. Velocity can point the other way. An object moving right with a leftward net force is slowing down, then it can stop and reverse while a stays leftward.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Zero net force is first law</h3>
-            <p>If F<sub>net</sub> = 0, a = 0, so velocity stays whatever it already is — including rest. Second law does not replace first law. First law is the F<sub>net</sub> = 0 case.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Force does not set velocity</h3>
-            <p>A 20 N net force on 5 kg always gives 4 m/s², whether the object is at rest or already moving at 8 m/s. Force changes velocity; it does not equal velocity.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Mistakes to avoid</h3>
-            <p>Do not use the largest individual force as F in F = ma. Do not say a large speed requires a large net force. Do not say doubling force doubles velocity. Do not say a larger mass gets a larger acceleration from the same force.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>a vs. F_net at fixed mass should be a line through the origin with slope 1/m. a vs. m at fixed F_net should be inverse. a vs. 1/m should be linear with slope F_net.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Acceleration from net force and mass",
+        lead: "Acceleration is proportional to net force and inversely proportional to mass.",
+        cards: [
+          {
+            title: "a = F_net / m",
+            anim: "f-ma",
+            caption: "Watch a grow with F and shrink as m grows. The ratio is the acceleration.",
+            eq: "a = F<sub>net</sub> / m",
+          },
+          {
+            title: "Force does not set velocity",
+            anim: "speeding-slowing",
+            caption: "F_net sets a, which changes v. A force to the right can still be slowing an object that is moving left.",
+            eq: "F_net ↔ a, not v",
+          },
+        ],
+        fit: `<p>a vs. F_net at fixed m is a line through the origin with slope 1/m. a vs. 1/m at fixed F_net has slope F_net.</p>`,
+      })}
     </section>
   `;
 }
@@ -2661,57 +2394,25 @@ export function sim26Page() {
         <p class="track-help" id="field-visualization" hidden>Field arrows on the canvas show g of the source. They are not forces drawn by the test mass.</p>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Gravity as an interaction, not a slogan</h2>
-            <p>
-              Gravitational force is how two masses pull on each other. You can find the equation by holding variables
-              constant: Fg grows with each mass and falls as the square of the center-to-center separation.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. The measured relationship</h3>
-            <p>Hold m2 and r fixed and double m1: Fg doubles. Hold m1 and r fixed and double m2: Fg doubles. Hold both masses fixed and double r: Fg becomes one fourth. Together:</p>
-            <p class="eq-block">F<sub>g</sub> ∝ m<sub>1</sub> m<sub>2</sub> / r²<br />F<sub>g</sub> = G m<sub>1</sub> m<sub>2</sub> / r²</p>
-            <p>G = 6.67430 × 10⁻¹¹ N·m²/kg² is the same constant for every pair of masses in this model.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Distance is center to center</h3>
-            <p>r is not the gap between surfaces. The model uses the distance between centers. A larger drawn circle does not secretly change r.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. The force pair</h3>
-            <p>A on B and B on A have equal magnitude and opposite direction. They cannot cancel on one free-body diagram because they act on different objects. That is Newton’s third law, not a special gravity rule.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Equal force, different acceleration</h3>
-            <p>a = F/m. The smaller mass has the larger acceleration when the pair is isolated. Simulation 2.5 still applies.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. g is not G</h3>
-            <p>G is universal. g is the gravitational field at a location, g = G M / r². The force on a test mass is Fg = m g. Change the test mass at a fixed place: Fg changes and g does not.</p>
-            <p class="eq-block">g = F<sub>g</sub> / m = G M / r²</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Weight near Earth</h3>
-            <p>At Earth’s mean radius the spherical model gives g ≈ 9.8 m/s². Then Fg = m g is universal gravitation with r ≈ R_E. Raising the test mass increases r = R_E + h and decreases g. Gravity does not switch off at a finite height.</p>
-          </section>
-          <section class="theory-block">
-            <h3>7. Units</h3>
-            <p class="eq-block">(N·m²/kg²)(kg)(kg) / m² = N</p>
-            <p>The combination is a force. That is why G has those units.</p>
-          </section>
-          <section class="theory-block">
-            <h3>8. Mistakes to avoid</h3>
-            <p>Do not say gravity needs motion. Do not say doubling r halves Fg. Do not treat G and g as the same quantity. Do not say gravity is always the net force. Do not measure r surface-to-surface in this model.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>Fg vs. r at fixed masses should curve. Fg vs. 1/r² should be a line through the origin with slope G m1 m2. Fg vs. m1 at fixed m2 and r should be linear.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Gravity as an interaction, not a slogan",
+        lead: "Two masses pull equally on each other. The force grows with each mass and falls as 1/r².",
+        cards: [
+          {
+            title: "Inverse-square pull",
+            anim: "gravity-inverse-square",
+            caption: "Spread the masses and Fg shrinks fast. The pair stays equal and opposite.",
+            eq: "F<sub>g</sub> = G m<sub>1</sub> m<sub>2</sub> / r²",
+          },
+          {
+            title: "Equal force, different acceleration",
+            anim: "f-ma",
+            caption: "Earth and the apple share Fg. The apple’s a is huge; Earth’s is tiny.",
+            eq: "a = F<sub>g</sub> / m",
+          },
+        ],
+        fit: `<p>Fg vs. 1/r² at fixed masses should be a line. Doubling one mass doubles Fg.</p>`,
+      })}
     </section>
   `;
 }
@@ -2923,51 +2624,25 @@ export function sim27Page() {
         </div>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Two friction models, one contact</h2>
-            <p>
-              Friction is how two surfaces resist sliding. While they are not sliding, static friction balances the
-              tendency to slide, up to a maximum. Once they slide, kinetic friction has a size set by μk N.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Static friction is not always μs N</h3>
-            <p>The model is fs ≤ μs N. The equality fs,max = μs N is the largest static friction in the model, not the force at every rest. If F_app = 10 N and fs,max = 24.5 N, the actual static friction is 10 N.</p>
-            <p class="eq-block">f<sub>s</sub> ≤ μ<sub>s</sub> N<br />f<sub>s,max</sub> = μ<sub>s</sub> N</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Kinetic friction while sliding</h3>
-            <p>Once the surfaces slide, fk = μk N opposite the velocity. It does not depend on speed in this introductory model. Do not aim kinetic friction opposite the applied force if the block is still moving the other way.</p>
-            <p class="eq-block">f<sub>k</sub> = μ<sub>k</sub> N</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Normal force on this horizontal surface</h3>
-            <p>With no vertical acceleration and only gravity and the normal force vertically, N = mg. That is this setup, not a universal rule. Changing mass changes N and therefore both friction thresholds if the coefficients stay fixed.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Starting, sliding, and stopping</h3>
-            <p>Stay at rest while |F_app| ≤ fs,max. Above that, switch to kinetic friction. If kinetic friction then slows the block to rest, re-check the static condition. Friction does not reverse the block through zero velocity.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Net force is still F_net = ma</h3>
-            <p>Friction is one force in the sum. Zero net force means zero acceleration: rest, or sliding at constant speed when F_app = fk. Velocity can point opposite acceleration while the block slows.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Coefficients</h3>
-            <p>μs and μk describe a pair of surfaces in this model. Usually μs ≥ μk, but that is a common assumption, not a law you should silently enforce. Changing μs does not automatically change μk.</p>
-          </section>
-          <section class="theory-block">
-            <h3>7. Mistakes to avoid</h3>
-            <p>Do not report fs,max as the actual friction at every rest. Do not put fs,max into F = ma after sliding starts. Do not say F_net = 0 means the object is stopped. Do not say kinetic friction always opposes the applied force.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>Friction vs. F_app should rise one-to-one while static, then sit near μk N while sliding. fs,max vs. N should be a line through the origin with slope μs. a vs. F_net should have slope 1/m.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Two friction models, one contact",
+        lead: "Static friction matches the push, up to a maximum. After sliding starts, kinetic friction has a size set by μk N.",
+        cards: [
+          {
+            title: "Stuck, then sliding",
+            anim: "static-kinetic",
+            caption: "F_app rises. The block stays until fs,max. Then it slides and fk takes over.",
+            eq: "f<sub>s</sub> ≤ μ<sub>s</sub> N<br />f<sub>k</sub> = μ<sub>k</sub> N",
+          },
+          {
+            title: "Net force is still ma",
+            anim: "f-ma",
+            caption: "While stuck, F_net = 0. While sliding, a = (F_app − f_k)/m.",
+            eq: "F<sub>net</sub> = F<sub>app</sub> − f",
+          },
+        ],
+        fit: `<p>Below threshold, a stays 0. Above it, a vs. F_app should have slope 1/m.</p>`,
+      })}
     </section>
   `;
 }
@@ -3179,56 +2854,25 @@ export function sim28Page() {
         </div>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>A restoring force proportional to stretch</h2>
-            <p>
-              An ideal spring pulls or pushes toward its unstretched length. The force is opposite the displacement
-              from that reference, and its size is k times |x|.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Hooke’s law</h3>
-            <p>Right is positive. A stretch to the right (x &gt; 0) produces a leftward force. A compression (x &lt; 0) produces a rightward force.</p>
-            <p class="eq-block">F<sub>s</sub> = −kx<br />|F<sub>s</sub>| = k|x|</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Equilibrium of the spring</h3>
-            <p>At x = 0 the ideal spring force is zero. That is the spring’s own reference, not a claim that the block’s velocity is zero.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. The spring constant</h3>
-            <p>k is stiffness in N/m. Larger k means a larger |Fs| at the same nonzero x. At x = 0, Fs is still zero for any k.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Holding vs releasing</h3>
-            <p>If you hold the block at a nonzero x, a holding force balances Fs. Play releases the block. Then a = F_net / m with F_net = −kx + F_app.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Shifted equilibrium</h3>
-            <p>A constant F_app moves the net-force zero to x_eq = F_app / k. The spring can be stretched there. That is combined-system equilibrium, not x = 0.</p>
-            <p class="eq-block">x<sub>eq</sub> = F<sub>app</sub> / k</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Oscillation</h3>
-            <p>Released from rest at a stretch, the block speeds up toward x = 0, passes through with nonzero v, and slows on the other side. Do not stop it at x = 0. The ideal period is T = 2π√(m/k).</p>
-          </section>
-          <section class="theory-block">
-            <h3>7. Energy (extension)</h3>
-            <p>Us = ½kx² is zero at x = 0 in this reference. For an undamped isolated oscillator, K + Us stays nearly constant.</p>
-            <p class="eq-block">U<sub>s</sub> = ½kx²</p>
-          </section>
-          <section class="theory-block">
-            <h3>8. Mistakes to avoid</h3>
-            <p>Do not aim Fs along velocity. Do not say a larger k always means a larger force. Do not say equilibrium means v = 0. Do not treat Fs as F_net when F_app is present. Hooke’s law is an ideal linear range, not every real spring at every stretch.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>Fs vs. x should be a line through the origin with slope −k. |Fs| vs. |x| should have slope +k. Us vs. x should curve as ½kx².</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "A restoring force proportional to stretch",
+        lead: "An ideal spring pulls or pushes toward x = 0 with size k|x|.",
+        cards: [
+          {
+            title: "Hooke’s law",
+            anim: "hooke",
+            caption: "Displacement right, force left. Larger |x| means a larger restoring force.",
+            eq: "F<sub>s</sub> = −k x",
+          },
+          {
+            title: "Release and oscillate",
+            anim: "hooke",
+            caption: "Hold, then let go. The block passes equilibrium with speed and comes back.",
+            eq: "T = 2π √(m/k)",
+          },
+        ],
+        fit: `<p>Fs vs. x should be a line through the origin with slope −k.</p>`,
+      })}
     </section>
   `;
 }
@@ -3463,53 +3107,25 @@ export function sim29Page() {
         </div>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Changing direction at constant speed</h2>
-            <p>
-              An object can accelerate while its speed stays constant. In uniform circular motion the velocity is
-              always tangent to the path, and the acceleration points toward the center.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Centripetal acceleration</h3>
-            <p>Right is +x and up is +y. θ is measured counterclockwise from +x. At the rightmost point, counterclockwise velocity points up and acceleration points left.</p>
-            <p class="eq-block">a<sub>c</sub> = v² / r</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Required inward net force</h3>
-            <p>Newton’s second law still holds. The net force toward the center is m a<sub>c</sub>. That net force is not a new kind of interaction.</p>
-            <p class="eq-block">F<sub>net,inward</sub> = m v² / r</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Period and angular speed</h3>
-            <p>ω = v/r and T = 2πr/v. Frequency in hertz is 1/T. If speed is zero, period and frequency are undefined rather than infinite.</p>
-            <p class="eq-block">T = 2πr / v</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Scaling</h3>
-            <p>At fixed r, doubling v multiplies a<sub>c</sub> and F<sub>c</sub> by four. At fixed v, doubling r halves both. Doubling mass at fixed v and r leaves a<sub>c</sub> unchanged and doubles F<sub>c</sub>.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Real forces supply F<sub>c</sub></h3>
-            <p>On a horizontal table, tension can be the inward force. On a flat curve, static friction can, up to μ<sub>s</sub> N. In an ideal circular orbit, gravity can. Do not draw those forces and then add another centripetal arrow.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Friction limit</h3>
-            <p>If static friction alone supplies the inward force, v<sub>max</sub> = √(μ<sub>s</sub> g r). Faster requested speeds are not supported by that model.</p>
-            <p class="eq-block">v<sub>max</sub> = √(μ<sub>s</sub> g r)</p>
-          </section>
-          <section class="theory-block">
-            <h3>7. Mistakes to avoid</h3>
-            <p>Do not aim velocity toward the center. Do not say constant speed means zero acceleration. Do not say doubling speed doubles a<sub>c</sub>. Do not say mass changes a<sub>c</sub> at fixed v and r. Do not treat centripetal force as an extra interaction.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>ac vs. v² at fixed r should be a line through the origin with slope 1/r. ac vs. 1/r at fixed v should have slope v². Fc vs. m at fixed v and r should have slope v²/r.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Changing direction at constant speed",
+        lead: "Speed can stay constant while velocity changes direction. That change is an acceleration toward the center.",
+        cards: [
+          {
+            title: "Tangent v, inward a",
+            anim: "circular",
+            caption: "v is along the circle. a points at the center. Speed can stay the same the whole way around.",
+            eq: "a<sub>c</sub> = v² / r",
+          },
+          {
+            title: "Double v, quadruple ac",
+            anim: "ac-scales-v2",
+            caption: "At fixed r, ac grows with v². Mass does not change ac; it changes the force required.",
+            eq: "F<sub>net,inward</sub> = m v² / r",
+          },
+        ],
+        fit: `<p>ac vs. v² at fixed r is a line through the origin with slope 1/r.</p>`,
+      })}
     </section>
   `;
 }
@@ -3713,59 +3329,25 @@ export function sim31Page() {
         </div>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Work transfers kinetic energy</h2>
-            <p>
-              Work is energy transferred by a force acting through a displacement. For a constant force,
-              only the component along the displacement contributes. The work-energy theorem says the
-              <em>net</em> work equals the change in kinetic energy.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. Work by a constant force</h3>
-            <p>Displacement is to the right. θ is the angle from that displacement to the force. Work is a scalar, in joules.</p>
-            <p class="eq-block">W = F d cosθ = F<sub>∥</sub> d</p>
-            <p>At 0°, work is +Fd. At 90° or 270°, work is zero. At 180°, work is −Fd.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Kinetic energy</h3>
-            <p>K depends on mass and the square of the speed. Signed velocity does not go into K. K is never negative.</p>
-            <p class="eq-block">K = ½ m v²</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Work-energy theorem</h3>
-            <p>For the object as a particle:</p>
-            <p class="eq-block">W<sub>net</sub> = ΔK = K<sub>f</sub> − Kᵢ</p>
-            <p>Then v<sub>f</sub>² = vᵢ² + 2 W_net / m, only if the object can actually complete that process with nonnegative K.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Net work is a sum</h3>
-            <p>W_net = Σ Wᵢ. Applied-force work is not automatically net work. On this horizontal track, N and Fg do zero work. Kinetic friction, when included, does negative work while the object slides forward.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Zero net work is not rest</h3>
-            <p>If two horizontal forces do +40 J and −40 J, W_net = 0 and speed stays constant. The object can keep moving. Zero work by one force is also not zero force and not zero velocity.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Stopping before the endpoint</h3>
-            <p>If negative net work would drive K below zero, the object stops where K = 0. Report the actual distance traveled. Do not invent an imaginary final speed or claim the requested endpoint was reached.</p>
-          </section>
-          <section class="theory-block">
-            <h3>7. From Newton’s second law</h3>
-            <p>For constant F_net along a straight path, a = F_net / m and v<sub>f</sub>² − vᵢ² = 2 a d. Multiplying by ½m recovers W_net = ΔK. The theorem is more general than this constant-force derivation.</p>
-          </section>
-          <section class="theory-block">
-            <h3>8. Mistakes to avoid</h3>
-            <p>Do not say any force on a moving object does positive work. Do not say zero net work means the object is at rest. Do not use signed velocity in K. Do not let K go negative. Do not treat F_app as F_net when friction or an opposing force is present.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>W vs F at fixed d and θ should be a line through the origin with slope d cosθ. W vs d should have slope F cosθ. K vs v² at fixed m should have slope ½m. ΔK vs W_net should hug the identity ΔK = W_net.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Work transfers kinetic energy",
+        lead: "Only the force component along the displacement does work. Net work is the change in kinetic energy.",
+        cards: [
+          {
+            title: "W = Fd cosθ",
+            anim: "work-cos-theta",
+            caption: "Sweep θ. Work is full at 0°, zero at 90°, negative at 180°.",
+            eq: "W = F d cosθ",
+          },
+          {
+            title: "W_net = ΔK",
+            anim: "wnet-equals-dk",
+            caption: "The leftover work after adding every force is exactly how much K changes.",
+            eq: "W<sub>net</sub> = ΔK = K<sub>f</sub> − Kᵢ<br />K = ½ m v²",
+          },
+        ],
+        fit: `<p>W vs F at fixed d and θ is a line with slope d cosθ. ΔK vs W_net hugs the identity.</p>`,
+      })}
     </section>
   `;
 }
@@ -4024,49 +3606,25 @@ export function sim32Page() {
         </div>
       </div>
 
-      <div id="panel-theory" role="tabpanel" aria-labelledby="tab-btn-theory" hidden>
-        <article class="theory">
-          <header class="theory-hero">
-            <p class="kicker">Read this, then return to the lab</p>
-            <h2>Work is signed area under Fₓ vs. x</h2>
-            <p>
-              When force is not constant, you cannot grab one force value and multiply by the whole displacement.
-              On a graph of the force component along the motion versus position, work is the signed area.
-            </p>
-          </header>
-          <section class="theory-block">
-            <h3>1. The integral is area</h3>
-            <p>For a one-dimensional force along the track:</p>
-            <p class="eq-block">W = ∫<sub>xᵢ</sub><sup>x_f</sup> Fₓ(x) dx</p>
-            <p>If Fₓ is constant, this collapses to W = Fₓ Δx, a rectangle. Students do not need a general integration technique to finish the lab — they need graph geometry.</p>
-          </section>
-          <section class="theory-block">
-            <h3>2. Rectangles, triangles, trapezoids</h3>
-            <p>Piecewise-constant graphs are stacked rectangles: W = Σ Fᵢ Δxᵢ. A triangle of base b and height h has area ½bh. A linear segment is a trapezoid: W = ½(Fᵢ + F_f) Δx, which is also F_avg Δx.</p>
-          </section>
-          <section class="theory-block">
-            <h3>3. Signs</h3>
-            <p>When the interval runs toward increasing x, area above the axis is positive work and area below is negative work. Net work is the sum of those signed pieces. Cancellation is allowed. Zero net work does not require every piece to be zero, and it does not mean the object is at rest.</p>
-          </section>
-          <section class="theory-block">
-            <h3>4. Variable force and kinetic energy</h3>
-            <p>The work-energy theorem does not require constant force:</p>
-            <p class="eq-block">W_net = ΔK = K_f − Kᵢ &nbsp; with &nbsp; K = ½ m v²</p>
-            <p>If the proposed interval would drive K below zero, the object stops where K = 0. Report that stopping position. Do not invent an endpoint that was never reached.</p>
-          </section>
-          <section class="theory-block">
-            <h3>5. Approximating a curve</h3>
-            <p>For a nonlinear Fₓ(x), rectangles or trapezoids estimate the area. Finer partitions generally get closer for the smooth functions in this lab. A numerical estimate is not exact. Compare it with the analytical value when one is available, as in Fₓ = 2x from 0 to 4 m, where W = 16 J exactly.</p>
-          </section>
-          <section class="theory-block">
-            <h3>6. Mistakes to avoid</h3>
-            <p>The graph with the highest peak force does not automatically do the most work. Area below the axis is negative work for the standard Fₓ-versus-x convention with Δx &gt; 0. W = F_final Δx is only valid when F is constant. Zero net work is constant kinetic energy, not rest.</p>
-          </section>
-          ${trialFitTheory(`
-            <p>Trials that change only the interval on one graph should not all give the same W. ΔK vs W_net should hug the identity after valid runs. Coarse left rectangles on an increasing F = 2x graph underestimate 16 J; finer n moves closer.</p>
-          `)}
-        </article>
-      </div>
+      ${theoryPage({
+        title: "Work is signed area under Fₓ vs. x",
+        lead: "When force changes with position, do not grab one F and multiply by the whole displacement.",
+        cards: [
+          {
+            title: "The integral is area",
+            anim: "area-under-fx",
+            caption: "The shaded region under Fx vs. x is the work done so far.",
+            eq: "W = ∫ Fₓ(x) dx",
+          },
+          {
+            title: "Signs can cancel",
+            anim: "signed-area",
+            caption: "Area above the axis is +W. Area below is −W. Zero net work is not rest.",
+            eq: "W_net = W₊ + W₋ = ΔK",
+          },
+        ],
+        fit: `<p>Changing only the interval on one graph changes W. ΔK vs W_net still hugs the identity.</p>`,
+      })}
     </section>
   `;
 }

@@ -505,6 +505,35 @@ h2 {
   margin-top: 8px;
 }
 
+.theory-visual-page .theory-hero p {
+  max-width: 40em;
+}
+
+.theory-visual-card h3 {
+  margin-bottom: 10px;
+}
+
+.theory-visual {
+  margin: 0 0 10px;
+}
+
+.theory-visual canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+  background: color-mix(in srgb, var(--field-bg) 70%, var(--panel));
+  border: var(--control-border-width, 1px) solid var(--line);
+  border-radius: 14px;
+}
+
+.theory-visual figcaption {
+  margin: 8px 2px 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
