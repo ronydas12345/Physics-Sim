@@ -61,6 +61,27 @@ export function homePage() {
       </div>
     </section>
 
+    <section class="featured-row">
+      <article class="featured-card">
+        <p class="kicker">Start here · ${first.number}</p>
+        <h2>${first.title}</h2>
+        <p>${first.description} Distance is path length; displacement is the shortcut with a sign. Use Challenge mode to hit both at once.</p>
+        <a class="btn primary" href="${first.path}" data-link>Open 1.1</a>
+      </article>
+      <article class="featured-card">
+        <p class="kicker">Next · ${motion.number}</p>
+        <h2>${motion.title}</h2>
+        <p>${motion.description} Play constant velocity, speeding up, and slowing down until the object reverses. Graphs update while it moves.</p>
+        <a class="btn ghost-paper" href="${motion.path}" data-link>Open 1.2</a>
+      </article>
+      <article class="featured-card">
+        <p class="kicker">Unit 1 · ${twoD.number}</p>
+        <h2>${twoD.title}</h2>
+        <p>${twoD.description} This is the launch-angle lab: equal heights, no air resistance, 45° for maximum range.</p>
+        <a class="btn ghost-paper" href="${twoD.path}">Open 1.5</a>
+      </article>
+    </section>
+
     <section class="section">
       <div class="section-head">
         <h2>What this application is for</h2>
@@ -105,27 +126,6 @@ export function homePage() {
         <p>All eight AP Physics 1 units stay visible. Open a module when at least one lab is available; the rest remain as the map of what is coming.</p>
       </div>
       <div class="module-grid">${moduleCards()}</div>
-    </section>
-
-    <section class="featured-row">
-      <article class="featured-card">
-        <p class="kicker">Start here · ${first.number}</p>
-        <h2>${first.title}</h2>
-        <p>${first.description} Distance is path length; displacement is the shortcut with a sign. Use Challenge mode to hit both at once.</p>
-        <a class="btn primary" href="${first.path}" data-link>Open 1.1</a>
-      </article>
-      <article class="featured-card">
-        <p class="kicker">Next · ${motion.number}</p>
-        <h2>${motion.title}</h2>
-        <p>${motion.description} Play constant velocity, speeding up, and slowing down until the object reverses. Graphs update while it moves.</p>
-        <a class="btn ghost-paper" href="${motion.path}" data-link>Open 1.2</a>
-      </article>
-      <article class="featured-card">
-        <p class="kicker">Unit 1 · ${twoD.number}</p>
-        <h2>${twoD.title}</h2>
-        <p>${twoD.description} This is the launch-angle lab: equal heights, no air resistance, 45° for maximum range.</p>
-        <a class="btn ghost-paper" href="${twoD.path}">Open 1.5</a>
-      </article>
     </section>
   `;
 }

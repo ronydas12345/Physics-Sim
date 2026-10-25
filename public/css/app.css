@@ -1,4 +1,59 @@
 :root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e7f4f2;
+  --ink-soft: #8aa8a4;
+  --paper: #0b1618;
+  --panel: #122224;
+  --header-bg: #0f1c1e;
+  --raised: #173033;
+  --raised-hover: #1e3c40;
+  --field-bg: #0b1618;
+  --field-ink: #e7f4f2;
+  --inset: #0b1618;
+  --control-h: 40px;
+  --inset-ok: #0e2c22;
+  --inset-miss: #2c1610;
+  --well-bg: #071012;
+  --well-ink: #e7f4f2;
+  --well-line: #234448;
+  --line: #234448;
+  --accent: #ff8a3c;
+  --accent-dark: #ffb15c;
+  --on-accent: #1a0e06;
+  --teal: #13ecda;
+  --ok: #5ee0a0;
+  --on-ok: #042016;
+  --card: var(--panel);
+  --muted: var(--ink-soft);
+  --stage-bg: #071012;
+  --stage-canvas: #0a181c;
+  --well-btn: #173033;
+  --well-btn-hover: #1e3c40;
+  --well-soft: #8aa8a4;
+  --chip-active-bg: color-mix(in srgb, var(--accent) 22%, var(--raised));
+  --chip-active-ink: var(--well-ink);
+  --hero-visual: #0a181c;
+  --sky-0: #8ec4e6;
+  --sky-1: #e7f3fb;
+  --ground: #6f8f63;
+  --soil: #5a4634;
+  --vx: #13ecda;
+  --vy: #3d5a80;
+  --v0: #c9a227;
+  --g: #b42318;
+  --shadow: 0 0 0 1px rgba(19, 236, 218, 0.08), 0 16px 40px rgba(0, 0, 0, 0.38);
+  --paper-wash: radial-gradient(1100px 520px at 88% -12%, rgba(19, 236, 218, 0.14), transparent 58%),
+    radial-gradient(900px 420px at 0% 100%, rgba(255, 138, 60, 0.08), transparent 52%);
+  --spot: #13ecda;
+  --spot-dim: rgba(0, 0, 0, 0.55);
+  --control-border-width: 1px;
+  --radius: 16px;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "Figtree", "Segoe UI", sans-serif;
+  --serif: "Fraunces", Georgia, serif;
+}
+
 [data-theme="beige"] {
   color-scheme: light;
   --ink: #1b2430;
@@ -11,7 +66,6 @@
   --field-bg: #ffffff;
   --field-ink: #1b2430;
   --inset: #ffffff;
-  --control-h: 40px;
   --inset-ok: #dcefe3;
   --inset-miss: #f6e4d8;
   --well-bg: #1d2d3c;
@@ -24,8 +78,10 @@
   --teal: #1c6b73;
   --ok: #2c6e49;
   --on-ok: #f4fff7;
-  --card: var(--panel);
-  --muted: var(--ink-soft);
+  --shadow: 0 1px 0 rgba(27, 36, 48, 0.06);
+  --paper-wash: radial-gradient(1200px 400px at 10% -10%, #f7efe0, transparent);
+  --spot: #c45c26;
+  --spot-dim: rgba(27, 36, 48, 0.28);
   --stage-bg: #0f1a24;
   --stage-canvas: #132230;
   --well-btn: #2a3b4d;
@@ -34,23 +90,8 @@
   --chip-active-bg: color-mix(in srgb, var(--accent) 16%, var(--raised));
   --chip-active-ink: var(--well-ink);
   --hero-visual: #eaf4fb;
-  --sky-0: #8ec4e6;
-  --sky-1: #e7f3fb;
-  --ground: #6f8f63;
-  --soil: #5a4634;
   --vx: #1c6b73;
-  --vy: #3d5a80;
-  --v0: #c9a227;
-  --g: #b42318;
-  --shadow: 0 1px 0 rgba(27, 36, 48, 0.06);
-  --paper-wash: radial-gradient(1200px 400px at 10% -10%, #f7efe0, transparent);
-  --spot: #c45c26;
-  --spot-dim: rgba(27, 36, 48, 0.28);
-  --control-border-width: 1px;
   --radius: 14px;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
-  --sans: "Figtree", "Segoe UI", sans-serif;
-  --serif: "Fraunces", Georgia, serif;
 }
 
 [data-theme="light"] {
@@ -89,44 +130,6 @@
   --chip-active-bg: color-mix(in srgb, var(--accent) 14%, var(--raised));
   --chip-active-ink: var(--well-ink);
   --hero-visual: #e8eef4;
-}
-
-[data-theme="dark"] {
-  color-scheme: dark;
-  --ink: #e8eef4;
-  --ink-soft: #a8b4c0;
-  --paper: #12171e;
-  --panel: #1c2430;
-  --header-bg: #1c2430;
-  --raised: #243041;
-  --raised-hover: #2e3d52;
-  --field-bg: #12171e;
-  --field-ink: #e8eef4;
-  --inset: #12171e;
-  --inset-ok: #143024;
-  --inset-miss: #3a1c14;
-  --well-bg: #12171e;
-  --well-ink: #e8eef4;
-  --well-line: #3a4a5c;
-  --line: #3a4a5c;
-  --accent: #e07a3d;
-  --accent-dark: #f0a202;
-  --on-accent: #1b2430;
-  --teal: #7ec8d0;
-  --ok: #7dca9a;
-  --on-ok: #102016;
-  --shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
-  --paper-wash: none;
-  --spot: #f0a202;
-  --spot-dim: rgba(0, 0, 0, 0.55);
-  --stage-bg: #0d1218;
-  --stage-canvas: #12171e;
-  --well-btn: #243041;
-  --well-btn-hover: #2e3d52;
-  --well-soft: #a8b4c0;
-  --chip-active-bg: color-mix(in srgb, var(--accent) 20%, var(--raised));
-  --chip-active-ink: var(--well-ink);
-  --hero-visual: #12171e;
 }
 
 [data-theme="contrast"] {
@@ -421,7 +424,7 @@ h2 {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 16px;
   align-items: start;
 }
@@ -547,7 +550,7 @@ h2 {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 14px 14px 12px;
+  padding: 16px 16px 14px;
   box-shadow: var(--shadow);
 }
 

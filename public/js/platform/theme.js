@@ -10,14 +10,16 @@ export const THEMES = [
 const IDS = new Set(THEMES.map((theme) => theme.id));
 
 export function normalizeTheme(id) {
-  return IDS.has(id) ? id : "beige";
+  return IDS.has(id) ? id : "dark";
 }
 
 export function currentTheme() {
   try {
-    return normalizeTheme(localStorage.getItem(STORAGE_KEY));
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return "dark";
+    return normalizeTheme(stored);
   } catch {
-    return "beige";
+    return "dark";
   }
 }
 

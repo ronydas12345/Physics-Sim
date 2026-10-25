@@ -10,6 +10,8 @@
           var theme = localStorage.getItem("ap1-theme");
           if (theme === "beige" || theme === "light" || theme === "dark" || theme === "contrast") {
             document.documentElement.setAttribute("data-theme", theme);
+          } else {
+            document.documentElement.setAttribute("data-theme", "dark");
           }
         } catch (e) {}
       })();

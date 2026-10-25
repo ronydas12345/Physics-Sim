@@ -9,11 +9,12 @@ test("appearance settings include beige, light, dark, and high contrast", () => 
   );
 });
 
-test("unknown appearance falls back to beige", () => {
+test("unknown appearance falls back to dark", () => {
+  assert.equal(normalizeTheme("beige"), "beige");
   assert.equal(normalizeTheme("dark"), "dark");
   assert.equal(normalizeTheme("contrast"), "contrast");
-  assert.equal(normalizeTheme("neon"), "beige");
-  assert.equal(normalizeTheme(""), "beige");
+  assert.equal(normalizeTheme("neon"), "dark");
+  assert.equal(normalizeTheme(""), "dark");
 });
 
 test("theme canvas colors fall back without a document", () => {

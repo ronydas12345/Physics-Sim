@@ -1,6 +1,10 @@
 .site-header {
-  background: var(--header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--header-bg) 88%, transparent);
   border-bottom: var(--control-border-width, 1px) solid var(--line);
+  backdrop-filter: blur(16px);
 }
 
 .site-header-inner,
@@ -106,10 +110,15 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
   gap: 28px;
   align-items: center;
-  margin-bottom: 36px;
+  margin-bottom: 28px;
+  padding: 28px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  box-shadow: var(--shadow);
 }
 
 .hero h1 {
@@ -153,6 +162,7 @@ a.btn.ghost-paper.action-go {
   border-radius: 18px;
   border: 1px solid var(--line);
   overflow: hidden;
+  box-shadow: inset 0 0 48px color-mix(in srgb, var(--teal) 10%, transparent);
 }
 
 .hero-visual canvas {
@@ -210,7 +220,7 @@ a.btn.ghost-paper.action-go {
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgba(27, 36, 48, 0.28);
+  background: var(--spot-dim);
   cursor: pointer;
   transition: width 0.4s ease, background 0.4s ease, transform 0.4s ease;
 }
@@ -246,7 +256,7 @@ a.btn.ghost-paper.action-go {
 .module-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .module-card,
@@ -255,11 +265,12 @@ a.btn.ghost-paper.action-go {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
   color: inherit;
   text-decoration: none;
   display: grid;
   gap: 8px;
+  box-shadow: var(--shadow);
 }
 
 .module-card h3,
@@ -305,8 +316,8 @@ a.btn.ghost-paper.action-go {
 .featured-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin: 28px 0 8px;
+  gap: 16px;
+  margin: 0 0 36px;
 }
 
 .page-head {
@@ -385,6 +396,11 @@ a.btn.ghost-paper.action-go {
   align-items: flex-start;
   flex-wrap: wrap;
   margin-bottom: 16px;
+  padding: 18px 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 .objective {
@@ -663,7 +679,7 @@ html.is-fullscreen #page-root,
 .how-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .how-card {
@@ -671,6 +687,7 @@ html.is-fullscreen #page-root,
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: var(--shadow);
 }
 
 .how-card p {
@@ -682,10 +699,14 @@ html.is-fullscreen #page-root,
 
 .lab-steps {
   margin: 0;
-  padding-left: 1.2rem;
+  padding: 18px 22px 18px 2.2rem;
   max-width: 52em;
   color: var(--ink-soft);
   line-height: 1.55;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 .lab-steps li {
@@ -1015,6 +1036,107 @@ html.is-fullscreen #page-root,
 
 .sim-shell .workspace {
   margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-rows: auto auto auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.sim-shell .stage {
+  display: contents;
+}
+
+.sim-shell .stage > canvas {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--stage-canvas);
+  box-shadow: inset 0 0 48px rgba(0, 0, 0, 0.28);
+}
+
+.sim-shell .transport {
+  grid-column: 1;
+  grid-row: 2;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+}
+
+.sim-shell .rail {
+  grid-column: 2;
+  grid-row: 1 / -1;
+}
+
+.sim-shell .rail .metrics-wide {
+  grid-template-columns: 1fr;
+}
+
+.sim-shell .track-controls {
+  grid-column: 1;
+  grid-row: 3;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px 14px;
+  box-shadow: var(--shadow);
+}
+
+.sim-shell .track-controls .control-head,
+.sim-shell .track-controls .panel-toggles .switch,
+.sim-shell .track-controls .motion-inputs .pos-input,
+.sim-shell .track-controls .switch.light,
+.sim-shell .track-controls .planet-bg-switch {
+  color: var(--ink);
+}
+
+.sim-shell .track-controls .track-help {
+  color: var(--ink-soft);
+}
+
+.sim-shell .track-controls .chip:not([data-planet]) {
+  background: var(--raised);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.sim-shell .track-controls .chip:not([data-planet]):hover {
+  background: var(--raised-hover);
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.sim-shell .track-controls .chip:not([data-planet]).active {
+  background: var(--chip-active-bg);
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.sim-shell .track-controls .force-table {
+  color: var(--ink);
+}
+
+.sim-shell .track-controls .force-table th {
+  color: var(--ink-soft);
+}
+
+.sim-shell .track-controls .force-table th,
+.sim-shell .track-controls .force-table td {
+  border-bottom-color: var(--line);
+}
+
+.sim-shell .rail .metrics dd {
+  color: var(--teal);
+}
+
+.graph-wrap,
+.table-wrap,
+.theory-hero,
+.theory-block {
+  box-shadow: var(--shadow);
 }
 
 .about-tools .card {
@@ -1083,8 +1205,33 @@ html.is-fullscreen #page-root,
 @media (max-width: 1100px) {
   .hero,
   .featured-row,
-  .sim-1d-layout {
+  .sim-1d-layout,
+  .sim-shell .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .sim-shell .stage > canvas {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .sim-shell .transport {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .sim-shell .rail {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .sim-shell .track-controls {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .sim-shell .rail .metrics-wide {
+    grid-template-columns: 1fr 1fr;
   }
 
   .graphs.graphs-three,
