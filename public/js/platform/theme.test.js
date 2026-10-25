@@ -2,15 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { THEMES, normalizeTheme, themeCanvas, themeVar } from "./theme.js";
 
-test("appearance settings include arcade comic, beige, light, dark, and high contrast", () => {
+test("appearance settings include arcade comic, arcade dark, beige, light, dark, and high contrast", () => {
   assert.deepEqual(
     THEMES.map((theme) => theme.id),
-    ["arcade", "beige", "light", "dark", "contrast"],
+    ["arcade", "arcade-dark", "beige", "light", "dark", "contrast"],
   );
 });
 
 test("unknown appearance falls back to arcade", () => {
   assert.equal(normalizeTheme("arcade"), "arcade");
+  assert.equal(normalizeTheme("arcade-dark"), "arcade-dark");
   assert.equal(normalizeTheme("beige"), "beige");
   assert.equal(normalizeTheme("dark"), "dark");
   assert.equal(normalizeTheme("contrast"), "contrast");

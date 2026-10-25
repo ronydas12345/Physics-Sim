@@ -2,6 +2,7 @@ const STORAGE_KEY = "ap1-theme";
 
 export const THEMES = [
   { id: "arcade", label: "Arcade Comic" },
+  { id: "arcade-dark", label: "Arcade Dark" },
   { id: "beige", label: "Beige" },
   { id: "light", label: "Light" },
   { id: "dark", label: "Dark" },

@@ -57,6 +57,33 @@
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --sans: "Figtree", "Segoe UI", sans-serif;
   --serif: "Fraunces", Georgia, serif;
+  --console-field: #0f141f;
+  --console-chip: #2a3348;
+}
+
+[data-theme="arcade-dark"] {
+  color-scheme: dark;
+  --ink: #f4ead8;
+  --ink-soft: #b8ae9a;
+  --paper: #10141c;
+  --panel: #1a2230;
+  --header-bg: #10141c;
+  --raised: #222a3a;
+  --raised-hover: #2b3448;
+  --field-bg: #0c1018;
+  --field-ink: #f4ead8;
+  --inset: #0c1018;
+  --inset-ok: #163024;
+  --inset-miss: #3a1c14;
+  --line: #f4ead8;
+  --on-accent: #141414;
+  --accent-dark: #ffb15c;
+  --shadow: 4px 4px 0 #05070c;
+  --paper-wash: linear-gradient(#1c2433 1px, transparent 1px),
+    linear-gradient(90deg, #1c2433 1px, transparent 1px);
+  --paper-size: 32px 32px;
+  --spot-dim: rgba(0, 0, 0, 0.55);
+  --chip-active-ink: #141414;
 }
 
 [data-theme="beige"] {
