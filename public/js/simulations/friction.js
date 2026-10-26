@@ -732,7 +732,7 @@ export function mountFriction(root) {
     if (state.time >= state.duration - 1e-12 && autoRecord) trials.record(trialSnapshot());
     paint();
   });
-  root.querySelector("#btn-check-27").addEventListener("click", () => {
+  root.querySelector("#btn-check").addEventListener("click", () => {
     if (challenge.state.active && challenge.state.spec) {
       challenge.markAttempt(evaluateChallenge(snapshot(state), challenge.state.spec));
     }

@@ -734,7 +734,7 @@ export function mountThirdLaw(root) {
     if (state.time >= state.duration - 1e-12 && autoRecord) trials.record(trialSnapshot());
     paint();
   });
-  root.querySelector("#btn-check-23").addEventListener("click", () => {
+  root.querySelector("#btn-check").addEventListener("click", () => {
     if (challenge.state.active && challenge.state.spec) {
       challenge.markAttempt(evaluateChallenge({ ...snapshot(state), choice: selectedChoice }, challenge.state.spec));
     }

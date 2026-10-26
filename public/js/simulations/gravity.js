@@ -609,7 +609,7 @@ export function mountGravity(root) {
     stepTo(state, Math.min(state.time + 0.1, state.duration));
     paint();
   });
-  root.querySelector("#btn-check-26").addEventListener("click", () => {
+  root.querySelector("#btn-check").addEventListener("click", () => {
     if (challenge.state.active && challenge.state.spec) {
       challenge.markAttempt(evaluateChallenge(snapshot(state), challenge.state.spec));
     }

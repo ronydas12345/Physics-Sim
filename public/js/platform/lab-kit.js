@@ -237,6 +237,7 @@ export function challengeCard() {
         <p class="muted" id="challenge-unknown">Unknown: —</p>
         <p id="challenge-feedback" class="feedback">The solution stays hidden until you check.</p>
         <div class="challenge-actions">
+          <button type="button" id="btn-check" class="btn primary">Check</button>
           <button type="button" id="btn-reveal" class="btn ghost" disabled>Reveal answer</button>
           <button type="button" id="btn-new-target" class="btn ghost">New challenge</button>
         </div>
@@ -394,17 +395,24 @@ export function bindTeacher(root, renderDebug) {
 
 export function createTrialBook({ columns, renderRow, onChange }) {
   let trials = [];
+  function syncClearButton() {
+    const btn = typeof document === "undefined" ? null : document.querySelector("#btn-clear");
+    if (btn) btn.hidden = trials.length === 0;
+  }
   return {
     list: () => trials,
     record(entry) {
       trials.push({ id: trials.length + 1, ...entry });
+      syncClearButton();
       onChange?.(trials);
     },
     clear() {
       trials = [];
+      syncClearButton();
       onChange?.(trials);
     },
     render(tbody) {
+      syncClearButton();
       if (!trials.length) {
         tbody.innerHTML = `<tr class="empty-row"><td colspan="${columns}">No trials yet. Investigate, then record a trial.</td></tr>`;
         return;

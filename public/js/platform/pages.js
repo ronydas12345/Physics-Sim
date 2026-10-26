@@ -290,7 +290,7 @@ export function aboutPage() {
         )}
         ${faqItem(
           "Why is the Challenge answer hidden?",
-          "Challenge gives you a target and hides the solution until you run the experiment and press Check (or Launch in projectile). Reveal is for after you have a measurement, not a substitute for one.",
+          "Challenge gives you a target and hides the solution until you run the experiment and press Check in Challenge Mode (or Launch, then Check, in projectile). Reveal is for after you have a measurement, not a substitute for one.",
         )}
         ${faqItem(
           "What does Reset do, and why are there two?",
@@ -357,7 +357,6 @@ export function sim11Page() {
             <div class="transport">
               <button type="button" class="btn" id="nudge-neg">−1 m</button>
               <button type="button" class="btn" id="nudge-pos">+1 m</button>
-              <button type="button" class="btn primary" id="btn-check-1d">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -365,7 +364,7 @@ export function sim11Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -505,7 +504,6 @@ export function sim12Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-12">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -513,7 +511,7 @@ export function sim12Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -740,7 +738,6 @@ export function sim13Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-13">Check</button>
               <button type="button" class="chip" id="btn-collide" aria-pressed="false">Allow collisions</button>
               <span class="transport-gap"></span>
               <label class="switch light">
@@ -749,7 +746,7 @@ export function sim13Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -995,7 +992,6 @@ export function sim14Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-14">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -1003,7 +999,7 @@ export function sim14Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -1232,7 +1228,6 @@ export function sim21Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-21">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -1240,7 +1235,7 @@ export function sim21Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -1425,7 +1420,6 @@ export function sim22Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-22">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -1433,7 +1427,7 @@ export function sim22Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -1647,7 +1641,6 @@ export function sim23Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-23">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -1655,7 +1648,7 @@ export function sim23Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control">
@@ -1880,7 +1873,6 @@ export function sim24Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-24">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -1888,7 +1880,7 @@ export function sim24Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -2139,7 +2131,6 @@ export function sim25Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-25">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -2147,7 +2138,7 @@ export function sim25Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -2412,7 +2403,6 @@ export function sim26Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-26">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -2420,7 +2410,7 @@ export function sim26Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -2642,7 +2632,6 @@ export function sim27Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-27">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -2650,7 +2639,7 @@ export function sim27Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -2894,7 +2883,6 @@ export function sim28Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-28">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -2902,7 +2890,7 @@ export function sim28Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -3141,7 +3129,6 @@ export function sim29Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-29">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -3149,7 +3136,7 @@ export function sim29Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="preset-selector">
@@ -3412,7 +3399,6 @@ export function sim31Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-31">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -3420,7 +3406,7 @@ export function sim31Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -3661,7 +3647,6 @@ export function sim32Page() {
               <button type="button" class="btn primary" id="btn-play">Play</button>
               <button type="button" class="btn" id="btn-pause" disabled>Pause</button>
               <button type="button" class="btn" id="btn-step">Step +0.1 s</button>
-              <button type="button" class="btn" id="btn-check-32">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -3669,7 +3654,7 @@ export function sim32Page() {
               </label>
               <button type="button" class="btn" id="btn-reset-run">Reset</button>
               <button type="button" class="btn" id="btn-record">Record Trial</button>
-              <button type="button" class="btn" id="btn-clear">Clear Trials</button>
+              <button type="button" class="btn" id="btn-clear" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">

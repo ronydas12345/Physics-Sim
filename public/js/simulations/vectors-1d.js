@@ -433,7 +433,7 @@ export function mountVectors1D(root) {
   bindResetButtons(root, onReset);
   root.querySelector("#nudge-neg").addEventListener("click", onNeg);
   root.querySelector("#nudge-pos").addEventListener("click", onPos);
-  root.querySelector("#btn-check-1d").addEventListener("click", onCheck);
+  root.querySelector("#btn-check").addEventListener("click", onCheck);
   root.querySelector("#dir-right").addEventListener("click", () => {
     setPositiveRight(state, true);
     paint();

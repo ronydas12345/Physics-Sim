@@ -765,7 +765,7 @@ export function mountSystemsCM(root) {
     if (state.time >= state.duration - 1e-12 && autoRecord) trials.record(trialSnapshot());
     paint();
   });
-  root.querySelector("#btn-check-21").addEventListener("click", () => {
+  root.querySelector("#btn-check").addEventListener("click", () => {
     if (challenge.state.active && challenge.state.spec) {
       challenge.markAttempt(evaluateChallenge(trialSnapshot(), challenge.state.spec));
     }

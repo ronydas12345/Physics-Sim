@@ -715,7 +715,7 @@ export function mountWorkEnergy(root) {
     if (state.done && autoRecord) trials.record(trialSnapshot());
     paint();
   });
-  root.querySelector("#btn-check-31").addEventListener("click", () => {
+  root.querySelector("#btn-check").addEventListener("click", () => {
     if (challenge.state.active && challenge.state.spec) {
       challenge.markAttempt(evaluateChallenge(snapshot(state), challenge.state.spec));
     }

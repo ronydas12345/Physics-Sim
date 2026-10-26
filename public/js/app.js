@@ -118,7 +118,7 @@ const els = {
   debugLine: $("debug-line"),
   fbd: $("fbd-canvas"),
   step: $("btn-step"),
-  check: $("btn-check-15"),
+  check: $("btn-check"),
   vectors: $("toggle-vectors"),
   net: $("toggle-net"),
   velocityToggle: $("toggle-velocity"),
@@ -354,6 +354,7 @@ function drawAll() {
 }
 
 function renderTrials() {
+  if (els.clear) els.clear.hidden = trials.length === 0;
   if (!trials.length) {
     els.trialBody.innerHTML =
       '<tr class="empty-row"><td colspan="7">No trials yet. Launch, then record a trial to start a data table.</td></tr>';

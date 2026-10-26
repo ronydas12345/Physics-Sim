@@ -70,7 +70,6 @@
               <button type="button" id="btn-launch" class="btn primary">Launch</button>
               <button type="button" id="btn-pause" class="btn">Pause</button>
               <button type="button" id="btn-step" class="btn">Step +0.1 s</button>
-              <button type="button" id="btn-check-15" class="btn">Check</button>
               <span class="transport-gap"></span>
               <label class="switch light">
                 <input id="auto-record" type="checkbox" />
@@ -78,7 +77,7 @@
               </label>
               <button type="button" id="btn-reset-run" class="btn">Reset</button>
               <button type="button" id="btn-record" class="btn">Record Trial</button>
-              <button type="button" id="btn-clear" class="btn ghost">Clear Trials</button>
+              <button type="button" id="btn-clear" class="btn ghost" hidden>Clear Trials</button>
             </div>
             <div class="track-controls">
               <div class="control" id="scenario-selector">
@@ -204,6 +203,7 @@
                 <p class="muted" id="challenge-unknown">Unknown: —</p>
                 <p id="challenge-feedback" class="feedback">The solution stays hidden until you launch.</p>
                 <div class="challenge-actions">
+                  <button type="button" id="btn-check" class="btn primary">Check</button>
                   <button type="button" id="btn-reveal" class="btn ghost" disabled>Reveal answer</button>
                   <button type="button" id="btn-new-target" class="btn ghost">New challenge</button>
                 </div>
