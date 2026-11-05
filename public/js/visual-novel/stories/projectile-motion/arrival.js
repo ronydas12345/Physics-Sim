@@ -1,4 +1,4 @@
-/** Demonstration-only Scene 1. Replace later with THE QUIET VECTOR canon. */
+/** Demonstration-only Scenes 1–2. Replace later with THE QUIET VECTOR canon. */
 export const projectileArrivalStory = {
   id: "projectile-arrival",
   title: "The Incomplete Report",
@@ -14,12 +14,14 @@ export const projectileArrivalStory = {
       name: "Elias",
       role: "Experimental engineer",
       position: "right",
-      expressions: ["neutral", "focused", "concerned", "amused"],
+      expressions: ["neutral", "focused", "confused", "concerned", "amused"],
     },
   },
   scenes: {
     "facility-exterior": {
       background: "facility-exterior",
+      transition: "fade",
+      cast: [],
       next: "facility-interior",
       lines: [
         {
@@ -30,12 +32,14 @@ export const projectileArrivalStory = {
           speaker: "mara",
           expression: "neutral",
           position: "left",
+          enter: "mara",
           text: "You must be the new analyst. I'm Mara. We are trying to reproduce an old projectile test.",
         },
         {
           speaker: "elias",
           expression: "focused",
           position: "right",
+          enter: "elias",
           text: "Elias. I keep the launcher honest. The archived trajectory is clean. The conditions are not.",
         },
         {
@@ -48,6 +52,8 @@ export const projectileArrivalStory = {
     },
     "facility-interior": {
       background: "facility-interior",
+      transition: "fade",
+      cast: ["mara", "elias"],
       next: "control-room",
       lines: [
         {
@@ -66,25 +72,100 @@ export const projectileArrivalStory = {
           speaker: "mara",
           expression: "neutral",
           position: "left",
-          text: "Come inside. We will start with how launch angle changes horizontal range on flat ground.",
+          text: "Come inside. Before we launch, you pick how we start.",
         },
       ],
     },
     "control-room": {
       background: "control-room",
-      next: null,
+      transition: "fade",
+      cast: ["mara", "elias"],
+      next: "testing-area",
+      lines: [
+        {
+          speaker: "mara",
+          expression: "serious",
+          position: "left",
+          text: "How should we begin?",
+          choices: [
+            {
+              id: "report",
+              label: "Inspect the original experiment report.",
+              speaker: "mara",
+              expression: "thinking",
+              reply: "Range and hang time are listed. Launch speed is implied, not measured on our rails. Gravity is assumed Earth-normal.",
+            },
+            {
+              id: "launcher",
+              label: "Examine the projectile launcher.",
+              speaker: "elias",
+              expression: "focused",
+              reply: "Angle, speed, and g are the three knobs that matter here. If the archive omitted one, the curve will not match.",
+            },
+            {
+              id: "ask-elias",
+              label: "Ask Elias about the recorded trajectory.",
+              speaker: "elias",
+              expression: "confused",
+              reply: "The curve is too clean. Complementary angles can share a range, but only if the missing condition is the same both times.",
+            },
+          ],
+        },
+      ],
+    },
+    "testing-area": {
+      background: "testing-area",
+      transition: "fade",
+      cast: ["mara", "elias"],
+      next: "simulation-focus",
       lines: [
         {
           speaker: "elias",
           expression: "amused",
           position: "right",
-          text: "No mystery until we have a measurement. If the numbers disagree with the archive, then we have a question worth asking.",
+          text: "Good. Different doorway, same lab. We reconvene at the rails.",
         },
         {
           speaker: "mara",
-          expression: "thinking",
+          expression: "neutral",
           position: "left",
-          text: "When you are ready, continue to the lab. This chapter only had to get you through the door.",
+          text: "On flat ground, launch angle changes hang time and horizontal range. That is the first identity we will test.",
+        },
+      ],
+    },
+    "simulation-focus": {
+      background: "simulation-focus",
+      transition: "fade",
+      cast: ["mara"],
+      next: "closing",
+      lines: [
+        {
+          speaker: "mara",
+          expression: "thinking",
+          position: "center",
+          exit: "elias",
+          text: "The live lab stays in your hands. The story will not hide the controls or invent a required number.",
+        },
+      ],
+    },
+    closing: {
+      background: "closing",
+      transition: "fade",
+      cast: ["mara", "elias"],
+      next: null,
+      lines: [
+        {
+          speaker: "elias",
+          expression: "focused",
+          position: "right",
+          enter: "elias",
+          text: "When you are ready, open 1.5 and take a baseline at a known angle. Mystery after measurement.",
+        },
+        {
+          speaker: "mara",
+          expression: "surprised",
+          position: "left",
+          text: "If the archive still disagrees after that, then the omitted condition is the real experiment.",
         },
       ],
     },
