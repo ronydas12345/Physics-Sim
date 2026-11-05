@@ -1,9 +1,17 @@
 import { formatFitEquation, formatR2, polynomialFit, sampleFit } from "/lib/regression.js";
-import { themeCanvas } from "./platform/theme.js";
+import { plotColor, plotPalette, themeCanvas, withAlpha } from "./platform/theme.js";
 
-const CURVE = "#c45c26";
-const HEIGHT = "#1c6b73";
-const NOW = "#2c6e49";
+function curveColor() {
+  return plotPalette().dx;
+}
+
+function nowColor() {
+  return plotPalette().now;
+}
+
+function seriesColor({ color, yKey, yLabel, fitYName, label }) {
+  return plotColor(yKey, fitYName, yLabel, label) || color || curveColor();
+}
 
 function axisColor() {
   return themeCanvas().muted;
@@ -111,17 +119,17 @@ function emptyMessage(ctx, cssW, cssH, text) {
 export function renderTheoryGraphs({ rangeCanvas, heightCanvas, curve }) {
   const yMaxR = Math.max(1, ...curve.map((p) => p.range));
   const yMaxH = Math.max(1, ...curve.map((p) => p.maxHeight));
-  drawCurve(rangeCanvas, curve, "range", yMaxR, "Launch angle", "Range (m)", CURVE);
-  drawCurve(heightCanvas, curve, "maxHeight", yMaxH, "Launch angle", "Max height (m)", HEIGHT);
+  drawCurve(rangeCanvas, curve, "range", yMaxR, "Launch angle", "Range (m)", plotColor("range"));
+  drawCurve(heightCanvas, curve, "maxHeight", yMaxH, "Launch angle", "Max height (m)", plotColor("height"));
 }
 
 export function renderTrialGraphs({ rangeCanvas, heightCanvas, trials, rangeIdentity = null, heightIdentity = null }) {
-  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", CURVE, {
+  drawTrialScatter(rangeCanvas, trials, "range", "Launch angle", "Range (m)", plotColor("range"), {
     yName: "R",
     xName: "θ",
     identity: rangeIdentity,
   });
-  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", HEIGHT, {
+  drawTrialScatter(heightCanvas, trials, "maxHeight", "Launch angle", "Max height (m)", plotColor("height"), {
     yName: "H",
     xName: "θ",
     identity: heightIdentity,
@@ -198,24 +206,30 @@ export function renderXYScatter(canvas, points, options = {}) {
     yLo -= 1;
     yHi += 1;
   }
+  const ink = seriesColor({ color, yKey, yLabel, fitYName, label: identity?.label });
+  const identityInk = showFit ? plotPalette().identity : ink;
   const box = drawLinearFrame(ctx, pad, cssW, cssH, xLabel, yLabel, lo, hi, yLo, yHi);
-  strokeSampledCurve(ctx, box, identitySamples, lo, hi, yLo, yHi, { color: pointColor(), width: 2.4 });
+  strokeSampledCurve(ctx, box, identitySamples, lo, hi, yLo, yHi, { color: identityInk, width: 2.4 });
   if (showFit && fit) {
     strokeSampledCurve(ctx, box, sampleFit(fit, { start: lo, end: hi, steps: 64 }), lo, hi, yLo, yHi, {
-      color,
+      color: ink,
       dash: [5, 4],
-      width: 2,
-      alpha: 0.9,
+      width: 2.2,
+      alpha: 0.95,
     });
   }
-  drawOverlayLabels(ctx, box, overlayLabelLines({ fit, showFit, hasPoints: list.length > 0, fitYName, fitXName, identity }));
+  drawOverlayLabels(
+    ctx,
+    box,
+    overlayLabelLines({ fit, showFit, hasPoints: list.length > 0, fitYName, fitXName, identity, fitColor: ink, identityColor: identityInk }),
+  );
   const last = list[list.length - 1];
   if (connect && pairs.length) {
-    strokeSampledCurve(ctx, box, pairs, lo, hi, yLo, yHi, { color, width: 2.4 });
+    strokeSampledCurve(ctx, box, pairs, lo, hi, yLo, yHi, { color: ink, width: 2.4 });
     if (last) {
       const x = mapPlotX(last[xKey], lo, hi, box);
       const y = mapPlotY(last[yKey], yLo, yHi, box);
-      ctx.fillStyle = NOW;
+      ctx.fillStyle = nowColor();
       ctx.beginPath();
       ctx.arc(x, y, 5.2, 0, Math.PI * 2);
       ctx.fill();
@@ -231,7 +245,7 @@ export function renderXYScatter(canvas, points, options = {}) {
     const x = mapPlotX(point[xKey], lo, hi, box);
     const y = mapPlotY(point[yKey], yLo, yHi, box);
     const latest = point === last;
-    ctx.fillStyle = latest ? NOW : color;
+    ctx.fillStyle = latest ? nowColor() : ink;
     ctx.beginPath();
     ctx.arc(x, y, latest ? 5.6 : 4.2, 0, Math.PI * 2);
     ctx.fill();
@@ -249,7 +263,10 @@ export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel,
   const surface = setup(canvas);
   if (!surface) return null;
   const { ctx, cssW, cssH, pad } = surface;
-  const lines = series?.length ? series : [{ yKey, color }];
+  const lines = (series?.length ? series : [{ yKey, color }]).map((line) => ({
+    ...line,
+    color: seriesColor({ color: line.color || color, yKey: line.yKey || yKey, yLabel, label: line.label }),
+  }));
   const fallbackKey = lines[0].yKey || yKey;
   const points = history?.length ? history : [{ time: 0, [fallbackKey]: 0 }];
   const tMax = Math.max(duration || 1, ...points.map((p) => p.time), now || 0, 1e-6);
@@ -283,13 +300,13 @@ export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel,
     points.forEach((p) => ctx.lineTo(xOfT(p.time), yOfV(p[fallbackKey])));
     ctx.lineTo(xOfT(points[points.length - 1].time), yOfV(0));
     ctx.closePath();
-    ctx.fillStyle = "rgba(28, 107, 115, 0.18)";
+    ctx.fillStyle = withAlpha(lines[0].color || plotPalette().v, 0.18);
     ctx.fill();
   }
 
   for (const line of lines) {
-    ctx.strokeStyle = line.color || color || CURVE;
-    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = line.color;
+    ctx.lineWidth = 2.4;
     ctx.beginPath();
     points.forEach((p, i) => {
       const x = xOfT(p.time);
@@ -305,14 +322,14 @@ export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel,
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     lines.forEach((line, i) => {
-      ctx.fillStyle = line.color || color || CURVE;
+      ctx.fillStyle = line.color;
       ctx.fillText(line.label || line.yKey, box.left + 8 + i * 72, box.top + 6);
     });
   }
 
   const tNow = now ?? points[points.length - 1].time;
   const xNow = xOfT(tNow);
-  ctx.strokeStyle = NOW;
+  ctx.strokeStyle = nowColor();
   ctx.lineWidth = 1.4;
   ctx.setLineDash([4, 3]);
   ctx.beginPath();
@@ -323,7 +340,7 @@ export function renderTimeSeries(canvas, history, { yKey, color, xLabel, yLabel,
 
   const current = points.reduce((best, p) => (Math.abs(p.time - tNow) < Math.abs(best.time - tNow) ? p : best), points[0]);
   for (const line of lines) {
-    ctx.fillStyle = NOW;
+    ctx.fillStyle = line.color || nowColor();
     ctx.beginPath();
     ctx.arc(xNow, yOfV(current[line.yKey]), 4.4, 0, Math.PI * 2);
     ctx.fill();
@@ -424,17 +441,32 @@ function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = 
   if (fit) {
     yMax = Math.max(yMax, ...sampleFit(fit, { start: 0, end: 90, steps: 90 }).map((p) => p.y));
   }
+  const ink = seriesColor({ color, yKey: key, yLabel, fitYName: yName, label: identity?.label });
+  const identityInk = plotPalette().identity;
   const box = drawFrame(ctx, pad, cssW, cssH, xLabel, yLabel, yMax);
-  strokeSampledCurve(ctx, box, identitySamples, 0, 90, 0, yMax, { color: pointColor(), width: 2.4 });
+  strokeSampledCurve(ctx, box, identitySamples, 0, 90, 0, yMax, { color: identityInk, width: 2.4 });
   if (fit) {
     strokeSampledCurve(ctx, box, sampleFit(fit, { start: 0, end: 90, steps: 90 }), 0, 90, 0, yMax, {
-      color,
+      color: ink,
       dash: [5, 4],
-      width: 2,
-      alpha: 0.9,
+      width: 2.2,
+      alpha: 0.95,
     });
   }
-  drawOverlayLabels(ctx, box, overlayLabelLines({ fit, showFit: true, hasPoints: list.length > 0, fitYName: yName, fitXName: xName, identity }));
+  drawOverlayLabels(
+    ctx,
+    box,
+    overlayLabelLines({
+      fit,
+      showFit: true,
+      hasPoints: list.length > 0,
+      fitYName: yName,
+      fitXName: xName,
+      identity,
+      fitColor: ink,
+      identityColor: identityInk,
+    }),
+  );
   const last = list[list.length - 1];
 
   ctx.fillStyle = pointColor();
@@ -445,7 +477,7 @@ function drawTrialScatter(canvas, trials, key, xLabel, yLabel, color, { yName = 
     const x = xOf(trial.angleDeg, box);
     const y = yOf(trial[key], yMax, box);
     const latest = trial === last;
-    ctx.fillStyle = latest ? NOW : color;
+    ctx.fillStyle = latest ? nowColor() : ink;
     ctx.beginPath();
     ctx.arc(x, y, latest ? 5.6 : 4.2, 0, Math.PI * 2);
     ctx.fill();
@@ -499,17 +531,20 @@ function strokeSampledCurve(ctx, box, samples, xMin, xMax, yMin, yMax, { color, 
   ctx.restore();
 }
 
-function overlayLabelLines({ fit, showFit, hasPoints, fitYName, fitXName, identity }) {
+function overlayLabelLines({ fit, showFit, hasPoints, fitYName, fitXName, identity, fitColor, identityColor }) {
   const lines = [];
   if (showFit) {
     if (fit) {
-      lines.push({ text: `${formatFitEquation(fit, fitYName, fitXName)}   R² = ${formatR2(fit.r2)}`, color: axisColor() });
+      lines.push({
+        text: `${formatFitEquation(fit, fitYName, fitXName)}   R² = ${formatR2(fit.r2)}`,
+        color: fitColor || plotColor(fitYName),
+      });
     } else if (hasPoints) {
       lines.push({ text: "Record two trials with different x-values to fit a curve.", color: axisColor() });
     }
   }
   if (identity?.label) {
-    lines.push({ text: identity.label, color: pointColor() });
+    lines.push({ text: identity.label, color: identityColor || plotPalette().identity });
   }
   return lines;
 }
@@ -518,16 +553,17 @@ function drawOverlayLabels(ctx, box, lines) {
   const usable = (lines || []).filter((line) => line?.text);
   if (!usable.length) return;
   ctx.save();
-  ctx.font = "600 11px IBM Plex Mono, monospace";
+  ctx.font = "italic 17px 'Times New Roman', Times, serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   const maxW = Math.max(40, box.right - box.left - 12);
   const paper = themeCanvas().fill;
+  const rowH = 22;
   usable.forEach((line, i) => {
-    const y = box.top + 13 + i * 18;
-    const textW = Math.min(ctx.measureText(line.text).width + 10, maxW);
+    const y = box.top + 15 + i * rowH;
+    const textW = Math.min(ctx.measureText(line.text).width + 12, maxW);
     ctx.fillStyle = paper;
-    ctx.fillRect(box.left + 4, box.top + 4 + i * 18, textW, 18);
+    ctx.fillRect(box.left + 4, box.top + 4 + i * rowH, textW, rowH);
     ctx.fillStyle = line.color || axisColor();
     ctx.fillText(line.text, box.left + 8, y, maxW - 8);
   });
