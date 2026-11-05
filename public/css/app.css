@@ -517,16 +517,31 @@ h2 {
 .theory-eq-row {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(200px, 0.9fr);
+  grid-template-areas:
+    "eq eq"
+    "anim vars";
   gap: 16px;
   align-items: stretch;
 }
 
+.theory-eq-row:not(:has(.eq-display)) {
+  grid-template-areas: "anim vars";
+}
+
 .theory-eq-side {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: contents;
+}
+
+.theory-eq-row > .theory-visual,
+.theory-eq-row > p,
+.theory-eq-row > div:not(.eq-display):not(.eq-vars) {
+  grid-area: anim;
   min-width: 0;
-  gap: 10px;
+}
+
+.eq-vars {
+  grid-area: vars;
+  align-self: start;
 }
 
 .theory-visual {
@@ -551,24 +566,35 @@ h2 {
 }
 
 .eq-display {
+  grid-area: eq;
   margin: 0;
-  padding: 16px 18px;
+  padding: 22px 28px;
   background: var(--field-bg);
   color: var(--field-ink);
-  border: var(--control-border-width, 1px) solid var(--line);
-  border-radius: 14px;
+  border: 3px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
   font-family: var(--eq);
-  font-size: clamp(1.55rem, 3.4vw, 2.25rem);
+  font-size: clamp(5.2rem, 12vw, 8rem);
   font-weight: 800;
-  line-height: 1.45;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-align: center;
 }
 
+.theory-block .eq-display p,
 .eq-display p {
   margin: 0;
+  overflow-wrap: break-word;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .eq-display p + p {
-  margin-top: 0.35em;
+  margin-top: 0.28em;
 }
 
 .eq-display sub,
@@ -578,8 +604,8 @@ h2 {
 
 .eq-sym {
   display: inline-block;
-  padding: 0 0.18em;
-  border-radius: 0.28em;
+  padding: 0.02em 0.2em;
+  border-radius: 0.22em;
   font-family: var(--eq);
   font-style: italic;
   font-weight: 800;
@@ -589,7 +615,7 @@ h2 {
 .eq-sym-v,
 .eq-sym-n {
   color: var(--teal);
-  background: color-mix(in srgb, var(--teal) 22%, transparent);
+  background: color-mix(in srgb, var(--teal) 28%, transparent);
 }
 
 .eq-sym-dx,
@@ -598,14 +624,14 @@ h2 {
 .eq-sym-th,
 .eq-sym-g {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .eq-sym-m,
 .eq-sym-w,
 .eq-sym-ok {
   color: var(--ok);
-  background: color-mix(in srgb, var(--ok) 22%, transparent);
+  background: color-mix(in srgb, var(--ok) 28%, transparent);
 }
 
 .eq-sym-k,
@@ -614,18 +640,18 @@ h2 {
 .eq-sym-check,
 .eq-sym-mu {
   color: var(--check);
-  background: color-mix(in srgb, var(--check) 22%, transparent);
+  background: color-mix(in srgb, var(--check) 28%, transparent);
 }
 
 .eq-sym-x {
   color: var(--vy);
-  background: color-mix(in srgb, var(--vy) 20%, transparent);
+  background: color-mix(in srgb, var(--vy) 26%, transparent);
 }
 
 .eq-vars {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 6px 12px;
+  gap: 8px 12px;
   margin: 0;
 }
 
@@ -637,8 +663,8 @@ h2 {
   font-family: var(--eq);
   font-style: italic;
   font-weight: 800;
-  font-size: 1.2rem;
-  line-height: 1.35;
+  font-size: 1.55rem;
+  line-height: 1.3;
 }
 
 .eq-vars dd {
@@ -661,6 +687,20 @@ h2 {
 @media (max-width: 700px) {
   .theory-eq-row {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "eq"
+      "anim"
+      "vars";
+  }
+
+  .theory-eq-row:not(:has(.eq-display)) {
+    grid-template-areas:
+      "anim"
+      "vars";
+  }
+
+  .eq-display {
+    font-size: clamp(3.6rem, 14vw, 5.6rem);
   }
 }
 
