@@ -135,6 +135,12 @@ test("Help / About is routed and includes an FAQ", () => {
   assert.match(PAGES, /<summary>/);
 });
 
+test("visual novel prototype is an isolated SPA route", () => {
+  assert.match(APP, /\/vn\/projectile/);
+  assert.match(APP, /vnPrototypePage/);
+  assert.match(PAGES, /projectile story prototype/);
+});
+
 for (const id of IDS) {
   test(`tutorials for ${id} have How to Use and Guided Lab`, () => {
     const pack = getTutorials(id);

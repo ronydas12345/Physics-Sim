@@ -269,6 +269,10 @@ export function aboutPage() {
           <strong>How to Use This Lab</strong> walks the interface. <strong>Guided Lab</strong> is the investigation:
           predict, run, and explain. Closing a tutorial does not reset the lab. Escape closes the overlay.
         </p>
+        <p>
+          A separate <a href="/vn/projectile" data-link>projectile story prototype</a> is the Stage 1 visual-novel
+          foundation. It does not replace How to Use or Guided Lab, and it does not change the physics engine.
+        </p>
         <h2>Accuracy</h2>
         <p>
           Displayed values come from the same state that drives the visualization. Distance is the sum of path lengths,

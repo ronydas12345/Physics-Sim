@@ -18,6 +18,7 @@ import { mountCircular } from "../simulations/circular.js";
 import { mountWorkEnergy } from "../simulations/work-energy.js";
 import { mountVariableForce } from "../simulations/variable-force.js";
 import { mountHeroReel } from "./hero-reel.js";
+import { mountVnScreen, vnPrototypePage } from "../visual-novel/renderer/vn-screen.js";
 
 const outlet = document.getElementById("outlet");
 const header = document.getElementById("site-header");
@@ -33,6 +34,7 @@ function resolve(pathname) {
   if (pathname === "/") return { name: "home" };
   if (pathname === "/simulations") return { name: "library" };
   if (pathname === "/about") return { name: "about" };
+  if (pathname === "/vn/projectile") return { name: "vn-projectile" };
   const mod = pathname.match(/^\/simulations\/module-(\d+)$/);
   if (mod) return { name: "module", id: mod[1] };
   if (pathname === "/simulations/module-1/1-1") return { name: "sim-1-1" };
@@ -81,6 +83,7 @@ function render() {
     "sim-3-1": "3.1 Work and the Work-Energy Theorem · AP Physics 1",
     "sim-3-2": "3.2 Work by Variable Forces · AP Physics 1",
     notfound: "Not found · AP Physics 1",
+    "vn-projectile": "The Incomplete Report · Visual novel prototype",
   };
   if (route.name === "home") {
     outlet.innerHTML = homePage();
@@ -88,6 +91,10 @@ function render() {
   }
   else if (route.name === "library") outlet.innerHTML = libraryPage();
   else if (route.name === "about") outlet.innerHTML = aboutPage();
+  else if (route.name === "vn-projectile") {
+    outlet.innerHTML = vnPrototypePage();
+    unmount = mountVnScreen(outlet);
+  }
   else if (route.name === "module") {
     outlet.innerHTML = modulePage(route.id);
     const mod = document.querySelector(".page-head h1");
