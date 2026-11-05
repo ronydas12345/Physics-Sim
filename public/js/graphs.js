@@ -222,6 +222,7 @@ export function renderXYScatter(canvas, points, options = {}) {
     ctx,
     box,
     overlayLabelLines({ fit, showFit, hasPoints: list.length > 0, fitYName, fitXName, identity, fitColor: ink, identityColor: identityInk }),
+    { serif: !showFit },
   );
   const last = list[list.length - 1];
   if (connect && pairs.length) {
@@ -549,19 +550,21 @@ function overlayLabelLines({ fit, showFit, hasPoints, fitYName, fitXName, identi
   return lines;
 }
 
-function drawOverlayLabels(ctx, box, lines) {
+function drawOverlayLabels(ctx, box, lines, { serif = false } = {}) {
   const usable = (lines || []).filter((line) => line?.text);
   if (!usable.length) return;
   ctx.save();
-  ctx.font = "italic 17px 'Times New Roman', Times, serif";
+  ctx.font = serif
+    ? "800 italic 18px 'Times New Roman', Times, serif"
+    : "600 11px IBM Plex Mono, monospace";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   const maxW = Math.max(40, box.right - box.left - 12);
   const paper = themeCanvas().fill;
-  const rowH = 22;
+  const rowH = serif ? 24 : 18;
   usable.forEach((line, i) => {
-    const y = box.top + 15 + i * rowH;
-    const textW = Math.min(ctx.measureText(line.text).width + 12, maxW);
+    const y = box.top + (serif ? 16 : 13) + i * rowH;
+    const textW = Math.min(ctx.measureText(line.text).width + (serif ? 12 : 10), maxW);
     ctx.fillStyle = paper;
     ctx.fillRect(box.left + 4, box.top + 4 + i * rowH, textW, rowH);
     ctx.fillStyle = line.color || axisColor();

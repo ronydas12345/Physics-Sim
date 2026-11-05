@@ -559,7 +559,7 @@ h2 {
   border-radius: 14px;
   font-family: var(--eq);
   font-size: clamp(1.55rem, 3.4vw, 2.25rem);
-  font-weight: 400;
+  font-weight: 800;
   line-height: 1.45;
 }
 
@@ -582,14 +582,14 @@ h2 {
   border-radius: 0.28em;
   font-family: var(--eq);
   font-style: italic;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .eq-sym-d,
 .eq-sym-v,
 .eq-sym-n {
   color: var(--teal);
-  background: color-mix(in srgb, var(--teal) 18%, transparent);
+  background: color-mix(in srgb, var(--teal) 22%, transparent);
 }
 
 .eq-sym-dx,
@@ -598,14 +598,14 @@ h2 {
 .eq-sym-th,
 .eq-sym-g {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .eq-sym-m,
 .eq-sym-w,
 .eq-sym-ok {
   color: var(--ok);
-  background: color-mix(in srgb, var(--ok) 18%, transparent);
+  background: color-mix(in srgb, var(--ok) 22%, transparent);
 }
 
 .eq-sym-k,
@@ -614,12 +614,12 @@ h2 {
 .eq-sym-check,
 .eq-sym-mu {
   color: var(--check);
-  background: color-mix(in srgb, var(--check) 18%, transparent);
+  background: color-mix(in srgb, var(--check) 22%, transparent);
 }
 
 .eq-sym-x {
   color: var(--vy);
-  background: color-mix(in srgb, var(--vy) 16%, transparent);
+  background: color-mix(in srgb, var(--vy) 20%, transparent);
 }
 
 .eq-vars {
@@ -636,7 +636,8 @@ h2 {
 .eq-vars dt {
   font-family: var(--eq);
   font-style: italic;
-  font-size: 1.15rem;
+  font-weight: 800;
+  font-size: 1.2rem;
   line-height: 1.35;
 }
 
@@ -1220,21 +1221,17 @@ input[type="range"] {
 
 .eq,
 .eq-block {
-  font-family: var(--eq);
-  font-style: italic;
+  font-family: var(--mono);
   color: var(--ink);
 }
 
 .eq-block {
   margin: 8px 0;
-  padding: 14px 16px;
+  padding: 8px 10px;
   background: var(--field-bg);
   color: var(--field-ink);
   border: var(--control-border-width, 1px) solid var(--line);
-  border-radius: 12px;
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 400;
-  line-height: 1.45;
+  border-radius: 8px;
 }
 
 .teacher {
