@@ -11,6 +11,15 @@ import {
   saveVnSettings,
   textSpeedMs,
 } from "../settings/vn-settings.js";
+import {
+  VN_SLOT_COUNT,
+  exportSaveJson,
+  loadSaveBag,
+  parseImportedSave,
+  slotLabel,
+  writeAutosave,
+  writeSlot,
+} from "../saves/vn-saves.js";
 import { backgroundMarkup } from "./backgrounds.js";
 import { spriteMarkup, spriteSvg } from "./sprites.js";
 
@@ -102,12 +111,27 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
       </div>
       <aside class="vn-panel" data-vn-pause-panel hidden>
         <h2>Paused</h2>
-        <p>Story progress is not saved yet. Settings still persist.</p>
+        <p>Autosave keeps this chapter. Settings and the learning path use separate storage.</p>
         <button type="button" class="btn primary" data-vn-resume>Resume</button>
+        <button type="button" class="btn ghost-paper" data-vn-open-saves>Save / Load</button>
         <button type="button" class="btn ghost-paper" data-vn-open-history>Dialogue history</button>
         <button type="button" class="btn ghost-paper" data-vn-open-settings>Settings</button>
         <a class="btn ghost-paper" href="/simulations/module-1/1-5">Return to 1.5</a>
         <a class="btn ghost-paper" href="/" data-link>Return to title</a>
+      </aside>
+      <aside class="vn-panel vn-saves-panel" data-vn-saves-panel hidden>
+        <header class="vn-panel-head">
+          <h2>Save / Load</h2>
+          ${hudButton("data-vn-close-saves", "Close", "close")}
+        </header>
+        <p class="vn-save-note">Three manual slots plus autosave. Export a JSON file if you need to recover after clearing the browser.</p>
+        <div class="vn-save-autosave" data-vn-autosave></div>
+        <ol class="vn-save-slots" data-vn-slots></ol>
+        <div class="vn-save-tools">
+          <button type="button" class="btn ghost-paper" data-vn-import-btn>Import save</button>
+          <input type="file" accept="application/json,.json" data-vn-import hidden />
+        </div>
+        <p class="vn-save-status" data-vn-save-status></p>
       </aside>
       <aside class="vn-panel vn-history-panel" data-vn-history-panel hidden>
         <header class="vn-panel-head">
@@ -158,7 +182,10 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     pause: screen.querySelector("[data-vn-pause-panel]"),
     history: screen.querySelector("[data-vn-history-panel]"),
     settings: screen.querySelector("[data-vn-settings-panel]"),
+    saves: screen.querySelector("[data-vn-saves-panel]"),
   };
+  const saveStatus = screen.querySelector("[data-vn-save-status]");
+  const importInput = screen.querySelector("[data-vn-import]");
   const tw = createTypewriter();
   let settings = loadVnSettings();
   let lastScene = "";
@@ -180,6 +207,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     autoArmedAt = 0;
     if (name === "history") paintHistory();
     if (name === "settings") syncSettingsForm();
+    if (name === "saves") paintSaves();
   }
 
   function closePanels() {
@@ -287,6 +315,47 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     veilTimer = window.setTimeout(apply, 180);
   }
 
+  function persistAutosave() {
+    writeAutosave(story.id, session.snapshot());
+  }
+
+  function applySave(raw, message) {
+    if (!session.restore(raw)) {
+      if (saveStatus) saveStatus.textContent = "That save could not be loaded.";
+      return false;
+    }
+    lastLine = "";
+    lastScene = "";
+    persistAutosave();
+    closePanels();
+    paint();
+    if (saveStatus) saveStatus.textContent = message || "";
+    return true;
+  }
+
+  function confirmReplace() {
+    return window.confirm("Replace the current story position? Manual slots stay. Learning progress is not changed.");
+  }
+
+  function paintSaves() {
+    const bag = loadSaveBag(story.id);
+    const autoHost = screen.querySelector("[data-vn-autosave]");
+    const slotHost = screen.querySelector("[data-vn-slots]");
+    if (autoHost) {
+      autoHost.innerHTML = bag.autosave
+        ? `<p>Autosave · ${escapeHtml(slotLabel(bag.autosave))}</p><button type="button" class="btn ghost-paper" data-vn-load-auto>Load autosave</button>`
+        : `<p>No autosave yet.</p>`;
+    }
+    if (slotHost) {
+      slotHost.innerHTML = Array.from({ length: VN_SLOT_COUNT }, (_, index) => {
+        const entry = bag.slots[index];
+        const load = entry ? `<button type="button" class="btn ghost-paper" data-vn-load-slot="${index}">Load</button>` : "";
+        const exp = entry ? `<button type="button" class="btn ghost-paper" data-vn-export-slot="${index}">Export</button>` : "";
+        return `<li><span>Slot ${index + 1} · ${escapeHtml(slotLabel(entry))}</span><span class="vn-save-actions"><button type="button" class="btn ghost-paper" data-vn-write-slot="${index}">Save</button>${load}${exp}</span></li>`;
+      }).join("");
+    }
+  }
+
   function paintHistory() {
     if (!historyList) return;
     historyList.innerHTML = session.view().history
@@ -369,8 +438,14 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       return;
     }
     if (view.awaitingChoice || view.waitingForLab) return;
-    if (view.complete) session.reset();
-    else session.advance();
+    if (view.complete) {
+      if (!window.confirm("Replay from the start? Manual save slots are kept.")) return;
+      session.reset();
+      paint();
+      return;
+    }
+    session.advance();
+    persistAutosave();
     paint();
   }
 
@@ -393,6 +468,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       if (at - autoArmedAt >= autoDelayMs(settings)) {
         autoArmedAt = 0;
         session.advance();
+        persistAutosave();
         paint(at);
       }
     } else if (!settings.autoMode || view.awaitingChoice || view.waitingForLab || menuOpen()) {
@@ -444,12 +520,14 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     event.stopPropagation();
     if (menuOpen()) return;
     session.skipToCheckpoint();
+    persistAutosave();
     paint();
   });
   screen.querySelector("[data-vn-skip-all]")?.addEventListener("click", (event) => {
     event.stopPropagation();
     if (menuOpen()) return;
     session.skipAll();
+    persistAutosave();
     paint();
   });
   screen.querySelector("[data-vn-history]")?.addEventListener("click", (event) => {
@@ -469,6 +547,69 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   screen.querySelector("[data-vn-open-settings]")?.addEventListener("click", (event) => {
     event.stopPropagation();
     showPanel("settings");
+  });
+  screen.querySelector("[data-vn-open-saves]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    showPanel("saves");
+  });
+  screen.querySelector("[data-vn-close-saves]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closePanels();
+  });
+  screen.querySelector("[data-vn-import-btn]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    importInput?.click();
+  });
+  importInput?.addEventListener("click", (event) => event.stopPropagation());
+  importInput?.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const parsed = parseImportedSave(await file.text(), story);
+    if (!parsed.ok) {
+      if (saveStatus) saveStatus.textContent = parsed.error;
+      showPanel("saves");
+      return;
+    }
+    if (!confirmReplace()) return;
+    applySave(parsed.snapshot, "Imported save loaded.");
+  });
+  panels.saves?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (event.target.closest("[data-vn-load-auto]")) {
+      const auto = loadSaveBag(story.id).autosave;
+      if (auto && confirmReplace()) applySave(auto, "Autosave loaded.");
+      return;
+    }
+    const loadBtn = event.target.closest("[data-vn-load-slot]");
+    if (loadBtn) {
+      const entry = loadSaveBag(story.id).slots[Number(loadBtn.dataset.vnLoadSlot)];
+      if (entry && confirmReplace()) applySave(entry, "Slot loaded.");
+      return;
+    }
+    const writeBtn = event.target.closest("[data-vn-write-slot]");
+    if (writeBtn) {
+      const index = Number(writeBtn.dataset.vnWriteSlot);
+      const existing = loadSaveBag(story.id).slots[index];
+      if (existing && !window.confirm("Overwrite this slot?")) return;
+      writeSlot(story.id, index, session.snapshot());
+      if (saveStatus) saveStatus.textContent = `Saved to slot ${index + 1}.`;
+      paintSaves();
+      return;
+    }
+    const exportBtn = event.target.closest("[data-vn-export-slot]");
+    if (exportBtn) {
+      const index = Number(exportBtn.dataset.vnExportSlot);
+      const entry = loadSaveBag(story.id).slots[index];
+      if (!entry) return;
+      const blob = new Blob([exportSaveJson(entry, `slot-${index + 1}`)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${story.id}-slot-${index + 1}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
   });
   screen.querySelector("[data-vn-close-history]")?.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -503,6 +644,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     if (!button) return;
     event.stopPropagation();
     session.choose(button.dataset.vnChoice);
+    persistAutosave();
     paint();
   });
   screen.addEventListener("click", (event) => {
@@ -519,14 +661,17 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     stopBus.push(
       bus.on(LAB_EVENTS.PROJECTILE_LAUNCHED, () => {
         session.notify("launch");
+        persistAutosave();
         paint();
       }),
       bus.on(LAB_EVENTS.PROJECTILE_LANDED, () => {
         session.notify("land");
+        persistAutosave();
         paint();
       }),
       bus.on(LAB_EVENTS.TRIAL_RECORDED, () => {
         session.notify("record-trial");
+        persistAutosave();
         paint();
       }),
     );
@@ -534,6 +679,8 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
 
   applyChrome();
   syncSettingsForm();
+  const auto = loadSaveBag(story.id).autosave;
+  if (auto) session.restore(auto);
   paint();
   raf = requestAnimationFrame(loop);
   return () => {

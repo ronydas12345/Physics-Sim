@@ -1,9 +1,10 @@
 /**
  * Narrative session. Choices reconverge immediately.
- * Checkpoints exist so skip can stop. Story variables wait for a later stage.
+ * Checkpoints exist so skip can stop. Snapshot/restore keep story saves separate from settings.
  */
 
 import { labActionKey } from "../../shared/lab-events.js";
+import { VN_SAVE_VERSION, validateNarrativeSave } from "../saves/vn-saves.js";
 import { nextCheckpointId } from "./skip.js";
 
 function emptyStage(story) {
@@ -228,6 +229,51 @@ export function createNarrativeSession(story, { bus } = {}) {
     return view();
   }
 
+  function snapshot() {
+    return {
+      version: VN_SAVE_VERSION,
+      storyId: story.id,
+      sceneId,
+      lineIndex,
+      complete,
+      pendingReply,
+      lastChoiceId,
+      log: log.map((entry) => ({ ...entry })),
+      labDone: [...labDone],
+      stage: JSON.parse(JSON.stringify(stage)),
+      stagedScene,
+    };
+  }
+
+  function restore(raw) {
+    const checked = validateNarrativeSave(story, raw);
+    if (!checked.ok) return null;
+    const data = checked.snapshot;
+    sceneId = data.sceneId;
+    lineIndex = data.lineIndex;
+    complete = Boolean(data.complete);
+    pendingReply = data.pendingReply || null;
+    lastChoiceId = data.lastChoiceId || null;
+    log = Array.isArray(data.log) ? data.log.map((entry) => ({ ...entry })) : [];
+    labDone.clear();
+    for (const action of data.labDone || []) labDone.add(action);
+    const nextStage = emptyStage(story);
+    if (data.stage && typeof data.stage === "object") {
+      for (const id of Object.keys(nextStage)) {
+        if (data.stage[id] && typeof data.stage[id] === "object") {
+          nextStage[id] = {
+            visible: Boolean(data.stage[id].visible),
+            position: data.stage[id].position || nextStage[id].position,
+            expression: data.stage[id].expression || "neutral",
+          };
+        }
+      }
+    }
+    stage = nextStage;
+    stagedScene = data.stagedScene || sceneId;
+    return view();
+  }
+
   function reset() {
     sceneId = story.start;
     lineIndex = 0;
@@ -243,7 +289,7 @@ export function createNarrativeSession(story, { bus } = {}) {
   }
 
   land();
-  return { view, advance, choose, reset, skipToCheckpoint, skipAll, notify };
+  return { view, advance, choose, reset, skipToCheckpoint, skipAll, notify, snapshot, restore };
 }
 
 export function walkStory(story, pick = (choices) => choices[0]?.id) {

@@ -7,26 +7,15 @@ import { decorateActionButtons } from "../../platform/lab-kit.js";
 import { placeTutorialHighlight, resolveTutorialTarget } from "../../platform/highlight-target.js";
 import { LAB_EVENTS, actionFromEvent, createLabBus } from "../../shared/lab-events.js";
 import { getLearningTutorial } from "../registry.js";
+import { readLearningSave, writeLearningSave } from "../saves.js";
 import { createLinearTutorial } from "./linear-engine.js";
 
-function storageKey(tutorialId) {
-  return `ap1-learning:${tutorialId}`;
-}
-
 function loadState(tutorialId) {
-  try {
-    return JSON.parse(localStorage.getItem(storageKey(tutorialId)) || "null");
-  } catch {
-    return null;
-  }
+  return readLearningSave(tutorialId);
 }
 
 function saveState(snapshot) {
-  try {
-    localStorage.setItem(storageKey(snapshot.tutorialId), JSON.stringify(snapshot));
-  } catch {
-    /* ignore quota */
-  }
+  writeLearningSave(snapshot);
 }
 
 function escapeHtml(value) {

@@ -104,6 +104,23 @@ test("skip all does not bypass a lab wait until the simulation launches", () => 
   assert.equal(session.view().complete, true);
 });
 
+test("snapshot restore resumes a lab wait without duplicating history", () => {
+  const bus = createLabBus();
+  const session = createNarrativeSession(projectileArrivalStory, { bus });
+  session.skipAll();
+  const snap = session.snapshot();
+  assert.equal(session.view().waitingForLab, true);
+  const history = session.view().history.length;
+  const loaded = createNarrativeSession(projectileArrivalStory, { bus });
+  assert.ok(loaded.restore(snap));
+  assert.equal(loaded.view().sceneId, "simulation-focus");
+  assert.equal(loaded.view().waitingForLab, true);
+  assert.equal(loaded.view().history.length, history);
+  loaded.notify("launch");
+  loaded.skipAll();
+  assert.equal(loaded.view().complete, true);
+});
+
 test("a prototype session without a lab bus still completes the chapter", () => {
   const frames = walkStory(projectileArrivalStory);
   assert.equal(frames.at(-1).complete, true);
