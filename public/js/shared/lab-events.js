@@ -21,9 +21,14 @@ export const LAB_EVENTS = Object.freeze({
   LAUNCH_SPEED_CHANGED: "sim:speed-changed",
   GRAVITY_CHANGED: "sim:gravity-changed",
   EXPERIMENT_RESET: "sim:reset",
+  PLAYBACK_STARTED: "sim:play",
+  PLAYBACK_PAUSED: "sim:pause",
+  PLAYBACK_STEPPED: "sim:step",
+  VARIABLE_CHANGED: "sim:variable-changed",
+  NUDGED: "sim:nudged",
 });
 
-const EVENT_ACTIONS = Object.freeze({
+export const SIM_EVENT_ACTIONS = Object.freeze({
   [LAB_EVENTS.PROJECTILE_LAUNCHED]: "launch",
   [LAB_EVENTS.PROJECTILE_LANDED]: "land",
   [LAB_EVENTS.TRIAL_RECORDED]: "record-trial",
@@ -31,15 +36,32 @@ const EVENT_ACTIONS = Object.freeze({
   [LAB_EVENTS.LAUNCH_SPEED_CHANGED]: "speed",
   [LAB_EVENTS.GRAVITY_CHANGED]: "gravity",
   [LAB_EVENTS.EXPERIMENT_RESET]: "reset",
+  [LAB_EVENTS.PLAYBACK_STARTED]: "play",
+  [LAB_EVENTS.PLAYBACK_PAUSED]: "pause",
+  [LAB_EVENTS.PLAYBACK_STEPPED]: "step",
+  [LAB_EVENTS.VARIABLE_CHANGED]: "variable",
+  [LAB_EVENTS.NUDGED]: "nudge",
+});
+
+const CLICK_EVENTS = Object.freeze({
+  "btn-play": LAB_EVENTS.PLAYBACK_STARTED,
+  "btn-pause": LAB_EVENTS.PLAYBACK_PAUSED,
+  "btn-step": LAB_EVENTS.PLAYBACK_STEPPED,
+  "btn-reset": LAB_EVENTS.EXPERIMENT_RESET,
+  "btn-reset-run": LAB_EVENTS.EXPERIMENT_RESET,
+  "btn-launch": LAB_EVENTS.PROJECTILE_LAUNCHED,
+  "btn-record": LAB_EVENTS.TRIAL_RECORDED,
+  "nudge-pos": LAB_EVENTS.NUDGED,
+  "nudge-neg": LAB_EVENTS.NUDGED,
 });
 
 export function actionFromEvent(type) {
-  return EVENT_ACTIONS[type] || null;
+  return SIM_EVENT_ACTIONS[type] || null;
 }
 
 export function labActionKey(value) {
   if (!value) return "";
-  return EVENT_ACTIONS[value] || String(value);
+  return SIM_EVENT_ACTIONS[value] || String(value);
 }
 
 export function createLabBus() {
@@ -53,5 +75,36 @@ export function createLabBus() {
     emit(type, detail = {}) {
       target.dispatchEvent(new CustomEvent(type, { detail }));
     },
+  };
+}
+
+/**
+ * DOM adapter: report playback and control activity without reading physics internals.
+ */
+export function bindSimEvents(root, bus) {
+  if (!root?.addEventListener || !bus) return () => {};
+
+  function onClick(event) {
+    const button = event.target.closest?.("button[id]");
+    const type = button ? CLICK_EVENTS[button.id] : null;
+    if (type) bus.emit(type, { controlId: button.id });
+  }
+
+  function onChange(event) {
+    const field = event.target.closest?.("input, select, textarea");
+    if (!field?.id) return;
+    bus.emit(LAB_EVENTS.VARIABLE_CHANGED, { controlId: field.id });
+    if (field.id === "angle" || field.id === "angle-input") {
+      bus.emit(LAB_EVENTS.LAUNCH_ANGLE_CHANGED, { controlId: field.id });
+    }
+  }
+
+  root.addEventListener("click", onClick);
+  root.addEventListener("input", onChange);
+  root.addEventListener("change", onChange);
+  return () => {
+    root.removeEventListener("click", onClick);
+    root.removeEventListener("input", onChange);
+    root.removeEventListener("change", onChange);
   };
 }

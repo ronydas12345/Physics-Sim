@@ -3,6 +3,8 @@
  */
 
 import { getTutorials } from "../tutorials/registry.js";
+import { bindLearningTutorial } from "../learning/engine/instruction-window.js";
+import { bindSimEvents, createLabBus } from "../shared/lab-events.js";
 import { decorateActionButtons } from "./lab-kit.js";
 import { placeTutorialHighlight, resolveTutorialTarget } from "./highlight-target.js";
 
@@ -34,7 +36,7 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-export function bindTutorial(root, { simulationId }) {
+export function bindTutorial(root, { simulationId, bus } = {}) {
   const pack = getTutorials(simulationId);
   if (!pack) return () => {};
 
@@ -53,6 +55,9 @@ export function bindTutorial(root, { simulationId }) {
     toolbar.prepend(launch);
     createdLaunch = true;
   }
+  const events = bus || createLabBus();
+  const stopSimEvents = bindSimEvents(root, events);
+  const stopLearning = bindLearningTutorial(root, { simulationId, bus: events });
 
   const host = document.createElement("div");
   host.className = "tutorial-root";
@@ -331,6 +336,8 @@ export function bindTutorial(root, { simulationId }) {
     close();
     host.remove();
     if (createdLaunch) launch?.remove();
+    stopLearning();
+    stopSimEvents();
     window.removeEventListener("keydown", onKey);
     window.removeEventListener("resize", onMove);
     window.removeEventListener("scroll", onMove, true);

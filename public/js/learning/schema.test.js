@@ -3,6 +3,7 @@ import test from "node:test";
 import { BRANCH_CONDITIONS, emptyLearningState, validateTutorialDefinition } from "./schema.js";
 import { projectileRangeTutorial } from "./tutorials/projectile-motion.js";
 import { LAB_EVENTS, actionFromEvent, createLabBus } from "../shared/lab-events.js";
+import { listLearningTutorials } from "./registry.js";
 
 test("projectile tutorial definition matches the Stage 1 schema", () => {
   assert.deepEqual(validateTutorialDefinition(projectileRangeTutorial), []);
@@ -34,9 +35,16 @@ test("lab event bus delivers story and tutorial events without coupling", () => 
   assert.deepEqual(seen, ["facility-exterior", "await-lab", "closing"]);
 });
 
+test("the catalog keeps story and learning definitions on the shared schema", () => {
+  assert.ok(listLearningTutorials().length >= 16);
+  assert.equal(projectileRangeTutorial.stages["hv-check"].type, "conceptual-question");
+  assert.equal(projectileRangeTutorial.stages.investigate.requiredAction, "angle");
+});
+
 test("simulation events stay on the shared bus and map to tutorial actions", () => {
   assert.equal(actionFromEvent(LAB_EVENTS.PROJECTILE_LAUNCHED), "launch");
   assert.equal(actionFromEvent(LAB_EVENTS.TRIAL_RECORDED), "record-trial");
+  assert.equal(actionFromEvent(LAB_EVENTS.PLAYBACK_STARTED), "play");
   const bus = createLabBus();
   const seen = [];
   bus.on(LAB_EVENTS.PROJECTILE_LAUNCHED, (detail) => seen.push(detail.angleDeg));

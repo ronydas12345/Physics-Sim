@@ -29,7 +29,7 @@ import {
 } from "./platform/lab-kit.js";
 import { bindTheoryVisuals } from "./platform/theory-visuals.js";
 import { bindLearningTutorial } from "./learning/engine/instruction-window.js";
-import { LAB_EVENTS, createLabBus } from "./shared/lab-events.js";
+import { LAB_EVENTS, bindSimEvents, createLabBus } from "./shared/lab-events.js";
 import { bindVnLab } from "./visual-novel/renderer/vn-lab.js";
 import { planetById, planetChipStyle, planetIcon, sceneForGravity } from "/lib/planets.js";
 
@@ -848,6 +848,7 @@ resize.observe(els.graphTheoryRange);
 resize.observe(els.graphTheoryHeight);
 
 const pageRoot = document.getElementById("page-root") || document.body;
+bindSimEvents(pageRoot, labBus);
 bindLearningTutorial(pageRoot, { simulationId: "1-5", bus: labBus });
 bindVnLab(pageRoot, { bus: labBus });
 decorateActionButtons(document);

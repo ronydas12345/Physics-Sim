@@ -319,7 +319,7 @@ export function walkLinear(def) {
   const session = createLinearTutorial(def);
   const frames = [session.view()];
   let guard = 0;
-  while (!session.view().complete && guard < 40) {
+  while (!session.view().complete && guard < 80) {
     const now = session.view();
     if (now.needsAnswer) {
       const choice = now.question?.options?.find((option) => option.correct);

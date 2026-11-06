@@ -13,6 +13,10 @@ test("registry loads the projectile tutorial by simulation id", () => {
     "interface",
     "launch",
     "observe",
+    "hv-check",
+    "investigate",
+    "control-check",
+    "graphs",
     "concept-check",
     "summary",
   ]);
@@ -26,6 +30,10 @@ test("correct first answers take the extension path", () => {
     "interface",
     "launch",
     "observe",
+    "hv-check",
+    "investigate",
+    "control-check",
+    "graphs",
     "concept-check",
     "extension",
     "summary",
@@ -82,6 +90,7 @@ test("wrong concept answers take the supported path, then return to standard", (
   const session = createLinearTutorial(projectileRangeTutorial, { bus });
   while (session.view().stageId !== "concept-check") {
     const now = session.view();
+    if (now.needsAnswer) session.answer(now.question.options.find((option) => option.correct).id);
     if (now.needsAction) session.observe(now.requiredAction);
     else session.advance();
   }
@@ -107,6 +116,7 @@ test("hints block the extension path and record usage", () => {
   const session = createLinearTutorial(projectileRangeTutorial, { bus });
   while (session.view().stageId !== "concept-check") {
     const now = session.view();
+    if (now.needsAnswer) session.answer(now.question.options.find((option) => option.correct).id);
     if (now.needsAction) session.observe(now.requiredAction);
     else session.advance();
   }

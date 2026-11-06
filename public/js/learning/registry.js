@@ -1,12 +1,10 @@
 import { projectileRangeTutorial } from "./tutorials/projectile-motion.js";
+import { platformLearningTutorials } from "./tutorials/catalog.js";
 
-const BY_ID = {
-  [projectileRangeTutorial.id]: projectileRangeTutorial,
-};
+const ALL = [projectileRangeTutorial, ...platformLearningTutorials];
 
-const BY_SIM = {
-  [projectileRangeTutorial.simulationId]: projectileRangeTutorial,
-};
+const BY_ID = Object.fromEntries(ALL.map((def) => [def.id, def]));
+const BY_SIM = Object.fromEntries(ALL.map((def) => [def.simulationId, def]));
 
 export function getLearningTutorial(simulationId) {
   return BY_SIM[simulationId] || null;
@@ -17,5 +15,5 @@ export function getLearningTutorialById(id) {
 }
 
 export function listLearningTutorials() {
-  return Object.values(BY_ID);
+  return ALL.slice();
 }

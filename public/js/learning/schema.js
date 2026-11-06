@@ -82,5 +82,12 @@ export function validateTutorialDefinition(def) {
       }
     }
   }
+  if (def.adapter) {
+    if (def.adapter.simulationId && def.adapter.simulationId !== def.simulationId) {
+      errors.push("adapter simulationId mismatch");
+    }
+    if (def.adapter.events && !Array.isArray(def.adapter.events)) errors.push("adapter events must be an array");
+    if (def.adapter.controls && !Array.isArray(def.adapter.controls)) errors.push("adapter controls must be an array");
+  }
   return errors;
 }

@@ -5,7 +5,7 @@
 
 import { decorateActionButtons } from "../../platform/lab-kit.js";
 import { placeTutorialHighlight, resolveTutorialTarget } from "../../platform/highlight-target.js";
-import { LAB_EVENTS, actionFromEvent, createLabBus } from "../../shared/lab-events.js";
+import { LAB_EVENTS, SIM_EVENT_ACTIONS, actionFromEvent, createLabBus } from "../../shared/lab-events.js";
 import { getLearningTutorial } from "../registry.js";
 import { readLearningSave, writeLearningSave } from "../saves.js";
 import { createLinearTutorial } from "./linear-engine.js";
@@ -234,9 +234,7 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
   }
 
   const unsubs = [
-    events.on(LAB_EVENTS.PROJECTILE_LAUNCHED, () => onSim(LAB_EVENTS.PROJECTILE_LAUNCHED)),
-    events.on(LAB_EVENTS.PROJECTILE_LANDED, () => onSim(LAB_EVENTS.PROJECTILE_LANDED)),
-    events.on(LAB_EVENTS.TRIAL_RECORDED, () => onSim(LAB_EVENTS.TRIAL_RECORDED)),
+    ...Object.keys(SIM_EVENT_ACTIONS).map((type) => events.on(type, () => onSim(type))),
     events.on(LAB_EVENTS.STORY_AWAITS_LAB, () => {
       if (loadState(def.id)?.complete) {
         events.emit(LAB_EVENTS.LAB_COMPLETED, { tutorialId: def.id, simulationId: def.simulationId });
