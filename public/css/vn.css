@@ -49,20 +49,17 @@ body:has(.vn-page) .site-footer {
   box-sizing: border-box;
 }
 
-.vn-lab-dock {
-  grid-column: 1 / -1;
-  min-height: min(78vh, 880px);
-  height: min(84vh, 980px);
-  margin: 12px 0 8px;
+.vn-story-panel {
+  min-height: min(78vh, 860px);
 }
 
-.vn-lab-dock[hidden] {
+.vn-story-panel[hidden] {
   display: none;
 }
 
-.vn-lab-dock .vn-screen {
-  height: 100%;
-  min-height: 0;
+.vn-story-panel .vn-screen {
+  height: min(82vh, 960px);
+  min-height: min(72vh, 820px);
 }
 
 .vn-screen {
@@ -609,6 +606,12 @@ body:has(.vn-page) .site-footer {
 }
 
 @media (max-width: 700px) {
+  .vn-story-panel,
+  .vn-story-panel .vn-screen {
+    height: min(78vh, 720px);
+    min-height: min(62vh, 520px);
+  }
+
   #outlet:has(.vn-page) {
     height: calc(100vh - 5.5rem);
   }

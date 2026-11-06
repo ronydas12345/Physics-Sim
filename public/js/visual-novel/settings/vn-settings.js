@@ -21,6 +21,7 @@ export const CHECKPOINT_LABELS = Object.freeze({
   arrival: "Arrival",
   decision: "Investigation choice",
   reconvene: "Testing area",
+  lab: "Guided lab",
   "chapter-end": "Chapter end",
 });
 

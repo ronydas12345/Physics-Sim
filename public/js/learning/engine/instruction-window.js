@@ -157,7 +157,7 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
         return `<li><button type="button" class="text-link${doneClass}${here}" data-jump="${id}">${escapeHtml(title)}</button></li>`;
       })
       .join("");
-    btn?.setAttribute("aria-expanded", "true");
+    btn?.setAttribute("aria-expanded", host.hidden ? "false" : "true");
     decorateActionButtons(host);
     requestAnimationFrame(place);
     persist();
@@ -190,6 +190,7 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
   });
   host.querySelector("#learning-next").addEventListener("click", () => {
     session?.advance();
+    if (host.hidden) return;
     render();
   });
   host.querySelector("#learning-restart").addEventListener("click", () => open(true));
@@ -236,6 +237,15 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
     events.on(LAB_EVENTS.PROJECTILE_LAUNCHED, () => onSim(LAB_EVENTS.PROJECTILE_LAUNCHED)),
     events.on(LAB_EVENTS.PROJECTILE_LANDED, () => onSim(LAB_EVENTS.PROJECTILE_LANDED)),
     events.on(LAB_EVENTS.TRIAL_RECORDED, () => onSim(LAB_EVENTS.TRIAL_RECORDED)),
+    events.on(LAB_EVENTS.STORY_AWAITS_LAB, () => {
+      if (loadState(def.id)?.complete) {
+        events.emit(LAB_EVENTS.LAB_COMPLETED, { tutorialId: def.id, simulationId: def.simulationId });
+        return;
+      }
+      if (host.hidden) open(false);
+      document.getElementById("tab-btn-lab")?.click();
+    }),
+    events.on(LAB_EVENTS.STORY_RESUMES, () => close()),
   ];
 
   return () => {

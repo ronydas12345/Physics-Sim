@@ -70,6 +70,19 @@ test("export and import reject the wrong story and accept a valid file", () => {
   assert.equal(validateNarrativeSave(projectileArrivalStory, { version: 1, storyId: projectileArrivalStory.id, sceneId: "missing", lineIndex: 0 }).ok, false);
 });
 
+test("resetting a chapter does not clear manual slots", () => {
+  const storage = memoryStorage();
+  const session = createNarrativeSession(projectileArrivalStory);
+  session.skipAll();
+  writeSlot(session.view().storyId, 1, session.snapshot(), storage);
+  session.reset();
+  assert.equal(session.view().sceneId, "facility-exterior");
+  assert.equal(session.view().complete, false);
+  const saved = loadSaveBag(session.view().storyId, storage).slots[1];
+  assert.equal(saved.complete, true);
+  assert.equal(saved.sceneId, "closing");
+});
+
 test("learning progress writes a separate store", () => {
   const storage = memoryStorage();
   writeLearningSave({ tutorialId: "1-5-range-intro", currentStage: "launch", version: 1 }, storage);

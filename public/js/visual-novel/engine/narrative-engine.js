@@ -72,12 +72,29 @@ export function createNarrativeSession(story, { bus } = {}) {
     return !labDone.has(labActionKey(need));
   }
 
+  function lastChosen() {
+    if (lastChoiceId) return lastChoiceId;
+    for (let i = log.length - 1; i >= 0; i -= 1) {
+      if (log[i].choiceId) return log[i].choiceId;
+    }
+    return null;
+  }
+
   function spokenNow() {
     return pendingReply || line();
   }
 
+  function spokenText(spoken) {
+    if (!spoken) return "";
+    const variants = spoken.ifChoiceText;
+    const id = lastChosen();
+    if (variants && id && variants[id]) return variants[id];
+    return spoken.text || "";
+  }
+
   function record(spoken, extra = {}) {
-    if (!spoken?.text) return;
+    const text = spokenText(spoken);
+    if (!text) return;
     const key = pendingReply ? `${sceneId}:reply:${lastChoiceId}` : `${sceneId}:${lineIndex}`;
     if (log.at(-1)?.key === key) return;
     const character = spoken.speaker ? story.characters?.[spoken.speaker] : null;
@@ -86,7 +103,7 @@ export function createNarrativeSession(story, { bus } = {}) {
       sceneId,
       speakerId: spoken.speaker || null,
       speaker: character?.name || spoken.speaker || "",
-      text: spoken.text,
+      text,
       choiceId: extra.choiceId || lastChoiceId || null,
       choiceLabel: extra.choiceLabel || null,
     });
@@ -123,7 +140,7 @@ export function createNarrativeSession(story, { bus } = {}) {
       speakerId: spoken?.speaker || null,
       speaker: character?.name || spoken?.speaker || "",
       expression: spoken?.expression || "neutral",
-      text: spoken?.text || "",
+      text: spokenText(spoken),
       position: spoken?.position || character?.position || "center",
       lineIndex,
       lineCount: current?.lines?.length || 0,

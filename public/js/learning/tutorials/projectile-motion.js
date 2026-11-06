@@ -44,7 +44,7 @@ export const projectileRangeTutorial = {
       body: "Set the angle near 45°, launch, and wait for landing. Record the trial if auto-record is off.",
       instruction: "Set the angle near 45°, press Launch, and wait for landing.",
       explanation: "If auto-record is off, press Record Trial after the ball lands so the archive keeps this baseline.",
-      highlight: "playback-controls",
+      highlight: "btn-launch",
       requiredAction: "launch",
       hints: [
         "Launch sits in the playback bar. 45° is a known baseline on flat ground.",
@@ -64,7 +64,7 @@ export const projectileRangeTutorial = {
       title: "What a baseline launch is",
       instruction: "A baseline is one known launch: angle, speed, and gravity all recorded.",
       explanation: "This extra step names the three controls. You can return to the launch bar and take that known run whenever you are ready.",
-      highlight: "playback-controls",
+      highlight: "btn-launch",
       next: "launch",
     },
     observe: {

@@ -12,6 +12,8 @@ export const LAB_EVENTS = Object.freeze({
   TUTORIAL_HINT_REQUESTED: "tutorial:hint-requested",
   STORY_SCENE_UNLOCKED: "story:scene-unlocked",
   STORY_CHAPTER_COMPLETED: "story:chapter-completed",
+  STORY_AWAITS_LAB: "story:awaits-lab",
+  STORY_RESUMES: "story:resumes",
   PROJECTILE_LAUNCHED: "sim:launched",
   PROJECTILE_LANDED: "sim:landed",
   TRIAL_RECORDED: "sim:trial-recorded",

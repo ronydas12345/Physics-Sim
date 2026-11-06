@@ -11,6 +11,7 @@ test("projectile tutorial definition matches the Stage 1 schema", () => {
   assert.equal(projectileRangeTutorial.stages.intro.type, "introduction");
   assert.equal(projectileRangeTutorial.stages.interface.highlight, "angle");
   assert.ok(projectileRangeTutorial.adapter.controls.includes("btn-launch"));
+  assert.equal(projectileRangeTutorial.stages.launch.highlight, "btn-launch");
 });
 
 test("learning state starts empty and separate from story progress", () => {
@@ -25,8 +26,12 @@ test("lab event bus delivers story and tutorial events without coupling", () => 
   const bus = createLabBus();
   const seen = [];
   bus.on(LAB_EVENTS.STORY_SCENE_UNLOCKED, (detail) => seen.push(detail.sceneId));
+  bus.on(LAB_EVENTS.STORY_AWAITS_LAB, () => seen.push("await-lab"));
+  bus.on(LAB_EVENTS.STORY_RESUMES, (detail) => seen.push(detail.sceneId));
   bus.emit(LAB_EVENTS.STORY_SCENE_UNLOCKED, { sceneId: "facility-exterior" });
-  assert.deepEqual(seen, ["facility-exterior"]);
+  bus.emit(LAB_EVENTS.STORY_AWAITS_LAB, { sceneId: "simulation-focus" });
+  bus.emit(LAB_EVENTS.STORY_RESUMES, { sceneId: "closing" });
+  assert.deepEqual(seen, ["facility-exterior", "await-lab", "closing"]);
 });
 
 test("simulation events stay on the shared bus and map to tutorial actions", () => {

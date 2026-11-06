@@ -116,7 +116,7 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
         <button type="button" class="btn ghost-paper" data-vn-open-saves>Save / Load</button>
         <button type="button" class="btn ghost-paper" data-vn-open-history>Dialogue history</button>
         <button type="button" class="btn ghost-paper" data-vn-open-settings>Settings</button>
-        <a class="btn ghost-paper" href="/simulations/module-1/1-5">Return to 1.5</a>
+        <a class="btn ghost-paper" href="/simulations/module-1/1-5" data-vn-back-lab>Return to 1.5</a>
         <a class="btn ghost-paper" href="/" data-link>Return to title</a>
       </aside>
       <aside class="vn-panel vn-saves-panel" data-vn-saves-panel hidden>
@@ -190,6 +190,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   let settings = loadVnSettings();
   let lastScene = "";
   let lastLine = "";
+  let chapterCompleteSent = false;
   let veilTimer = 0;
   let autoArmedAt = 0;
   let raf = 0;
@@ -326,6 +327,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     }
     lastLine = "";
     lastScene = "";
+    chapterCompleteSent = Boolean(session.view().complete);
     persistAutosave();
     closePanels();
     paint();
@@ -372,16 +374,19 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
 
   function paintCheckpoint(view) {
     if (!checkpointEl) return;
-    const here = view.checkpoint ? CHECKPOINT_LABELS[view.checkpoint] || view.checkpoint : "";
-    const next = view.nextCheckpoint
-      ? CHECKPOINT_LABELS[story.scenes[view.nextCheckpoint]?.checkpoint] || view.nextCheckpoint
-      : "Chapter end";
+    checkpointEl.hidden = false;
     if (view.complete) {
-      checkpointEl.hidden = false;
       checkpointEl.textContent = "Chapter complete";
       return;
     }
-    checkpointEl.hidden = false;
+    const here = view.checkpoint ? CHECKPOINT_LABELS[view.checkpoint] || view.checkpoint : "";
+    const next = view.nextCheckpoint
+      ? CHECKPOINT_LABELS[story.scenes[view.nextCheckpoint]?.checkpoint] || view.nextCheckpoint
+      : "";
+    if (!next || next === here) {
+      checkpointEl.textContent = here || "Chapter end";
+      return;
+    }
     checkpointEl.textContent = here ? `${here} · Next: ${next}` : `Next: ${next}`;
   }
 
@@ -412,12 +417,20 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       bus?.emit(LAB_EVENTS.STORY_SCENE_UNLOCKED, { storyId: view.storyId, sceneId: view.sceneId });
     }
     if (view.complete) {
-      if (hintEl) hintEl.textContent = "Chapter prototype complete. The lab stays available.";
+      if (hintEl) hintEl.textContent = "Chapter complete. The lab stays available.";
       setHudLabel(nextBtn, "Replay", "replay");
-      bus?.emit(LAB_EVENTS.STORY_CHAPTER_COMPLETED, { storyId: view.storyId });
+      if (!chapterCompleteSent) {
+        chapterCompleteSent = true;
+        bus?.emit(LAB_EVENTS.STORY_CHAPTER_COMPLETED, { storyId: view.storyId });
+      }
     } else if (view.waitingForLab) {
-      setHudLabel(nextBtn, "Continue", "continue");
-      if (hintEl) hintEl.textContent = "Launch on the lab to continue. Skip will not bypass this.";
+      if (view.waitFor === "lab-complete") {
+        setHudLabel(nextBtn, "Go to Lab", "continue");
+        if (hintEl) hintEl.textContent = "Finish the guided path on the Lab tab. This chapter continues after that run.";
+      } else {
+        setHudLabel(nextBtn, "Continue", "continue");
+        if (hintEl) hintEl.textContent = "Launch on the lab to continue. Skip will not bypass this.";
+      }
     } else if (view.awaitingChoice) {
       if (hintEl) hintEl.textContent = "Choose how to begin. Paths reconvene at the rails.";
     } else if (!typed.complete) {
@@ -437,9 +450,16 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       paint();
       return;
     }
-    if (view.awaitingChoice || view.waitingForLab) return;
+    if (view.awaitingChoice) return;
+    if (view.waitingForLab) {
+      if (view.waitFor === "lab-complete") {
+        bus?.emit(LAB_EVENTS.STORY_AWAITS_LAB, { storyId: view.storyId, sceneId: view.sceneId });
+      }
+      return;
+    }
     if (view.complete) {
       if (!window.confirm("Replay from the start? Manual save slots are kept.")) return;
+      chapterCompleteSent = false;
       session.reset();
       paint();
       return;
@@ -477,7 +497,13 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     raf = requestAnimationFrame(loop);
   }
 
+  function screenLive() {
+    if (mode === "immersive") return true;
+    return !screen.closest("[hidden]");
+  }
+
   function onKey(event) {
+    if (!screenLive()) return;
     if (event.target.closest("input, textarea, select")) return;
     if (event.key === "Escape") {
       event.preventDefault();
@@ -497,7 +523,6 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       return;
     }
     if (event.code !== "Space" && event.code !== "Enter") return;
-    if (mode === "split") return;
     if (event.target.closest("button, a")) return;
     event.preventDefault();
     step();
@@ -634,6 +659,16 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   screen.querySelector("[data-vn-animate]")?.addEventListener("change", (event) => {
     persistSettings({ animateSprites: event.target.checked });
   });
+  const backLab = screen.querySelector("[data-vn-back-lab]");
+  if (mode === "tab" && backLab) {
+    backLab.textContent = "Return to Lab";
+    backLab.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      closePanels();
+      document.getElementById("tab-btn-lab")?.click();
+    });
+  }
 
   nextBtn?.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -673,6 +708,18 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
         session.notify("record-trial");
         persistAutosave();
         paint();
+      }),
+      bus.on(LAB_EVENTS.LAB_COMPLETED, () => {
+        const waiting = session.view().waitingForLab && session.view().waitFor === "lab-complete";
+        session.notify("lab-complete");
+        if (!waiting) {
+          persistAutosave();
+          return;
+        }
+        session.advance();
+        persistAutosave();
+        paint();
+        bus.emit(LAB_EVENTS.STORY_RESUMES, { storyId: story.id, sceneId: session.view().sceneId });
       }),
     );
   }

@@ -75,6 +75,7 @@ test("advance waits on choices, and reset returns to the start", () => {
 
 test("skip to checkpoint stops at a choice; skip all takes a default path to the end", () => {
   assert.equal(nextCheckpointId(projectileArrivalStory, "facility-exterior"), "control-room");
+  assert.equal(nextCheckpointId(projectileArrivalStory, "testing-area"), "simulation-focus");
   const session = createNarrativeSession(projectileArrivalStory);
   session.skipToCheckpoint();
   assert.equal(session.view().sceneId, "control-room");
@@ -92,14 +93,18 @@ test("skip to checkpoint stops at a choice; skip all takes a default path to the
   assert.equal(session.view().history.length, 1);
 });
 
-test("skip all does not bypass a lab wait until the simulation launches", () => {
+test("skip all waits for the guided lab to finish before the closing scene", () => {
   const bus = createLabBus();
   const session = createNarrativeSession(projectileArrivalStory, { bus });
   session.skipAll();
   assert.equal(session.view().complete, false);
   assert.equal(session.view().waitingForLab, true);
-  assert.equal(session.view().waitFor, "launch");
+  assert.equal(session.view().waitFor, "lab-complete");
+  assert.equal(session.view().sceneId, "simulation-focus");
   session.notify("launch");
+  session.skipAll();
+  assert.equal(session.view().complete, false);
+  session.notify("lab-complete");
   session.skipAll();
   assert.equal(session.view().complete, true);
 });
@@ -114,9 +119,10 @@ test("snapshot restore resumes a lab wait without duplicating history", () => {
   const loaded = createNarrativeSession(projectileArrivalStory, { bus });
   assert.ok(loaded.restore(snap));
   assert.equal(loaded.view().sceneId, "simulation-focus");
+  assert.equal(loaded.view().waitFor, "lab-complete");
   assert.equal(loaded.view().waitingForLab, true);
   assert.equal(loaded.view().history.length, history);
-  loaded.notify("launch");
+  loaded.notify("lab-complete");
   loaded.skipAll();
   assert.equal(loaded.view().complete, true);
 });
@@ -124,5 +130,35 @@ test("snapshot restore resumes a lab wait without duplicating history", () => {
 test("a prototype session without a lab bus still completes the chapter", () => {
   const frames = walkStory(projectileArrivalStory);
   assert.equal(frames.at(-1).complete, true);
-  assert.ok(frames.some((frame) => frame.waitFor === "launch" && !frame.waitingForLab));
+  assert.ok(frames.some((frame) => frame.waitFor === "lab-complete" && !frame.waitingForLab));
+});
+
+test("advance stays on the lab wait until the guided run finishes", () => {
+  const bus = createLabBus();
+  const session = createNarrativeSession(projectileArrivalStory, { bus });
+  session.skipAll();
+  const blocked = session.view();
+  session.advance();
+  assert.equal(session.view().sceneId, blocked.sceneId);
+  assert.equal(session.view().waitingForLab, true);
+  assert.equal(session.view().complete, false);
+});
+
+test("choice history stays after reconverge and changes the closing line", () => {
+  const lines = {};
+  for (const id of ["report", "launcher", "ask-elias"]) {
+    const session = createNarrativeSession(projectileArrivalStory);
+    session.skipToCheckpoint();
+    session.choose(id);
+    session.skipAll();
+    assert.ok(session.snapshot().log.some((entry) => entry.choiceId === id), id);
+    const closing = session.view().history.find((entry) => entry.sceneId === "closing");
+    assert.ok(closing, id);
+    lines[id] = closing.text;
+  }
+  assert.notEqual(lines.report, lines.launcher);
+  assert.notEqual(lines.launcher, lines["ask-elias"]);
+  assert.match(lines.report, /missing launch speed/);
+  assert.match(lines.launcher, /Angle, speed, and g/);
+  assert.match(lines["ask-elias"], /archive was clean/);
 });

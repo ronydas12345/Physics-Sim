@@ -91,8 +91,10 @@ const els = {
   graphTheoryHeight: $("graph-theory-height"),
   panelLab: $("panel-lab"),
   panelTheory: $("panel-theory"),
+  panelStory: $("panel-story"),
   tabLab: $("tab-btn-lab"),
   tabTheory: $("tab-btn-theory"),
+  tabStory: $("tab-btn-story"),
   openTheory: $("open-theory"),
   angle: $("angle"),
   velocity: $("velocity"),
@@ -709,12 +711,17 @@ bindTheoryVisuals(document);
 function showTab(name) {
   activeTab = name;
   const lab = name === "lab";
+  const theory = name === "theory";
+  const story = name === "story";
   els.panelLab.hidden = !lab;
-  els.panelTheory.hidden = lab;
+  els.panelTheory.hidden = !theory;
+  if (els.panelStory) els.panelStory.hidden = !story;
   els.tabLab.classList.toggle("active", lab);
-  els.tabTheory.classList.toggle("active", !lab);
+  els.tabTheory.classList.toggle("active", theory);
+  els.tabStory?.classList.toggle("active", story);
   els.tabLab.setAttribute("aria-selected", String(lab));
-  els.tabTheory.setAttribute("aria-selected", String(!lab));
+  els.tabTheory.setAttribute("aria-selected", String(theory));
+  els.tabStory?.setAttribute("aria-selected", String(story));
   requestAnimationFrame(() => {
     drawAll();
   });
@@ -776,6 +783,7 @@ els.debugToggle.addEventListener("change", () => {
 });
 els.tabLab.addEventListener("click", () => showTab("lab"));
 els.tabTheory.addEventListener("click", () => showTab("theory"));
+els.tabStory?.addEventListener("click", () => showTab("story"));
 els.openTheory.addEventListener("click", () => showTab("theory"));
 
 for (const chip of document.querySelectorAll(".chip[data-angle]")) {
@@ -790,6 +798,7 @@ els.planetBackgrounds?.addEventListener("change", () => {
 });
 
 window.addEventListener("keydown", (event) => {
+  if (activeTab !== "lab") return;
   if (event.target.matches("input, textarea, button")) return;
   if (event.code === "Space") {
     event.preventDefault();

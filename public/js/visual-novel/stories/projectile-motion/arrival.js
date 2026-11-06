@@ -139,6 +139,7 @@ export const projectileArrivalStory = {
     "simulation-focus": {
       background: "simulation-focus",
       transition: "fade",
+      checkpoint: "lab",
       cast: ["mara"],
       next: "closing",
       lines: [
@@ -147,8 +148,8 @@ export const projectileArrivalStory = {
           expression: "thinking",
           position: "center",
           exit: "elias",
-          waitFor: "launch",
-          text: "The live lab stays in your hands. Launch a baseline when you are ready. I will wait until the ball is in the air.",
+          waitFor: "lab-complete",
+          text: "The live lab stays in your hands. Open Learning path, take a baseline at a known angle, and record what you actually control. I will wait until that guided run is finished.",
         },
       ],
     },
@@ -164,13 +165,21 @@ export const projectileArrivalStory = {
           expression: "focused",
           position: "right",
           enter: "elias",
-          text: "When you are ready, open 1.5 and take a baseline at a known angle. Mystery after measurement.",
+          text: "The rails kept their word. You have a measured baseline on this apparatus, not a recipe copied from a missing report.",
+          ifChoiceText: {
+            report:
+              "The rails kept their word. The missing launch speed in that report is why a copied recipe would have failed.",
+            launcher:
+              "The rails kept their word. Angle, speed, and g were the knobs; the archive had omitted one.",
+            "ask-elias":
+              "The rails kept their word. The archive was clean; the missing conditions were the experiment.",
+          },
         },
         {
           speaker: "mara",
           expression: "surprised",
           position: "left",
-          text: "If the archive still disagrees after that, then the omitted condition is the real experiment.",
+          text: "If the archive still disagrees after that, the omitted condition is the real experiment.",
         },
       ],
     },

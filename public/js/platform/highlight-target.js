@@ -26,6 +26,8 @@ export const TARGET_ALIASES = {
   "inertia-panel": "#inertia-panel",
   "scenario-selector": "#scenario-selector",
   "playback-controls": "#playback-controls",
+  "btn-launch": "#btn-launch",
+  launch: "#btn-launch",
   "acceleration-panel": "#acceleration-panel",
   "velocity-panel": "#velocity-panel",
   "mass-control": "#mass-control",
@@ -116,6 +118,9 @@ export function placeTutorialHighlight(spot, panel, target) {
   if (left < 12) left = 12;
   if (top < 12) top = 12;
   if (top + ph > window.innerHeight - 12) top = Math.max(12, window.innerHeight - ph - 12);
+  if (tr && left < tr.right && left + pw > tr.left && top < tr.bottom && top + ph > tr.top) {
+    top = Math.min(window.innerHeight - ph - 12, tr.bottom + 12);
+  }
   panel.style.width = `${pw}px`;
   panel.style.left = `${left}px`;
   panel.style.top = `${top}px`;
