@@ -2,11 +2,11 @@
  * Learning Branch Manager — Stage 1 schema.
  *
  * Existing How to Use / Guided Lab overlays stay as they are. This schema is the
- * reusable graph those tutorials can later compile into. The engine (Stage 2+)
- * loads definitions; it does not scrape simulation internals.
+ * reusable graph those tutorials can later compile into. The linear engine loads
+ * definitions; it does not scrape simulation internals.
  *
- * Highlight targets reuse the current tutorial highlight aliases
- * (see public/js/platform/tutorial.js TARGET_ALIASES and .tutorial-spot).
+ * Stage copy: instruction (or body) plus optional explanation.
+ * Highlight targets reuse the shared aliases in highlight-target.js and .tutorial-spot.
  */
 
 export const STAGE_TYPES = Object.freeze([

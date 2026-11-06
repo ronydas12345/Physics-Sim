@@ -100,6 +100,10 @@ const ACTION_ICONS = {
     "guided",
     `<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path class="icon-needle" fill="currentColor" d="M12 5.5 14.2 12 12 18.5 9.8 12z"/>`,
   ),
+  learning: iconSvg(
+    "learning",
+    `<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 19V6l7 3 7-3v13l-7 3z"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 9v13"/>`,
+  ),
   prev: iconSvg(
     "prev",
     `<path class="icon-chevron" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M14 5 7 12l7 7"/>`,
@@ -142,10 +146,11 @@ function actionOf(el) {
   if (id === "btn-new-target") return "shuffle";
   if (id === "btn-howto") return "howto";
   if (id === "btn-guided") return "guided";
-  if (id === "tutorial-prev") return "prev";
-  if (id === "tutorial-next") return "next";
-  if (id === "tutorial-close") return "close";
-  if (id === "tutorial-restart") return "reset";
+  if (id === "btn-learning") return "learning";
+  if (id === "tutorial-prev" || id === "learning-prev") return "prev";
+  if (id === "tutorial-next" || id === "learning-next") return "next";
+  if (id === "tutorial-close" || id === "learning-close") return "close";
+  if (id === "tutorial-restart" || id === "learning-restart") return "reset";
   if (id === "btn-fullscreen") return "fullscreen";
   if (id === "btn-download") return "download";
   if (el.matches?.("a.btn.primary")) return "open";
@@ -156,7 +161,7 @@ function actionOf(el) {
 
 export function decorateActionButtons(root = document) {
   if (!root?.querySelectorAll) return;
-  root.querySelectorAll("button.btn, a.btn, button.icon-btn, #tutorial-close, #tutorial-restart").forEach((el) => {
+  root.querySelectorAll("button.btn, a.btn, button.icon-btn, #tutorial-close, #tutorial-restart, #learning-close, #learning-restart").forEach((el) => {
     if (el.dataset.iconified === "1") return;
     const action = actionOf(el);
     if (!action) return;
@@ -170,7 +175,7 @@ export function decorateActionButtons(root = document) {
       return;
     }
     const label = el.innerHTML.trim();
-    el.innerHTML = el.id === "tutorial-close" ? icon : `${icon}<span class="btn-label">${label}</span>`;
+    el.innerHTML = el.id === "tutorial-close" || el.id === "learning-close" ? icon : `${icon}<span class="btn-label">${label}</span>`;
   });
 }
 

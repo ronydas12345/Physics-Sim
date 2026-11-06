@@ -55,6 +55,22 @@
   border-color: var(--accent);
 }
 
+.tutorial-launch .btn.action-learning {
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--line));
+  color: var(--ok);
+}
+
+.tutorial-launch .btn.action-learning:hover {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.tutorial-launch .btn.action-learning[aria-expanded="true"] {
+  background: var(--ok);
+  color: var(--paper);
+  border-color: var(--ok);
+}
+
 .tutorial-root {
   position: relative;
   z-index: 40;
@@ -114,7 +130,8 @@
   height: 18px;
 }
 
-#tutorial-restart.has-icon {
+#tutorial-restart.has-icon,
+#learning-restart.has-icon {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;

@@ -28,6 +28,7 @@ import {
   setButtonLabel,
 } from "./platform/lab-kit.js";
 import { bindTheoryVisuals } from "./platform/theory-visuals.js";
+import { bindLearningTutorial } from "./learning/engine/instruction-window.js";
 import { planetById, planetChipStyle, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
@@ -806,6 +807,7 @@ resize.observe(els.graphHeight);
 resize.observe(els.graphTheoryRange);
 resize.observe(els.graphTheoryHeight);
 
+bindLearningTutorial(document.getElementById("page-root") || document.body, { simulationId: "1-5" });
 decorateActionButtons(document);
 syncReadouts();
 updateLive();

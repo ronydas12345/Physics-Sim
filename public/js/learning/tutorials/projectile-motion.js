@@ -1,5 +1,5 @@
 /**
- * Stage 1 projectile tutorial definition.
+ * Projectile tutorial definition.
  * Linear only. Adaptive branches are listed as reserved next-ids for Stage 4.
  */
 export const projectileRangeTutorial = {
@@ -24,6 +24,8 @@ export const projectileRangeTutorial = {
       type: "introduction",
       title: "What this lab investigates",
       body: "On flat ground with no air resistance, launch angle changes hang time and horizontal range. Speed and gravity stay in your control.",
+      instruction: "On flat ground with no air resistance, launch angle changes hang time and horizontal range.",
+      explanation: "Speed and gravity stay in your control. This path walks one baseline trial so you can read range from the apparatus.",
       highlight: "simulation-canvas",
       next: "interface",
     },
@@ -31,6 +33,8 @@ export const projectileRangeTutorial = {
       type: "interface",
       title: "Find the launch controls",
       body: "Angle, speed, and gravity sit under the launcher. The existing highlight box can point at the angle field.",
+      instruction: "Find the angle, speed, and gravity fields under the launcher.",
+      explanation: "Angle is highlighted. Speed and gravity sit beside it. You can change them later; this step only locates the controls.",
       highlight: "angle",
       next: "launch",
     },
@@ -38,6 +42,8 @@ export const projectileRangeTutorial = {
       type: "guided-action",
       title: "Run a baseline at 45°",
       body: "Set the angle near 45°, launch, and wait for landing. Record the trial if auto-record is off.",
+      instruction: "Set the angle near 45°, press Launch, and wait for landing.",
+      explanation: "If auto-record is off, press Record Trial after the ball lands so the archive keeps this baseline.",
       highlight: "playback-controls",
       requiredAction: "launch",
       next: "observe",
@@ -50,6 +56,8 @@ export const projectileRangeTutorial = {
       type: "observation",
       title: "Read range and hang time",
       body: "Compare the live landing position with Time of Flight and Maximum Height. Do not assume the archive listed every condition yet.",
+      instruction: "Read Time of Flight, Maximum Height, and the live landing position.",
+      explanation: "Range on flat ground is the horizontal distance from launch to landing. Complementary angles can match later; this step only records one trial.",
       highlight: "final-metrics",
       next: "summary",
     },
@@ -57,6 +65,8 @@ export const projectileRangeTutorial = {
       type: "summary",
       title: "Baseline recorded",
       body: "You have a known launch on this apparatus. Later stages will branch if angle never changes, if launches are repeated without recording, or if complementary angles are compared.",
+      instruction: "You now have a known launch on this apparatus.",
+      explanation: "Later paths can branch if the angle never changes, if launches are repeated without recording, or if complementary angles are compared. Closing this panel does not reset the lab.",
       next: null,
     },
   },
