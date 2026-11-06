@@ -31,12 +31,13 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function reducedMotion() {
-  return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function motionOff(settings) {
+  return Boolean(settings?.reducedMotion) || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
 }
 
 function lineKey(view) {
-  return `${view.sceneId}:${view.lineIndex}:${view.lastChoiceId || ""}:${view.complete ? "end" : "line"}`;
+  const beat = view.pendingEvent ? "event" : view.complete ? "end" : view.awaitingChoice ? "choice" : "line";
+  return `${view.sceneId}:${view.lineIndex}:${view.lastChoiceId || ""}:${beat}`;
 }
 
 const HUD_PATHS = {
@@ -101,7 +102,7 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
         <div class="vn-dialogue-copy">
           <p class="vn-kicker">${escapeHtml(story.title)}</p>
           <p class="vn-speaker" data-vn-speaker></p>
-          <p class="vn-line" data-vn-line></p>
+          <p class="vn-line" data-vn-line aria-live="polite"></p>
           <div class="vn-choices" data-vn-choices hidden></div>
           <div class="vn-dialogue-bar">
             <p class="vn-hint" data-vn-hint>Click, tap, or press Space to continue.</p>
@@ -116,8 +117,9 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
         <button type="button" class="btn ghost-paper" data-vn-open-saves>Save / Load</button>
         <button type="button" class="btn ghost-paper" data-vn-open-history>Dialogue history</button>
         <button type="button" class="btn ghost-paper" data-vn-open-settings>Settings</button>
+        <button type="button" class="btn ghost-paper" data-vn-replay>Replay chapter</button>
         <a class="btn ghost-paper" href="/simulations/module-1/1-5" data-vn-back-lab>Return to 1.5</a>
-        <a class="btn ghost-paper" href="/" data-link>Return to title</a>
+        <a class="btn ghost-paper" href="/" data-link data-vn-title>Return to title</a>
       </aside>
       <aside class="vn-panel vn-saves-panel" data-vn-saves-panel hidden>
         <header class="vn-panel-head">
@@ -159,6 +161,21 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
         </label>
         <label class="vn-check">
           <input type="checkbox" data-vn-animate /> Character animation
+        </label>
+        <label class="vn-check">
+          <input type="checkbox" data-vn-reduced-motion /> Reduced motion
+        </label>
+        <label class="vn-check">
+          <input type="checkbox" data-vn-captions /> Captions
+        </label>
+        <label>Background music <span class="vn-muted">reserved</span>
+          <input type="range" min="0" max="1" step="0.05" data-vn-bgm />
+        </label>
+        <label>Sound effects <span class="vn-muted">reserved</span>
+          <input type="range" min="0" max="1" step="0.05" data-vn-sfx />
+        </label>
+        <label>Voice <span class="vn-muted">reserved</span>
+          <input type="range" min="0" max="1" step="0.05" data-vn-voice />
         </label>
       </aside>
     </section>`;
@@ -221,6 +238,8 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   function applyChrome() {
     screen.style.setProperty("--vn-line-size", `${settings.textScale}`);
     screen.style.setProperty("--vn-box-opacity", String(settings.boxOpacity));
+    screen.classList.toggle("is-reduced-motion", motionOff(settings));
+    screen.classList.toggle("is-captions-off", settings.captions === false);
     autoBtn?.setAttribute("aria-pressed", String(settings.autoMode));
     autoBtn?.classList.toggle("is-on", settings.autoMode);
   }
@@ -231,19 +250,29 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     const scale = screen.querySelector("[data-vn-text-scale]");
     const opacity = screen.querySelector("[data-vn-box-opacity]");
     const animate = screen.querySelector("[data-vn-animate]");
+    const reduced = screen.querySelector("[data-vn-reduced-motion]");
+    const captions = screen.querySelector("[data-vn-captions]");
+    const bgm = screen.querySelector("[data-vn-bgm]");
+    const sfx = screen.querySelector("[data-vn-sfx]");
+    const voice = screen.querySelector("[data-vn-voice]");
     if (speed) speed.value = settings.textSpeed;
     if (delay) delay.value = settings.autoDelay;
     if (scale) scale.value = String(settings.textScale);
     if (opacity) opacity.value = String(settings.boxOpacity);
     if (animate) animate.checked = settings.animateSprites;
+    if (reduced) reduced.checked = settings.reducedMotion;
+    if (captions) captions.checked = settings.captions;
+    if (bgm) bgm.value = String(settings.bgmVolume);
+    if (sfx) sfx.value = String(settings.sfxVolume);
+    if (voice) voice.value = String(settings.voiceVolume);
   }
 
   function persistSettings(patch) {
     settings = saveVnSettings({ ...settings, ...patch });
     applyChrome();
-    if (patch.textSpeed == null) return;
+    if (patch.textSpeed == null && patch.reducedMotion == null) return;
     const view = session.view();
-    const speed = reducedMotion() ? 0 : textSpeedMs(settings);
+    const speed = motionOff(settings) ? 0 : textSpeedMs(settings);
     const wasComplete = tw.view().complete;
     tw.start(view.text, speed, performance.now());
     if (wasComplete || speed === 0) tw.complete();
@@ -260,7 +289,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       el.dataset.expression = member.expression || "neutral";
       el.classList.toggle("is-speaking", view.speakerId === member.id);
       el.classList.toggle("is-dim", show && view.speakerId && view.speakerId !== member.id);
-      if (show && wasHidden && settings.animateSprites && !reducedMotion()) {
+      if (show && wasHidden && settings.animateSprites && !motionOff(settings)) {
         el.classList.remove("is-exiting");
         el.classList.add("is-entering");
       }
@@ -307,7 +336,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       bg.dataset.bg = view.background;
       veil?.classList.remove("is-on");
     };
-    if (reducedMotion() || !settings.animateSprites || view.transition !== "fade") {
+    if (motionOff(settings) || !settings.animateSprites || view.transition !== "fade") {
       apply();
       return;
     }
@@ -366,7 +395,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
         const choice = entry.choiceLabel
           ? `<p class="vn-history-choice">Chose: ${escapeHtml(entry.choiceLabel)}</p>`
           : "";
-        return `<li><p class="vn-history-speaker">${escapeHtml(who)}</p><p>${escapeHtml(entry.text)}</p>${choice}</li>`;
+        return `<li><p class="vn-history-speaker">${escapeHtml(who)}</p><p class="vn-history-scene">${escapeHtml(entry.sceneId || "")}</p><p>${escapeHtml(entry.text)}</p>${choice}</li>`;
       })
       .join("");
     historyList.scrollTop = historyList.scrollHeight;
@@ -391,7 +420,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   }
 
   function beginLine(view, at = performance.now()) {
-    const speed = reducedMotion() ? 0 : textSpeedMs(settings);
+    const speed = motionOff(settings) ? 0 : textSpeedMs(settings);
     tw.start(view.text, speed, at);
     if (speed === 0 || view.awaitingChoice || view.complete) tw.complete();
     autoArmedAt = 0;
@@ -423,6 +452,9 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
         chapterCompleteSent = true;
         bus?.emit(LAB_EVENTS.STORY_CHAPTER_COMPLETED, { storyId: view.storyId });
       }
+    } else if (view.pendingEvent) {
+      setHudLabel(nextBtn, "Continue", "continue");
+      if (hintEl) hintEl.textContent = "A lab event updated the story. Continue keeps you on the rails until the guided run finishes.";
     } else if (view.waitingForLab) {
       if (view.waitFor === "lab-complete") {
         setHudLabel(nextBtn, "Go to Lab", "continue");
@@ -432,13 +464,13 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
         if (hintEl) hintEl.textContent = "Launch on the lab to continue. Skip will not bypass this.";
       }
     } else if (view.awaitingChoice) {
-      if (hintEl) hintEl.textContent = "Choose how to begin. Paths reconvene at the rails.";
+      if (hintEl) hintEl.textContent = "Choose a path. Later lines can remember this. Skip will not pick for you.";
     } else if (!typed.complete) {
       setHudLabel(nextBtn, "Reveal", "reveal");
       if (hintEl) hintEl.textContent = "Click to reveal the rest. Space also works.";
     } else {
       setHudLabel(nextBtn, "Continue", "continue");
-      if (hintEl) hintEl.textContent = "Click, tap, or press Space to continue. A toggles auto.";
+      if (hintEl) hintEl.textContent = "Space continues. A auto. S skip. Shift+S skip all. Esc menu.";
     }
   }
 
@@ -451,17 +483,21 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       return;
     }
     if (view.awaitingChoice) return;
+    if (view.pendingEvent) {
+      session.advance();
+      persistAutosave();
+      paint();
+      return;
+    }
     if (view.waitingForLab) {
       if (view.waitFor === "lab-complete") {
         bus?.emit(LAB_EVENTS.STORY_AWAITS_LAB, { storyId: view.storyId, sceneId: view.sceneId });
+        if (mode === "tab") document.getElementById("tab-btn-lab")?.click();
       }
       return;
     }
     if (view.complete) {
-      if (!window.confirm("Replay from the start? Manual save slots are kept.")) return;
-      chapterCompleteSent = false;
-      session.reset();
-      paint();
+      replayChapter();
       return;
     }
     session.advance();
@@ -497,6 +533,15 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     raf = requestAnimationFrame(loop);
   }
 
+  function replayChapter() {
+    if (!window.confirm("Replay from the start? Manual save slots are kept.")) return;
+    chapterCompleteSent = false;
+    session.reset();
+    persistAutosave();
+    closePanels();
+    paint();
+  }
+
   function screenLive() {
     if (mode === "immersive") return true;
     return !screen.closest("[hidden]");
@@ -520,6 +565,14 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     if (event.key === "h" || event.key === "H") {
       event.preventDefault();
       showPanel("history");
+      return;
+    }
+    if (event.key === "s" || event.key === "S") {
+      event.preventDefault();
+      if (event.shiftKey) session.skipAll();
+      else session.skipToCheckpoint();
+      persistAutosave();
+      paint();
       return;
     }
     if (event.code !== "Space" && event.code !== "Enter") return;
@@ -659,6 +712,31 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   screen.querySelector("[data-vn-animate]")?.addEventListener("change", (event) => {
     persistSettings({ animateSprites: event.target.checked });
   });
+  screen.querySelector("[data-vn-reduced-motion]")?.addEventListener("change", (event) => {
+    persistSettings({ reducedMotion: event.target.checked });
+  });
+  screen.querySelector("[data-vn-captions]")?.addEventListener("change", (event) => {
+    persistSettings({ captions: event.target.checked });
+  });
+  screen.querySelector("[data-vn-bgm]")?.addEventListener("input", (event) => {
+    persistSettings({ bgmVolume: Number(event.target.value) });
+  });
+  screen.querySelector("[data-vn-sfx]")?.addEventListener("input", (event) => {
+    persistSettings({ sfxVolume: Number(event.target.value) });
+  });
+  screen.querySelector("[data-vn-voice]")?.addEventListener("input", (event) => {
+    persistSettings({ voiceVolume: Number(event.target.value) });
+  });
+  screen.querySelector("[data-vn-replay]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    replayChapter();
+  });
+  screen.querySelector("[data-vn-title]")?.addEventListener("click", (event) => {
+    if (!window.confirm("Leave the chapter? Autosave keeps this position. Manual slots stay.")) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
   const backLab = screen.querySelector("[data-vn-back-lab]");
   if (mode === "tab" && backLab) {
     backLab.textContent = "Return to Lab";
@@ -706,6 +784,11 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       }),
       bus.on(LAB_EVENTS.TRIAL_RECORDED, () => {
         session.notify("record-trial");
+        persistAutosave();
+        paint();
+      }),
+      bus.on(LAB_EVENTS.LAUNCH_ANGLE_CHANGED, (detail) => {
+        session.notify("angle", detail);
         persistAutosave();
         paint();
       }),

@@ -576,6 +576,15 @@ body:has(.vn-page) .site-footer {
   font-weight: 650;
 }
 
+.vn-history-scene,
+.vn-muted {
+  margin: 0 0 4px;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
 .vn-history-choice {
   margin: 4px 0 0;
   color: var(--ink-soft);
@@ -603,6 +612,24 @@ body:has(.vn-page) .site-footer {
     transition: none;
     animation: none;
   }
+}
+
+.vn-screen.is-reduced-motion .vn-background,
+.vn-screen.is-reduced-motion .vn-actor,
+.vn-screen.is-reduced-motion .vn-veil,
+.vn-screen.is-reduced-motion .vn-hud-btn {
+  transition: none;
+  animation: none;
+}
+
+.vn-screen.is-reduced-motion .vn-hud-btn:hover {
+  transform: none;
+}
+
+.vn-line:focus-visible,
+.vn-choice:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 @media (max-width: 700px) {

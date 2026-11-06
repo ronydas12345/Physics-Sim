@@ -22,10 +22,18 @@ export const CHECKPOINT_LABELS = Object.freeze({
   decision: "Investigation choice",
   reconvene: "Testing area",
   lab: "Guided lab",
+  interpretation: "Read the trials",
+  revelation: "Omitted condition",
   "chapter-end": "Chapter end",
 });
 
 const STORAGE_KEY = "ap1-vn-settings";
+
+function clamp01(value, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(1, Math.max(0, n));
+}
 
 export function defaultVnSettings() {
   return {
@@ -35,6 +43,11 @@ export function defaultVnSettings() {
     textScale: 1,
     boxOpacity: 0.94,
     animateSprites: true,
+    reducedMotion: false,
+    captions: true,
+    bgmVolume: 0,
+    sfxVolume: 0,
+    voiceVolume: 0,
   };
 }
 
@@ -49,6 +62,11 @@ export function normalizeVnSettings(raw) {
   const opacity = Number(raw.boxOpacity);
   if (Number.isFinite(opacity)) base.boxOpacity = Math.min(1, Math.max(0.7, opacity));
   if (raw.animateSprites === false) base.animateSprites = false;
+  base.reducedMotion = Boolean(raw.reducedMotion);
+  base.captions = raw.captions !== false;
+  base.bgmVolume = clamp01(raw.bgmVolume, 0);
+  base.sfxVolume = clamp01(raw.sfxVolume, 0);
+  base.voiceVolume = clamp01(raw.voiceVolume, 0);
   return base;
 }
 

@@ -1,8 +1,24 @@
-/** Demonstration-only Scenes 1–2. Replace later with THE QUIET VECTOR canon. */
+/** Demonstration-only Scenes 1–7. Replace later with THE QUIET VECTOR canon. */
 export const projectileArrivalStory = {
   id: "projectile-arrival",
   title: "The Incomplete Report",
   start: "facility-exterior",
+  variables: {
+    inspectedReport: false,
+    inspectedLauncher: false,
+    askedElias: false,
+    launches: 0,
+    trials: 0,
+    changedAngle: false,
+    sawLaunch: false,
+    interpretation: "",
+    lastAngle: null,
+  },
+  events: {
+    launch: { add: { launches: 1 }, set: { sawLaunch: true } },
+    angle: { set: { changedAngle: true } },
+    "record-trial": { add: { trials: 1 } },
+  },
   characters: {
     mara: {
       name: "Mara",
@@ -95,6 +111,7 @@ export const projectileArrivalStory = {
               label: "Inspect the original experiment report.",
               speaker: "mara",
               expression: "thinking",
+              set: { inspectedReport: true },
               reply: "Range and hang time are listed. Launch speed is implied, not measured on our rails. Gravity is assumed Earth-normal.",
             },
             {
@@ -102,6 +119,7 @@ export const projectileArrivalStory = {
               label: "Examine the projectile launcher.",
               speaker: "elias",
               expression: "focused",
+              set: { inspectedLauncher: true },
               reply: "Angle, speed, and g are the three knobs that matter here. If the archive omitted one, the curve will not match.",
             },
             {
@@ -109,6 +127,7 @@ export const projectileArrivalStory = {
               label: "Ask Elias about the recorded trajectory.",
               speaker: "elias",
               expression: "confused",
+              set: { askedElias: true },
               reply: "The curve is too clean. Complementary angles can share a range, but only if the missing condition is the same both times.",
             },
           ],
@@ -141,7 +160,29 @@ export const projectileArrivalStory = {
       transition: "fade",
       checkpoint: "lab",
       cast: ["mara"],
-      next: "closing",
+      next: "investigation",
+      on: {
+        launch: {
+          speaker: "elias",
+          expression: "focused",
+          position: "right",
+          enter: "elias",
+          text: "That shot is on the rails. Keep speed and gravity fixed if you want the angle to be the only change.",
+        },
+        angle: {
+          speaker: "elias",
+          expression: "amused",
+          position: "right",
+          enter: "elias",
+          text: "New angle, same rails. Complementary pairs can share a range. 45° is the peak on flat ground, not a requirement.",
+        },
+        "record-trial": {
+          speaker: "mara",
+          expression: "thinking",
+          position: "center",
+          text: "A recorded row belongs to you. Compare it with the next launch before you trust the archive.",
+        },
+      },
       lines: [
         {
           speaker: "mara",
@@ -150,6 +191,97 @@ export const projectileArrivalStory = {
           exit: "elias",
           waitFor: "lab-complete",
           text: "The live lab stays in your hands. Open Learning path, take a baseline at a known angle, and record what you actually control. I will wait until that guided run is finished.",
+        },
+      ],
+    },
+    investigation: {
+      background: "testing-area",
+      transition: "fade",
+      checkpoint: "interpretation",
+      cast: ["mara", "elias"],
+      next: "revelation",
+      lines: [
+        {
+          speaker: "mara",
+          expression: "serious",
+          position: "left",
+          text: "You have a measured baseline. What did the trials actually show?",
+          choices: [
+            {
+              id: "range",
+              label: "Range peaked near 45°, and complementary angles landed equally far.",
+              speaker: "mara",
+              expression: "neutral",
+              set: { interpretation: "range" },
+              reply: "That is the range identity on flat ground. Height does not follow the same curve.",
+            },
+            {
+              id: "height",
+              label: "Steeper launches went higher even when they did not go farther.",
+              speaker: "elias",
+              expression: "focused",
+              set: { interpretation: "height" },
+              reply: "Height keeps rising toward 90°. Range does not. The archive listed hang time; it still omitted a knob.",
+            },
+            {
+              id: "missing",
+              label: "The archive is still missing a condition we actually control.",
+              speaker: "elias",
+              expression: "concerned",
+              skipDefault: true,
+              set: { interpretation: "missing" },
+              reply: "Exactly. The curve we measured is honest. The report is not a complete recipe.",
+            },
+          ],
+        },
+      ],
+    },
+    revelation: {
+      background: "control-room",
+      transition: "fade",
+      checkpoint: "revelation",
+      cast: ["mara", "elias"],
+      next: "closing",
+      lines: [
+        {
+          speaker: "mara",
+          expression: "thinking",
+          position: "left",
+          when: { inspectedReport: true },
+          text: "The report listed range and hang time. Launch speed was implied, never measured on these rails. That is the omitted condition.",
+        },
+        {
+          speaker: "elias",
+          expression: "focused",
+          position: "right",
+          when: { inspectedLauncher: true },
+          text: "Angle, speed, and g. If the archive left speed as an assumption, no copied recipe would have matched our launcher.",
+        },
+        {
+          speaker: "elias",
+          expression: "confused",
+          position: "right",
+          when: { askedElias: true },
+          text: "The archived curve was too clean because it hid a knob. Complementary angles only share a range when that knob stays fixed.",
+        },
+        {
+          speaker: "mara",
+          expression: "serious",
+          position: "left",
+          text: "The report is not necessarily wrong. It is insufficient to reproduce the experiment independently.",
+        },
+        {
+          speaker: "mara",
+          expression: "concerned",
+          position: "left",
+          when: { sawLaunch: true },
+          text: "Your launches on this apparatus are the first complete record we have. The mystery is what the original team left out, not whether the rails work.",
+        },
+        {
+          speaker: "elias",
+          expression: "concerned",
+          position: "right",
+          text: "Someone archived a trajectory without archiving the machine. That is a small mystery. It will not stay small.",
         },
       ],
     },
@@ -180,6 +312,12 @@ export const projectileArrivalStory = {
           expression: "surprised",
           position: "left",
           text: "If the archive still disagrees after that, the omitted condition is the real experiment.",
+        },
+        {
+          speaker: "mara",
+          expression: "neutral",
+          position: "left",
+          text: "Replay this chapter whenever you want. The lab stays open. Completing the story is not the same as finishing the experiment.",
         },
       ],
     },

@@ -34,3 +34,20 @@ test("settings persist without writing a narrative save", () => {
   assert.equal(loaded.textScale, 1.2);
   assert.deepEqual(loadVnSettings(memoryStorage()), defaultVnSettings());
 });
+
+test("reduced motion and reserved volumes persist separately from story saves", () => {
+  const storage = memoryStorage();
+  const saved = saveVnSettings(
+    { reducedMotion: true, captions: false, bgmVolume: 0.4, sfxVolume: 2, voiceVolume: -1 },
+    storage,
+  );
+  assert.equal(saved.reducedMotion, true);
+  assert.equal(saved.captions, false);
+  assert.equal(saved.bgmVolume, 0.4);
+  assert.equal(saved.sfxVolume, 1);
+  assert.equal(saved.voiceVolume, 0);
+  assert.equal(storage.getItem("ap1-vn-save"), null);
+  const loaded = loadVnSettings(storage);
+  assert.equal(loaded.reducedMotion, true);
+  assert.equal(loaded.captions, false);
+});

@@ -1,10 +1,11 @@
 /**
- * Narrative session. Choices reconverge immediately.
+ * Narrative session. Choices reconverge. Variables and lab events can change later lines.
  * Checkpoints exist so skip can stop. Snapshot/restore keep story saves separate from settings.
  */
 
 import { labActionKey } from "../../shared/lab-events.js";
 import { VN_SAVE_VERSION, validateNarrativeSave } from "../saves/vn-saves.js";
+import { applyPatch, conditionOk, emptyVars } from "./conditions.js";
 import { nextCheckpointId } from "./skip.js";
 
 function emptyStage(story) {
@@ -55,47 +56,62 @@ export function createNarrativeSession(story, { bus } = {}) {
   let lineIndex = 0;
   let complete = false;
   let pendingReply = null;
+  let pendingEvent = null;
   let lastChoiceId = null;
   let stage = emptyStage(story);
   let stagedScene = null;
   let log = [];
+  let vars = emptyVars(story);
   const labDone = new Set();
+  const heard = new Set();
 
   function awaitingChoice() {
-    return Boolean(line()?.choices?.length) && !pendingReply && !lastChoiceId;
+    return Boolean(line()?.choices?.length) && !pendingReply && !pendingEvent && !lastChoiceId;
+  }
+
+  function requiredLabAction() {
+    return line()?.waitFor || scene()?.waitFor || null;
   }
 
   function waitingForLab() {
     if (!bus) return false;
-    const need = spokenNow()?.waitFor || scene()?.waitFor;
+    const need = requiredLabAction();
     if (!need) return false;
     return !labDone.has(labActionKey(need));
   }
 
-  function lastChosen() {
-    if (lastChoiceId) return lastChoiceId;
-    for (let i = log.length - 1; i >= 0; i -= 1) {
-      if (log[i].choiceId) return log[i].choiceId;
-    }
-    return null;
-  }
-
   function spokenNow() {
-    return pendingReply || line();
+    return pendingEvent || pendingReply || line();
   }
 
   function spokenText(spoken) {
     if (!spoken) return "";
     const variants = spoken.ifChoiceText;
-    const id = lastChosen();
-    if (variants && id && variants[id]) return variants[id];
+    if (variants) {
+      for (let i = log.length - 1; i >= 0; i -= 1) {
+        const id = log[i].choiceId;
+        if (id && variants[id]) return variants[id];
+      }
+      if (lastChoiceId && variants[lastChoiceId]) return variants[lastChoiceId];
+    }
+    const varText = spoken.ifVarText;
+    if (varText && typeof varText === "object") {
+      for (const [key, text] of Object.entries(varText)) {
+        if (key !== "_else" && vars[key] && text) return text;
+      }
+      if (varText._else) return varText._else;
+    }
     return spoken.text || "";
   }
 
   function record(spoken, extra = {}) {
     const text = spokenText(spoken);
     if (!text) return;
-    const key = pendingReply ? `${sceneId}:reply:${lastChoiceId}` : `${sceneId}:${lineIndex}`;
+    const key = pendingEvent
+      ? `${sceneId}:event:${pendingEvent.action || "event"}`
+      : pendingReply
+        ? `${sceneId}:reply:${lastChoiceId}`
+        : `${sceneId}:${lineIndex}`;
     if (log.at(-1)?.key === key) return;
     const character = spoken.speaker ? story.characters?.[spoken.speaker] : null;
     log.push({
@@ -117,7 +133,28 @@ export function createNarrativeSession(story, { bus } = {}) {
     return scene()?.lines?.[lineIndex] || null;
   }
 
+  function skipInvalidLines(guard = 0) {
+    if (complete || guard > 40) return;
+    const current = scene();
+    const lines = current?.lines || [];
+    while (lineIndex < lines.length && !conditionOk(lines[lineIndex]?.when, vars)) {
+      lineIndex += 1;
+    }
+    if (lineIndex < lines.length) return;
+    const nextId = current?.next;
+    if (nextId && story.scenes[nextId]) {
+      sceneId = nextId;
+      lineIndex = 0;
+      stagedScene = null;
+      skipInvalidLines(guard + 1);
+      return;
+    }
+    complete = true;
+  }
+
   function land() {
+    skipInvalidLines();
+    if (complete) return;
     if (stagedScene !== sceneId) {
       applySceneCast(stage, scene());
       stagedScene = sceneId;
@@ -128,7 +165,7 @@ export function createNarrativeSession(story, { bus } = {}) {
 
   function view() {
     const current = scene();
-    const spoken = pendingReply || line();
+    const spoken = spokenNow();
     const character = spoken?.speaker ? story.characters?.[spoken.speaker] : null;
     const waiting = awaitingChoice();
     const checkpoint = current?.checkpoint || null;
@@ -150,11 +187,13 @@ export function createNarrativeSession(story, { bus } = {}) {
       choices: waiting ? line().choices : [],
       lastChoiceId,
       waitingForLab: waitingForLab(),
-      waitFor: spoken?.waitFor || current?.waitFor || null,
+      waitFor: requiredLabAction(),
+      pendingEvent: Boolean(pendingEvent),
       transition: current?.transition || "fade",
       checkpoint,
       nextCheckpoint: nextCheckpointId(story, sceneId),
       history: log.slice(),
+      variables: { ...vars },
       cast: Object.entries(stage).map(([id, state]) => ({
         id,
         name: story.characters[id]?.name || id,
@@ -163,14 +202,36 @@ export function createNarrativeSession(story, { bus } = {}) {
     };
   }
 
-  function notify(action) {
+  function notify(action, detail = {}) {
     const key = labActionKey(action);
-    if (key) labDone.add(key);
+    if (key) {
+      labDone.add(key);
+      const patch = story.events?.[key];
+      if (patch) vars = applyPatch(vars, patch);
+      if (detail && typeof detail === "object") {
+        if (Number.isFinite(detail.angleDeg)) vars.lastAngle = Number(detail.angleDeg);
+      }
+    }
+    if (waitingForLab()) {
+      const comment = scene()?.on?.[key];
+      const heardKey = `${sceneId}:${key}`;
+      if (comment && !heard.has(heardKey)) {
+        heard.add(heardKey);
+        pendingEvent = { ...comment, action: key };
+        land();
+      }
+    } else {
+      pendingEvent = null;
+    }
     return view();
   }
 
   function advance() {
     if (complete) return view();
+    if (pendingEvent) {
+      pendingEvent = null;
+      return view();
+    }
     if (waitingForLab()) return view();
     const spoken = line();
     if (spoken?.choices?.length && !pendingReply && !lastChoiceId) return view();
@@ -178,6 +239,7 @@ export function createNarrativeSession(story, { bus } = {}) {
       pendingReply = null;
       lastChoiceId = null;
     }
+    if (spoken?.set || spoken?.add) vars = applyPatch(vars, spoken);
     const current = scene();
     const last = (current?.lines?.length || 1) - 1;
     if (lineIndex < last) {
@@ -199,8 +261,10 @@ export function createNarrativeSession(story, { bus } = {}) {
   function choose(id) {
     const spoken = line();
     const option = spoken?.choices?.find((choice) => choice.id === id);
-    if (!option || pendingReply) return view();
+    if (!option || pendingReply || pendingEvent) return view();
     lastChoiceId = id;
+    if (option.set || option.add) vars = applyPatch(vars, option);
+    vars.lastChoiceId = id;
     pendingReply = {
       speaker: option.speaker || spoken.speaker,
       expression: option.expression || spoken.expression,
@@ -214,6 +278,7 @@ export function createNarrativeSession(story, { bus } = {}) {
 
   function skipToCheckpoint() {
     if (complete || awaitingChoice() || waitingForLab()) return view();
+    pendingEvent = null;
     const target = nextCheckpointId(story, sceneId);
     if (!target) return skipAll();
     let guard = 0;
@@ -231,6 +296,7 @@ export function createNarrativeSession(story, { bus } = {}) {
 
   function skipAll() {
     if (complete) return view();
+    pendingEvent = null;
     let guard = 0;
     while (!complete && guard < 400) {
       if (waitingForLab()) break;
@@ -254,9 +320,12 @@ export function createNarrativeSession(story, { bus } = {}) {
       lineIndex,
       complete,
       pendingReply,
+      pendingEvent,
       lastChoiceId,
       log: log.map((entry) => ({ ...entry })),
       labDone: [...labDone],
+      heard: [...heard],
+      variables: { ...vars },
       stage: JSON.parse(JSON.stringify(stage)),
       stagedScene,
     };
@@ -270,10 +339,14 @@ export function createNarrativeSession(story, { bus } = {}) {
     lineIndex = data.lineIndex;
     complete = Boolean(data.complete);
     pendingReply = data.pendingReply || null;
+    pendingEvent = data.pendingEvent || null;
     lastChoiceId = data.lastChoiceId || null;
     log = Array.isArray(data.log) ? data.log.map((entry) => ({ ...entry })) : [];
+    vars = { ...emptyVars(story), ...(data.variables && typeof data.variables === "object" ? data.variables : {}) };
     labDone.clear();
     for (const action of data.labDone || []) labDone.add(action);
+    heard.clear();
+    for (const key of data.heard || []) heard.add(key);
     const nextStage = emptyStage(story);
     if (data.stage && typeof data.stage === "object") {
       for (const id of Object.keys(nextStage)) {
@@ -296,11 +369,14 @@ export function createNarrativeSession(story, { bus } = {}) {
     lineIndex = 0;
     complete = false;
     pendingReply = null;
+    pendingEvent = null;
     lastChoiceId = null;
     stage = emptyStage(story);
     stagedScene = null;
     log = [];
+    vars = emptyVars(story);
     labDone.clear();
+    heard.clear();
     land();
     return view();
   }
@@ -315,7 +391,7 @@ export function walkStory(story, pick = (choices) => choices[0]?.id) {
   let guard = 0;
   while (!frames[frames.length - 1].complete && guard < 240) {
     const now = frames[frames.length - 1];
-    if (now.awaitingChoice) session.choose(pick(now.choices));
+    if (now.awaitingChoice) session.choose(pick(now.choices, now));
     else session.advance();
     frames.push(session.view());
     guard += 1;

@@ -18,6 +18,8 @@ test("arrival story visits every demonstration background and both characters", 
     "control-room",
     "testing-area",
     "simulation-focus",
+    "investigation",
+    "revelation",
     "closing",
   ]);
   const bgs = new Set(frames.map((frame) => frame.background));
@@ -28,7 +30,9 @@ test("arrival story visits every demonstration background and both characters", 
 
 test("investigation choices reconverge on the testing area", () => {
   for (const id of ["report", "launcher", "ask-elias"]) {
-    const frames = walkStory(projectileArrivalStory, () => id);
+    const frames = walkStory(projectileArrivalStory, (choices) => (
+      choices.some((choice) => choice.id === id) ? id : choices[0]?.id
+    ));
     const choice = frames.find((frame) => frame.awaitingChoice);
     assert.ok(choice, id);
     assert.equal(choice.choices.length, 3);
@@ -76,6 +80,7 @@ test("advance waits on choices, and reset returns to the start", () => {
 test("skip to checkpoint stops at a choice; skip all takes a default path to the end", () => {
   assert.equal(nextCheckpointId(projectileArrivalStory, "facility-exterior"), "control-room");
   assert.equal(nextCheckpointId(projectileArrivalStory, "testing-area"), "simulation-focus");
+  assert.equal(nextCheckpointId(projectileArrivalStory, "simulation-focus"), "investigation");
   const session = createNarrativeSession(projectileArrivalStory);
   session.skipToCheckpoint();
   assert.equal(session.view().sceneId, "control-room");
@@ -161,4 +166,57 @@ test("choice history stays after reconverge and changes the closing line", () =>
   assert.match(lines.report, /missing launch speed/);
   assert.match(lines.launcher, /Angle, speed, and g/);
   assert.match(lines["ask-elias"], /archive was clean/);
+});
+
+test("choices write narrative variables and later lines can depend on them", () => {
+  const session = createNarrativeSession(projectileArrivalStory);
+  session.skipToCheckpoint();
+  session.choose("launcher");
+  assert.equal(session.view().variables.inspectedLauncher, true);
+  assert.equal(session.view().variables.inspectedReport, false);
+  session.skipAll();
+  assert.equal(session.view().complete, true);
+  assert.ok(session.view().history.some((entry) => /Angle, speed, and g/.test(entry.text) && entry.sceneId === "revelation"));
+  assert.equal(session.view().history.some((entry) => /Launch speed was implied/.test(entry.text)), false);
+});
+
+test("lab events can comment during a wait without skipping the required lab", () => {
+  const bus = createLabBus();
+  const session = createNarrativeSession(projectileArrivalStory, { bus });
+  session.skipAll();
+  assert.equal(session.view().waitingForLab, true);
+  session.notify("launch");
+  assert.equal(session.view().pendingEvent, true);
+  assert.equal(session.view().waitingForLab, true);
+  assert.equal(session.view().variables.launches, 1);
+  assert.equal(session.view().variables.sawLaunch, true);
+  assert.match(session.view().text, /That shot is on the rails/);
+  session.advance();
+  assert.equal(session.view().pendingEvent, false);
+  assert.equal(session.view().waitingForLab, true);
+  session.notify("launch");
+  assert.equal(session.view().pendingEvent, false);
+  assert.equal(session.view().variables.launches, 2);
+  session.notify("angle", { angleDeg: 30 });
+  assert.equal(session.view().pendingEvent, true);
+  assert.equal(session.view().variables.changedAngle, true);
+  assert.equal(session.view().variables.lastAngle, 30);
+  session.skipAll();
+  assert.equal(session.view().complete, false);
+  assert.equal(session.view().waitFor, "lab-complete");
+});
+
+test("saved variables restore with the rest of the chapter", () => {
+  const bus = createLabBus();
+  const session = createNarrativeSession(projectileArrivalStory, { bus });
+  session.skipToCheckpoint();
+  session.choose("report");
+  session.skipAll();
+  session.notify("launch");
+  const snap = session.snapshot();
+  const loaded = createNarrativeSession(projectileArrivalStory, { bus });
+  assert.ok(loaded.restore(snap));
+  assert.equal(loaded.view().variables.inspectedReport, true);
+  assert.equal(loaded.view().variables.launches, 1);
+  assert.equal(loaded.view().waitingForLab, true);
 });
