@@ -3,6 +3,7 @@
  * Checkpoints exist so skip can stop. Story variables wait for a later stage.
  */
 
+import { labActionKey } from "../../shared/lab-events.js";
 import { nextCheckpointId } from "./skip.js";
 
 function emptyStage(story) {
@@ -45,7 +46,7 @@ function applyLinePresence(stage, story, spoken) {
   }
 }
 
-export function createNarrativeSession(story) {
+export function createNarrativeSession(story, { bus } = {}) {
   if (!story?.start || !story.scenes?.[story.start]) {
     throw new Error("Story needs a start scene.");
   }
@@ -57,9 +58,17 @@ export function createNarrativeSession(story) {
   let stage = emptyStage(story);
   let stagedScene = null;
   let log = [];
+  const labDone = new Set();
 
   function awaitingChoice() {
     return Boolean(line()?.choices?.length) && !pendingReply && !lastChoiceId;
+  }
+
+  function waitingForLab() {
+    if (!bus) return false;
+    const need = spokenNow()?.waitFor || scene()?.waitFor;
+    if (!need) return false;
+    return !labDone.has(labActionKey(need));
   }
 
   function spokenNow() {
@@ -122,6 +131,8 @@ export function createNarrativeSession(story) {
       awaitingChoice: waiting,
       choices: waiting ? line().choices : [],
       lastChoiceId,
+      waitingForLab: waitingForLab(),
+      waitFor: spoken?.waitFor || current?.waitFor || null,
       transition: current?.transition || "fade",
       checkpoint,
       nextCheckpoint: nextCheckpointId(story, sceneId),
@@ -134,8 +145,15 @@ export function createNarrativeSession(story) {
     };
   }
 
+  function notify(action) {
+    const key = labActionKey(action);
+    if (key) labDone.add(key);
+    return view();
+  }
+
   function advance() {
     if (complete) return view();
+    if (waitingForLab()) return view();
     const spoken = line();
     if (spoken?.choices?.length && !pendingReply && !lastChoiceId) return view();
     if (pendingReply) {
@@ -177,11 +195,11 @@ export function createNarrativeSession(story) {
   }
 
   function skipToCheckpoint() {
-    if (complete || awaitingChoice()) return view();
+    if (complete || awaitingChoice() || waitingForLab()) return view();
     const target = nextCheckpointId(story, sceneId);
     if (!target) return skipAll();
     let guard = 0;
-    while (!complete && !awaitingChoice() && sceneId !== target && guard < 400) {
+    while (!complete && !awaitingChoice() && !waitingForLab() && sceneId !== target && guard < 400) {
       advance();
       guard += 1;
     }
@@ -197,6 +215,7 @@ export function createNarrativeSession(story) {
     if (complete) return view();
     let guard = 0;
     while (!complete && guard < 400) {
+      if (waitingForLab()) break;
       if (awaitingChoice()) {
         const id = skipChoiceId();
         if (!id) break;
@@ -218,12 +237,13 @@ export function createNarrativeSession(story) {
     stage = emptyStage(story);
     stagedScene = null;
     log = [];
+    labDone.clear();
     land();
     return view();
   }
 
   land();
-  return { view, advance, choose, reset, skipToCheckpoint, skipAll };
+  return { view, advance, choose, reset, skipToCheckpoint, skipAll, notify };
 }
 
 export function walkStory(story, pick = (choices) => choices[0]?.id) {

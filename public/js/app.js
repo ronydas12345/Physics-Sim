@@ -29,6 +29,8 @@ import {
 } from "./platform/lab-kit.js";
 import { bindTheoryVisuals } from "./platform/theory-visuals.js";
 import { bindLearningTutorial } from "./learning/engine/instruction-window.js";
+import { LAB_EVENTS, createLabBus } from "./shared/lab-events.js";
+import { bindVnLab } from "./visual-novel/renderer/vn-lab.js";
 import { planetById, planetChipStyle, planetIcon, sceneForGravity } from "/lib/planets.js";
 
 const toolbarSlot = document.getElementById("lab-icon-toolbar");
@@ -56,6 +58,7 @@ const SCENARIOS = {
   jupiter: { angleDeg: 45, v0: 20, planet: "jupiter" },
 };
 
+const labBus = createLabBus();
 let sim = createLaunchState(ui);
 let trials = [];
 let predicted = predictedTrajectory(ui);
@@ -425,7 +428,21 @@ function applyScenario(id) {
   applyUiFromSliders();
 }
 
+function labSnapshot(extra = {}) {
+  return {
+    simulationId: "1-5",
+    angleDeg: ui.angleDeg,
+    v0: ui.v0,
+    g: ui.g,
+    trialCount: trials.length,
+    running: Boolean(sim?.isRunning && !sim.landed),
+    landed: Boolean(sim?.landed),
+    ...extra,
+  };
+}
+
 function applyUiFromSliders() {
+  const before = { angleDeg: ui.angleDeg, v0: ui.v0, g: ui.g };
   const angle = Number(els.angle.value);
   const v0 = Number(els.velocity.value);
   const g = Number(els.gravity.value);
@@ -441,6 +458,9 @@ function applyUiFromSliders() {
   refreshPredicted();
   updateLive();
   drawAll();
+  if (ui.angleDeg !== before.angleDeg) labBus.emit(LAB_EVENTS.LAUNCH_ANGLE_CHANGED, labSnapshot());
+  if (ui.v0 !== before.v0) labBus.emit(LAB_EVENTS.LAUNCH_SPEED_CHANGED, labSnapshot());
+  if (ui.g !== before.g) labBus.emit(LAB_EVENTS.GRAVITY_CHANGED, labSnapshot());
 }
 
 function setPlanet(id) {
@@ -459,6 +479,7 @@ function doLaunch() {
   refreshPredicted();
   updateLive();
   drawAll();
+  labBus.emit(LAB_EVENTS.PROJECTILE_LAUNCHED, labSnapshot());
 }
 
 function doPause() {
@@ -508,6 +529,7 @@ function doReset() {
   refreshPredicted();
   updateLive();
   drawAll();
+  labBus.emit(LAB_EVENTS.EXPERIMENT_RESET, labSnapshot());
 }
 
 function pushTrial({ angleDeg, v0, g, time, maxHeight, range }) {
@@ -522,6 +544,7 @@ function pushTrial({ angleDeg, v0, g, time, maxHeight, range }) {
   });
   renderTrials();
   drawCharts();
+  labBus.emit(LAB_EVENTS.TRIAL_RECORDED, labSnapshot({ range, time, maxHeight }));
 }
 
 function recordTrial() {
@@ -665,6 +688,14 @@ function setChallenge(on) {
 }
 
 function onLanded() {
+  labBus.emit(
+    LAB_EVENTS.PROJECTILE_LANDED,
+    labSnapshot({
+      range: sim.measuredRange,
+      time: sim.measuredTimeOfFlight,
+      maxHeight: sim.measuredMaxHeight,
+    }),
+  );
   if (autoRecord) recordLandedTrial(sim);
   if (challenge.active && challenge.spec) {
     challenge.attempted = true;
@@ -807,7 +838,9 @@ resize.observe(els.graphHeight);
 resize.observe(els.graphTheoryRange);
 resize.observe(els.graphTheoryHeight);
 
-bindLearningTutorial(document.getElementById("page-root") || document.body, { simulationId: "1-5" });
+const pageRoot = document.getElementById("page-root") || document.body;
+bindLearningTutorial(pageRoot, { simulationId: "1-5", bus: labBus });
+bindVnLab(pageRoot, { bus: labBus });
 decorateActionButtons(document);
 syncReadouts();
 updateLive();

@@ -1,6 +1,6 @@
 /**
  * Projectile tutorial with three guidance paths: standard, supported, and extension.
- * Simulation action detection still waits for a later stage.
+ * Guided launch waits for a real simulation launch event.
  */
 export const projectileRangeTutorial = {
   id: "1-5-range-intro",

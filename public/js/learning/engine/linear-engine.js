@@ -1,6 +1,6 @@
 /**
  * Learning session. Follows stage.next on the standard spine and stage.branches
- * when a condition matches. Simulation action detection waits for a later stage.
+ * when a condition matches. Guided actions wait for simulation events.
  */
 
 import { emptyLearningState, validateTutorialDefinition } from "../schema.js";
@@ -61,6 +61,7 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
   let visit = [def.start];
   let pending = null;
   let lastAnswer = null;
+  let actions = {};
 
   function restore(saved) {
     if (!saved) return;
@@ -73,6 +74,7 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
     if (saved.errors) errorCounts = { ...saved.errors };
     if (saved.hintsUsed) hintsUsed = { ...saved.hintsUsed };
     if (saved.flags) flags = { ...saved.flags };
+    if (saved.actions) actions = { ...saved.actions };
     finished = Boolean(saved.complete) && !def.stages[currentId]?.next;
     visit = path.includes(currentId) ? path.slice(0, path.indexOf(currentId) + 1) : [def.start, currentId];
   }
@@ -104,6 +106,7 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
       attempts: attempts[currentId] || 0,
       errors: errorCounts[currentId] || 0,
       hinted: (hintsUsed[currentId] || 0) > 0,
+      incomplete: Boolean(stage?.requiredAction && !actions[currentId]),
     };
   }
 
@@ -132,6 +135,7 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
     const hintCount = Math.min(hintsUsed[currentId] || 0, hintTotal);
     const level = stage.guidance || guidanceLevel;
     const needsAnswer = stage.type === "conceptual-question" && !question?.selected;
+    const needsAction = Boolean(stage.requiredAction) && !actions[currentId];
     return {
       tutorialId: def.id,
       simulationId: def.simulationId,
@@ -151,8 +155,10 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
       isLast: !stage.next && !stage.branches,
       complete: finished,
       canPrev: visit.length > 1,
-      canNext: !finished && !needsAnswer,
+      canNext: !finished && !needsAnswer && !needsAction,
       needsAnswer,
+      needsAction,
+      requiredAction: stage.requiredAction || null,
       guidanceLevel: level,
       guidanceLabel: guidanceLabel(level),
       question,
@@ -174,6 +180,7 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
       errors: { ...errorCounts },
       hintsUsed: { ...hintsUsed },
       flags: { ...flags },
+      actions: { ...actions },
       lastSessionAt: clock(),
       complete: finished,
     };
@@ -212,10 +219,21 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
     return view();
   }
 
+  function observe(action) {
+    const stage = def.stages[currentId];
+    if (!stage?.requiredAction || action !== stage.requiredAction) return view();
+    actions = { ...actions, [currentId]: action };
+    flags = { ...flags, lastSimAction: action };
+    if (stage.type === "guided-action") return advance();
+    return view();
+  }
+
   function advance() {
     if (finished) return view();
     const stage = def.stages[currentId];
-    const condition = resolveBranch(stage, context());
+    const ctx = context();
+    if (ctx.incomplete && !ctx.hinted && !ctx.pending) return view();
+    const condition = resolveBranch(stage, ctx);
     if (condition === null) return view();
     const dest = destinationFor(stage, condition);
     if (!dest) {
@@ -290,10 +308,11 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
     visit = [def.start];
     pending = null;
     lastAnswer = null;
+    actions = {};
     return view();
   }
 
-  return { view, snapshot, advance, back, go, restart, answer, requestHint, path };
+  return { view, snapshot, advance, back, go, restart, answer, requestHint, observe, path };
 }
 
 export function walkLinear(def) {
@@ -306,7 +325,8 @@ export function walkLinear(def) {
       const choice = now.question?.options?.find((option) => option.correct);
       if (choice) session.answer(choice.id);
     }
-    frames.push(session.advance());
+    if (now.needsAction) frames.push(session.observe(now.requiredAction));
+    else frames.push(session.advance());
     guard += 1;
   }
   return frames;

@@ -3,6 +3,7 @@ import test from "node:test";
 import { createNarrativeSession, walkStory } from "./narrative-engine.js";
 import { nextCheckpointId } from "./skip.js";
 import { projectileArrivalStory } from "../stories/projectile-motion/arrival.js";
+import { LAB_EVENTS, createLabBus } from "../../shared/lab-events.js";
 import { BACKGROUNDS } from "../renderer/backgrounds.js";
 import { SPRITE_EXPRESSIONS, spriteSvg } from "../renderer/sprites.js";
 
@@ -89,4 +90,22 @@ test("skip to checkpoint stops at a choice; skip all takes a default path to the
   assert.equal(fromStart.view().complete, true);
   session.reset();
   assert.equal(session.view().history.length, 1);
+});
+
+test("skip all does not bypass a lab wait until the simulation launches", () => {
+  const bus = createLabBus();
+  const session = createNarrativeSession(projectileArrivalStory, { bus });
+  session.skipAll();
+  assert.equal(session.view().complete, false);
+  assert.equal(session.view().waitingForLab, true);
+  assert.equal(session.view().waitFor, "launch");
+  session.notify("launch");
+  session.skipAll();
+  assert.equal(session.view().complete, true);
+});
+
+test("a prototype session without a lab bus still completes the chapter", () => {
+  const frames = walkStory(projectileArrivalStory);
+  assert.equal(frames.at(-1).complete, true);
+  assert.ok(frames.some((frame) => frame.waitFor === "launch" && !frame.waitingForLab));
 });

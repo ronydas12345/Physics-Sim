@@ -30,6 +30,33 @@ function lineKey(view) {
   return `${view.sceneId}:${view.lineIndex}:${view.lastChoiceId || ""}:${view.complete ? "end" : "line"}`;
 }
 
+const HUD_PATHS = {
+  menu: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 7h14M5 12h14M5 17h14"/>`,
+  auto: `<path fill="currentColor" d="M7 6.5v11l9-5.5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M19 7v10"/>`,
+  skip: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 6l6 6-6 6M13 6l6 6-6 6"/>`,
+  "skip-all": `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 6l6 6-6 6M12 6l6 6-6 6"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M20 6v12"/>`,
+  history: `<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 6h14v10H8l-3 3V6z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 10h6M9 13h4"/>`,
+  settings: `<circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 4.5v2.2M12 17.3V20M4.5 12h2.2M17.3 12H20M6.4 6.4l1.6 1.6M16 16l1.6 1.6M17.6 6.4 16 8M8 16l-1.6 1.6"/>`,
+  continue: `<path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9 6l7 6-7 6"/>`,
+  reveal: `<path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.3" fill="currentColor"/>`,
+  replay: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 5v5h5M19 19v-5h-5M6.5 10A7 7 0 0 1 19 9M17.5 14A7 7 0 0 1 5 15"/>`,
+  close: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M7 7l10 10M17 7 7 17"/>`,
+};
+
+function hudButton(attrs, label, icon) {
+  return `<button type="button" class="vn-hud-btn" ${attrs} title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><svg class="vn-hud-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">${HUD_PATHS[icon]}</svg><span class="vn-hud-tip" aria-hidden="true">${escapeHtml(label)}</span></button>`;
+}
+
+function setHudLabel(button, label, icon) {
+  if (!button) return;
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  const tip = button.querySelector(".vn-hud-tip");
+  if (tip) tip.textContent = label;
+  const svg = button.querySelector("svg");
+  if (icon && svg && HUD_PATHS[icon]) svg.innerHTML = HUD_PATHS[icon];
+}
+
 export function vnScreenMarkup(story = projectileArrivalStory) {
   const actors = Object.entries(story.characters || {})
     .map(([id, character]) =>
@@ -44,18 +71,20 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
     .join("");
   return `
     <section class="vn-screen" data-vn-root>
-      ${backgroundMarkup(story.scenes[story.start]?.background)}
-      <div class="vn-veil" data-vn-veil></div>
-      <div class="vn-stage" data-vn-stage>${actors}</div>
-      <div class="vn-hud" data-vn-ui>
-        <p class="vn-checkpoint" data-vn-checkpoint hidden></p>
-        <div class="vn-hud-actions">
-          <button type="button" class="vn-hud-btn" data-vn-pause>Menu</button>
-          <button type="button" class="vn-hud-btn" data-vn-auto aria-pressed="false">Auto</button>
-          <button type="button" class="vn-hud-btn" data-vn-skip>Skip</button>
-          <button type="button" class="vn-hud-btn" data-vn-skip-all>Skip all</button>
-          <button type="button" class="vn-hud-btn" data-vn-history>History</button>
-          <button type="button" class="vn-hud-btn" data-vn-settings>Settings</button>
+      <div class="vn-scene">
+        ${backgroundMarkup(story.scenes[story.start]?.background)}
+        <div class="vn-veil" data-vn-veil></div>
+        <div class="vn-stage" data-vn-stage>${actors}</div>
+        <div class="vn-hud" data-vn-ui>
+          <p class="vn-checkpoint" data-vn-checkpoint hidden></p>
+          <div class="vn-hud-actions">
+            ${hudButton('data-vn-pause', "Menu", "menu")}
+            ${hudButton('data-vn-auto aria-pressed="false"', "Auto", "auto")}
+            ${hudButton("data-vn-skip", "Skip", "skip")}
+            ${hudButton('data-vn-skip-all', "Skip all", "skip-all")}
+            ${hudButton("data-vn-history", "History", "history")}
+            ${hudButton("data-vn-settings", "Settings", "settings")}
+          </div>
         </div>
       </div>
       <div class="vn-dialogue">
@@ -67,7 +96,7 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
           <div class="vn-choices" data-vn-choices hidden></div>
           <div class="vn-dialogue-bar">
             <p class="vn-hint" data-vn-hint>Click, tap, or press Space to continue.</p>
-            <button type="button" class="btn primary" data-vn-next>Continue</button>
+            ${hudButton("data-vn-next", "Continue", "continue")}
           </div>
         </div>
       </div>
@@ -83,14 +112,14 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
       <aside class="vn-panel vn-history-panel" data-vn-history-panel hidden>
         <header class="vn-panel-head">
           <h2>Dialogue history</h2>
-          <button type="button" class="vn-hud-btn" data-vn-close-history aria-label="Close history">Close</button>
+          ${hudButton("data-vn-close-history", "Close", "close")}
         </header>
         <ol class="vn-history-list" data-vn-history-list></ol>
       </aside>
       <aside class="vn-panel vn-settings-panel" data-vn-settings-panel hidden>
         <header class="vn-panel-head">
           <h2>Settings</h2>
-          <button type="button" class="vn-hud-btn" data-vn-close-settings aria-label="Close settings">Close</button>
+          ${hudButton("data-vn-close-settings", "Close", "close")}
         </header>
         <label>Text speed
           <select data-vn-text-speed>${speedOpts}</select>
@@ -111,8 +140,8 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
     </section>`;
 }
 
-export function mountVnScreen(root, { story = projectileArrivalStory, bus = null } = {}) {
-  const session = createNarrativeSession(story);
+export function mountVnScreen(root, { story = projectileArrivalStory, bus = null, mode = "immersive" } = {}) {
+  const session = createNarrativeSession(story, { bus });
   const screen = root.querySelector("[data-vn-root]") || root;
   const bg = screen.querySelector("[data-vn-bg]");
   const veil = screen.querySelector("[data-vn-veil]");
@@ -315,15 +344,18 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     }
     if (view.complete) {
       if (hintEl) hintEl.textContent = "Chapter prototype complete. The lab stays available.";
-      if (nextBtn) nextBtn.textContent = "Replay";
+      setHudLabel(nextBtn, "Replay", "replay");
       bus?.emit(LAB_EVENTS.STORY_CHAPTER_COMPLETED, { storyId: view.storyId });
+    } else if (view.waitingForLab) {
+      setHudLabel(nextBtn, "Continue", "continue");
+      if (hintEl) hintEl.textContent = "Launch on the lab to continue. Skip will not bypass this.";
     } else if (view.awaitingChoice) {
       if (hintEl) hintEl.textContent = "Choose how to begin. Paths reconvene at the rails.";
     } else if (!typed.complete) {
-      if (nextBtn) nextBtn.textContent = "Reveal";
+      setHudLabel(nextBtn, "Reveal", "reveal");
       if (hintEl) hintEl.textContent = "Click to reveal the rest. Space also works.";
-    } else if (nextBtn) {
-      nextBtn.textContent = "Continue";
+    } else {
+      setHudLabel(nextBtn, "Continue", "continue");
       if (hintEl) hintEl.textContent = "Click, tap, or press Space to continue. A toggles auto.";
     }
   }
@@ -336,7 +368,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       paint();
       return;
     }
-    if (view.awaitingChoice) return;
+    if (view.awaitingChoice || view.waitingForLab) return;
     if (view.complete) session.reset();
     else session.advance();
     paint();
@@ -354,6 +386,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       !menuOpen() &&
       typed.complete &&
       !view.awaitingChoice &&
+      !view.waitingForLab &&
       !view.complete
     ) {
       if (!autoArmedAt) autoArmedAt = at;
@@ -362,7 +395,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
         session.advance();
         paint(at);
       }
-    } else if (!settings.autoMode || view.awaitingChoice || menuOpen()) {
+    } else if (!settings.autoMode || view.awaitingChoice || view.waitingForLab || menuOpen()) {
       autoArmedAt = 0;
     }
     raf = requestAnimationFrame(loop);
@@ -388,6 +421,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       return;
     }
     if (event.code !== "Space" && event.code !== "Enter") return;
+    if (mode === "split") return;
     if (event.target.closest("button, a")) return;
     event.preventDefault();
     step();
@@ -480,11 +514,30 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     step();
   });
   window.addEventListener("keydown", onKey);
+  const stopBus = [];
+  if (bus) {
+    stopBus.push(
+      bus.on(LAB_EVENTS.PROJECTILE_LAUNCHED, () => {
+        session.notify("launch");
+        paint();
+      }),
+      bus.on(LAB_EVENTS.PROJECTILE_LANDED, () => {
+        session.notify("land");
+        paint();
+      }),
+      bus.on(LAB_EVENTS.TRIAL_RECORDED, () => {
+        session.notify("record-trial");
+        paint();
+      }),
+    );
+  }
+
   applyChrome();
   syncSettingsForm();
   paint();
   raf = requestAnimationFrame(loop);
   return () => {
+    stopBus.forEach((off) => off());
     window.removeEventListener("keydown", onKey);
     clearTimeout(veilTimer);
     cancelAnimationFrame(raf);

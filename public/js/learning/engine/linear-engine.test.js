@@ -80,7 +80,11 @@ test("wrong concept answers take the supported path, then return to standard", (
   const branches = [];
   bus.on(LAB_EVENTS.TUTORIAL_BRANCH_CHANGED, (detail) => branches.push(detail.condition));
   const session = createLinearTutorial(projectileRangeTutorial, { bus });
-  while (session.view().stageId !== "concept-check") session.advance();
+  while (session.view().stageId !== "concept-check") {
+    const now = session.view();
+    if (now.needsAction) session.observe(now.requiredAction);
+    else session.advance();
+  }
   session.answer("high");
   assert.equal(session.view().question.correct, false);
   session.advance();
@@ -101,7 +105,11 @@ test("hints block the extension path and record usage", () => {
   const seen = [];
   bus.on(LAB_EVENTS.TUTORIAL_HINT_REQUESTED, (detail) => seen.push(detail.stageId));
   const session = createLinearTutorial(projectileRangeTutorial, { bus });
-  while (session.view().stageId !== "concept-check") session.advance();
+  while (session.view().stageId !== "concept-check") {
+    const now = session.view();
+    if (now.needsAction) session.observe(now.requiredAction);
+    else session.advance();
+  }
   session.requestHint();
   assert.equal(session.view().hints.length, 1);
   session.answer("comp");
@@ -124,6 +132,20 @@ test("a hint on launch takes the supported launch explanation", () => {
   assert.equal(session.view().stageId, "launch");
 });
 
+test("guided launch waits for a simulation launch before advancing", () => {
+  const session = createLinearTutorial(projectileRangeTutorial);
+  session.advance();
+  session.advance();
+  assert.equal(session.view().stageId, "launch");
+  assert.equal(session.view().needsAction, true);
+  assert.equal(session.view().canNext, false);
+  session.advance();
+  assert.equal(session.view().stageId, "launch");
+  session.observe("launch");
+  assert.equal(session.view().stageId, "observe");
+  assert.equal(session.view().needsAction, false);
+});
+
 test("finishing the last stage emits checkpoint and completion events", () => {
   const bus = createLabBus();
   const seen = [];
@@ -134,7 +156,8 @@ test("finishing the last stage emits checkpoint and completion events", () => {
   while (!session.view().complete) {
     const now = session.view();
     if (now.needsAnswer) session.answer(now.question.options.find((option) => option.correct).id);
-    session.advance();
+    if (now.needsAction) session.observe(now.requiredAction);
+    else session.advance();
   }
   assert.ok(seen.includes("step:summary"));
   assert.ok(seen.includes("check:summary"));

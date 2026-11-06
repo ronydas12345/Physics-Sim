@@ -104,6 +104,10 @@ const ACTION_ICONS = {
     "learning",
     `<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 19V6l7 3 7-3v13l-7 3z"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 9v13"/>`,
   ),
+  story: iconSvg(
+    "story",
+    `<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 6h10a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V6z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M9 10h6M9 14h4"/>`,
+  ),
   prev: iconSvg(
     "prev",
     `<path class="icon-chevron" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M14 5 7 12l7 7"/>`,
@@ -147,6 +151,7 @@ function actionOf(el) {
   if (id === "btn-howto") return "howto";
   if (id === "btn-guided") return "guided";
   if (id === "btn-learning") return "learning";
+  if (id === "btn-story") return "story";
   if (id === "tutorial-prev" || id === "learning-prev") return "prev";
   if (id === "tutorial-next" || id === "learning-next") return "next";
   if (id === "tutorial-close" || id === "learning-close") return "close";

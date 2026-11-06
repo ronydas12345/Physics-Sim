@@ -5,7 +5,7 @@
 
 import { decorateActionButtons } from "../../platform/lab-kit.js";
 import { placeTutorialHighlight, resolveTutorialTarget } from "../../platform/highlight-target.js";
-import { LAB_EVENTS, createLabBus } from "../../shared/lab-events.js";
+import { LAB_EVENTS, actionFromEvent, createLabBus } from "../../shared/lab-events.js";
 import { getLearningTutorial } from "../registry.js";
 import { createLinearTutorial } from "./linear-engine.js";
 
@@ -121,7 +121,7 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
       : view.guidanceLabel;
     host.querySelector("#learning-prev").disabled = !view.canPrev;
     const nextBtn = host.querySelector("#learning-next");
-    nextBtn.disabled = view.complete || view.needsAnswer;
+    nextBtn.disabled = view.complete || view.needsAnswer || view.needsAction;
     const nextText = view.isLast || view.complete ? "Finish" : "Next";
     const nextLabel = nextBtn.querySelector(".btn-label");
     if (nextLabel) nextLabel.textContent = nextText;
@@ -149,10 +149,17 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
             : ""
         }</div>`
       : "";
+    const waiting = view.needsAction
+      ? `<p class="tutorial-explanation">The lab stays in your hands. ${
+          view.requiredAction === "launch"
+            ? "Press Launch to continue."
+            : "Complete the highlighted action to continue."
+        } Next stays off until that happens.</p>`
+      : "";
     const done = view.complete
       ? `<p class="tutorial-done">You can reopen this path any time. Closing it does not reset the lab.</p>`
       : "";
-    body.innerHTML = `<p class="tutorial-action">${escapeHtml(view.instruction)}</p>${explanation}${question}${hints}${done}`;
+    body.innerHTML = `<p class="tutorial-action">${escapeHtml(view.instruction)}</p>${explanation}${question}${hints}${waiting}${done}`;
     toc.innerHTML = view.path
       .map((id) => {
         const title = def.stages[id].title;
@@ -228,11 +235,26 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
   window.addEventListener("resize", onMove);
   window.addEventListener("scroll", onMove, true);
 
+  function onSim(type) {
+    if (!session || host.hidden) return;
+    const action = actionFromEvent(type);
+    if (!action) return;
+    session.observe(action);
+    render();
+  }
+
+  const unsubs = [
+    events.on(LAB_EVENTS.PROJECTILE_LAUNCHED, () => onSim(LAB_EVENTS.PROJECTILE_LAUNCHED)),
+    events.on(LAB_EVENTS.PROJECTILE_LANDED, () => onSim(LAB_EVENTS.PROJECTILE_LANDED)),
+    events.on(LAB_EVENTS.TRIAL_RECORDED, () => onSim(LAB_EVENTS.TRIAL_RECORDED)),
+  ];
+
   return () => {
     close();
     host.remove();
     btn?.remove();
     if (createdLaunch && launch && !launch.querySelector("button")) launch.remove();
+    unsubs.forEach((off) => off());
     window.removeEventListener("keydown", onKey);
     window.removeEventListener("resize", onMove);
     window.removeEventListener("scroll", onMove, true);
