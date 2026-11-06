@@ -270,8 +270,8 @@ export function aboutPage() {
           predict, run, and explain. Closing a tutorial does not reset the lab. Escape closes the overlay.
         </p>
         <p>
-          A separate <a href="/vn/projectile" data-link>projectile story prototype</a> is the Stage 1 visual-novel
-          foundation. It does not replace How to Use or Guided Lab, and it does not change the physics engine.
+          A separate <a href="/vn/projectile" data-link>projectile story prototype</a> is the visual-novel
+          demonstration. It does not replace How to Use or Guided Lab, and it does not change the physics engine.
         </p>
         <h2>Accuracy</h2>
         <p>

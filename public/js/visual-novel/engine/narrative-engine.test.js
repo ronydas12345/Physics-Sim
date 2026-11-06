@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createNarrativeSession, walkStory } from "./narrative-engine.js";
+import { nextCheckpointId } from "./skip.js";
 import { projectileArrivalStory } from "../stories/projectile-motion/arrival.js";
 import { BACKGROUNDS } from "../renderer/backgrounds.js";
 import { SPRITE_EXPRESSIONS, spriteSvg } from "../renderer/sprites.js";
@@ -69,4 +70,24 @@ test("advance waits on choices, and reset returns to the start", () => {
   session.reset();
   assert.equal(session.view().sceneId, first.sceneId);
   assert.equal(session.view().awaitingChoice, false);
+});
+
+test("skip stops at the next checkpoint and never picks a choice", () => {
+  assert.equal(nextCheckpointId(projectileArrivalStory, "facility-exterior"), "control-room");
+  const session = createNarrativeSession(projectileArrivalStory);
+  session.skipToCheckpoint();
+  assert.equal(session.view().sceneId, "control-room");
+  assert.equal(session.view().awaitingChoice, true);
+  assert.equal(session.view().checkpoint, "decision");
+  const before = session.view().lastChoiceId;
+  session.skipAll();
+  assert.equal(session.view().awaitingChoice, true);
+  assert.equal(session.view().lastChoiceId, before);
+  session.choose("report");
+  session.skipAll();
+  assert.equal(session.view().complete, true);
+  assert.ok(session.view().history.some((entry) => entry.choiceLabel?.includes("original experiment")));
+  assert.ok(session.view().history.some((entry) => entry.speaker === "Mara"));
+  session.reset();
+  assert.equal(session.view().history.length, 1);
 });

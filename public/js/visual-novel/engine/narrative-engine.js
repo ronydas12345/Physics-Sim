@@ -1,7 +1,9 @@
 /**
- * Narrative session for Stage 2 presentation.
- * Choices reconverge immediately. Story variables and checkpoints arrive in Stage 3.
+ * Narrative session. Choices reconverge immediately.
+ * Checkpoints exist so skip can stop. Story variables wait for a later stage.
  */
+
+import { nextCheckpointId } from "./skip.js";
 
 function emptyStage(story) {
   const stage = {};
@@ -54,6 +56,31 @@ export function createNarrativeSession(story) {
   let lastChoiceId = null;
   let stage = emptyStage(story);
   let stagedScene = null;
+  let log = [];
+
+  function awaitingChoice() {
+    return Boolean(line()?.choices?.length) && !pendingReply && !lastChoiceId;
+  }
+
+  function spokenNow() {
+    return pendingReply || line();
+  }
+
+  function record(spoken, extra = {}) {
+    if (!spoken?.text) return;
+    const key = pendingReply ? `${sceneId}:reply:${lastChoiceId}` : `${sceneId}:${lineIndex}`;
+    if (log.at(-1)?.key === key) return;
+    const character = spoken.speaker ? story.characters?.[spoken.speaker] : null;
+    log.push({
+      key,
+      sceneId,
+      speakerId: spoken.speaker || null,
+      speaker: character?.name || spoken.speaker || "",
+      text: spoken.text,
+      choiceId: extra.choiceId || lastChoiceId || null,
+      choiceLabel: extra.choiceLabel || null,
+    });
+  }
 
   function scene() {
     return story.scenes[sceneId];
@@ -68,14 +95,16 @@ export function createNarrativeSession(story) {
       applySceneCast(stage, scene());
       stagedScene = sceneId;
     }
-    applyLinePresence(stage, story, pendingReply || line());
+    applyLinePresence(stage, story, spokenNow());
+    record(spokenNow());
   }
 
   function view() {
     const current = scene();
     const spoken = pendingReply || line();
     const character = spoken?.speaker ? story.characters?.[spoken.speaker] : null;
-    const waiting = Boolean(line()?.choices?.length) && !pendingReply && !lastChoiceId;
+    const waiting = awaitingChoice();
+    const checkpoint = current?.checkpoint || null;
     return {
       storyId: story.id,
       title: story.title,
@@ -94,6 +123,9 @@ export function createNarrativeSession(story) {
       choices: waiting ? line().choices : [],
       lastChoiceId,
       transition: current?.transition || "fade",
+      checkpoint,
+      nextCheckpoint: nextCheckpointId(story, sceneId),
+      history: log.slice(),
       cast: Object.entries(stage).map(([id, state]) => ({
         id,
         name: story.characters[id]?.name || id,
@@ -140,6 +172,29 @@ export function createNarrativeSession(story) {
       text: option.reply || option.label,
     };
     land();
+    if (log.at(-1)) log.at(-1).choiceLabel = option.label;
+    return view();
+  }
+
+  function skipToCheckpoint() {
+    if (complete || awaitingChoice()) return view();
+    const target = nextCheckpointId(story, sceneId);
+    if (!target) return skipAll();
+    let guard = 0;
+    while (!complete && !awaitingChoice() && sceneId !== target && guard < 400) {
+      advance();
+      guard += 1;
+    }
+    return view();
+  }
+
+  function skipAll() {
+    if (complete || awaitingChoice()) return view();
+    let guard = 0;
+    while (!complete && !awaitingChoice() && guard < 400) {
+      advance();
+      guard += 1;
+    }
     return view();
   }
 
@@ -151,12 +206,13 @@ export function createNarrativeSession(story) {
     lastChoiceId = null;
     stage = emptyStage(story);
     stagedScene = null;
+    log = [];
     land();
     return view();
   }
 
   land();
-  return { view, advance, choose, reset };
+  return { view, advance, choose, reset, skipToCheckpoint, skipAll };
 }
 
 export function walkStory(story, pick = (choices) => choices[0]?.id) {

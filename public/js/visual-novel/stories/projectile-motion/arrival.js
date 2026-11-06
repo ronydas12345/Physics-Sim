@@ -21,6 +21,7 @@ export const projectileArrivalStory = {
     "facility-exterior": {
       background: "facility-exterior",
       transition: "fade",
+      checkpoint: "arrival",
       cast: [],
       next: "facility-interior",
       lines: [
@@ -79,6 +80,7 @@ export const projectileArrivalStory = {
     "control-room": {
       background: "control-room",
       transition: "fade",
+      checkpoint: "decision",
       cast: ["mara", "elias"],
       next: "testing-area",
       lines: [
@@ -116,6 +118,7 @@ export const projectileArrivalStory = {
     "testing-area": {
       background: "testing-area",
       transition: "fade",
+      checkpoint: "reconvene",
       cast: ["mara", "elias"],
       next: "simulation-focus",
       lines: [
@@ -151,6 +154,7 @@ export const projectileArrivalStory = {
     closing: {
       background: "closing",
       transition: "fade",
+      checkpoint: "chapter-end",
       cast: ["mara", "elias"],
       next: null,
       lines: [
