@@ -2,8 +2,8 @@
  * Learning Branch Manager — Stage 1 schema.
  *
  * Existing How to Use / Guided Lab overlays stay as they are. This schema is the
- * reusable graph those tutorials can later compile into. The linear engine loads
- * definitions; it does not scrape simulation internals.
+ * reusable graph those tutorials can later compile into. The engine loads
+ * definitions and selects branches from evidence; it does not scrape simulation internals.
  *
  * Stage copy: instruction (or body) plus optional explanation.
  * Highlight targets reuse the shared aliases in highlight-target.js and .tutorial-spot.
@@ -64,6 +64,17 @@ export function validateTutorialDefinition(def) {
     if (!STAGE_TYPES.includes(stage.type)) errors.push(`${id}: unknown type ${stage.type}`);
     if (!stage.title) errors.push(`${id}: missing title`);
     if (stage.next && !stages[stage.next]) errors.push(`${id}: next "${stage.next}" is missing`);
+    if (stage.guidance && !GUIDANCE_LEVELS.includes(stage.guidance)) {
+      errors.push(`${id}: unknown guidance ${stage.guidance}`);
+    }
+    if (stage.type === "conceptual-question") {
+      if (!stage.question?.prompt) errors.push(`${id}: missing question prompt`);
+      if (!Array.isArray(stage.question?.options) || stage.question.options.length < 2) {
+        errors.push(`${id}: question needs options`);
+      } else if (!stage.question.options.some((option) => option.correct)) {
+        errors.push(`${id}: question needs a correct option`);
+      }
+    }
     if (stage.branches) {
       for (const [condition, target] of Object.entries(stage.branches)) {
         if (!BRANCH_CONDITIONS.includes(condition)) errors.push(`${id}: unknown condition ${condition}`);

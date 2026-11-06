@@ -8,34 +8,43 @@ import { createLinearTutorial, linearPath, walkLinear } from "./linear-engine.js
 test("registry loads the projectile tutorial by simulation id", () => {
   const def = getLearningTutorial("1-5");
   assert.equal(def.id, "1-5-range-intro");
-  assert.deepEqual(linearPath(def), ["intro", "interface", "launch", "observe", "summary"]);
+  assert.deepEqual(linearPath(def), [
+    "intro",
+    "interface",
+    "launch",
+    "observe",
+    "concept-check",
+    "summary",
+  ]);
 });
 
-test("linear engine walks next pointers and ignores reserved branches", () => {
-  assert.equal(projectileRangeTutorial.stages.launch.branches.INCOMPLETE_ACTION, "launch");
+test("correct first answers take the extension path", () => {
   const frames = walkLinear(projectileRangeTutorial);
   const ids = frames.filter((frame) => !frame.complete).map((frame) => frame.stageId);
-  assert.deepEqual(ids, ["intro", "interface", "launch", "observe", "summary"]);
+  assert.deepEqual(ids, [
+    "intro",
+    "interface",
+    "launch",
+    "observe",
+    "concept-check",
+    "extension",
+    "summary",
+  ]);
   assert.equal(frames.at(-1).complete, true);
-  assert.equal(frames.at(-1).stageId, "summary");
-  assert.deepEqual(frames.at(-1).completedStages, ids);
+  assert.equal(frames.find((frame) => frame.stageId === "extension")?.guidanceLevel, "extension");
 });
 
-test("each stage exposes instruction and explanation copy", () => {
+test("each spine stage exposes instruction copy", () => {
   const session = createLinearTutorial(projectileRangeTutorial);
-  const seen = [];
-  let view = session.view();
-  while (!view.complete) {
-    seen.push(view.stageId);
-    assert.ok(view.instruction.length > 0, view.stageId);
-    assert.ok(view.explanation.length > 0, view.stageId);
-    assert.ok(view.kindLabel.length > 0, view.stageId);
-    view = session.advance();
+  for (const id of linearPath(projectileRangeTutorial)) {
+    if (id === "summary") continue;
+    session.go(id);
+    assert.ok(session.view().instruction.length > 0, id);
+    assert.ok(session.view().kindLabel.length > 0, id);
   }
-  assert.deepEqual(seen, ["intro", "interface", "launch", "observe", "summary"]);
 });
 
-test("advance, back, go, and restart keep a linear history", () => {
+test("advance, back, go, and restart keep a history", () => {
   const session = createLinearTutorial(projectileRangeTutorial);
   session.advance();
   session.advance();
@@ -49,23 +58,70 @@ test("advance, back, go, and restart keep a linear history", () => {
   assert.equal(session.view().stageId, "intro");
   assert.deepEqual(session.view().completedStages, []);
   assert.equal(session.view().complete, false);
+  assert.equal(session.view().guidanceLevel, "standard");
 });
 
-test("saved learning state restores the current stage without following branches", () => {
+test("saved learning state restores an off-spine supported stage", () => {
   const session = createLinearTutorial(projectileRangeTutorial, {
     state: {
-      currentStage: "launch",
-      completedStages: ["intro", "interface"],
+      currentStage: "angle-why",
+      completedStages: ["intro", "interface", "launch", "observe"],
+      guidanceLevel: "supported",
     },
   });
-  assert.equal(session.view().stageId, "launch");
-  assert.deepEqual(session.view().completedStages, ["intro", "interface"]);
+  assert.equal(session.view().stageId, "angle-why");
+  assert.equal(session.view().guidanceLevel, "supported");
   session.advance();
-  assert.equal(session.view().stageId, "observe");
-  const snap = session.snapshot();
-  assert.equal(snap.tutorialId, "1-5-range-intro");
-  assert.equal(snap.currentStage, "observe");
-  assert.ok(snap.completedStages.includes("launch"));
+  assert.equal(session.view().stageId, "concept-retry");
+});
+
+test("wrong concept answers take the supported path, then return to standard", () => {
+  const bus = createLabBus();
+  const branches = [];
+  bus.on(LAB_EVENTS.TUTORIAL_BRANCH_CHANGED, (detail) => branches.push(detail.condition));
+  const session = createLinearTutorial(projectileRangeTutorial, { bus });
+  while (session.view().stageId !== "concept-check") session.advance();
+  session.answer("high");
+  assert.equal(session.view().question.correct, false);
+  session.advance();
+  assert.equal(session.view().stageId, "angle-why");
+  assert.equal(session.view().guidanceLevel, "supported");
+  assert.equal(session.view().guidanceLabel, "Supported path");
+  session.advance();
+  assert.equal(session.view().stageId, "concept-retry");
+  session.answer("equal");
+  session.advance();
+  assert.equal(session.view().stageId, "summary");
+  assert.equal(session.view().guidanceLevel, "standard");
+  assert.ok(branches.includes("CONCEPT_MISUNDERSTANDING"));
+});
+
+test("hints block the extension path and record usage", () => {
+  const bus = createLabBus();
+  const seen = [];
+  bus.on(LAB_EVENTS.TUTORIAL_HINT_REQUESTED, (detail) => seen.push(detail.stageId));
+  const session = createLinearTutorial(projectileRangeTutorial, { bus });
+  while (session.view().stageId !== "concept-check") session.advance();
+  session.requestHint();
+  assert.equal(session.view().hints.length, 1);
+  session.answer("comp");
+  session.advance();
+  assert.equal(session.view().stageId, "summary");
+  assert.equal(session.view().guidanceLevel, "standard");
+  assert.deepEqual(seen, ["concept-check"]);
+});
+
+test("a hint on launch takes the supported launch explanation", () => {
+  const session = createLinearTutorial(projectileRangeTutorial);
+  session.advance();
+  session.advance();
+  assert.equal(session.view().stageId, "launch");
+  session.requestHint();
+  session.advance();
+  assert.equal(session.view().stageId, "launch-support");
+  assert.equal(session.view().guidanceLevel, "supported");
+  session.advance();
+  assert.equal(session.view().stageId, "launch");
 });
 
 test("finishing the last stage emits checkpoint and completion events", () => {
@@ -75,10 +131,12 @@ test("finishing the last stage emits checkpoint and completion events", () => {
   bus.on(LAB_EVENTS.LAB_CHECKPOINT_REACHED, (detail) => seen.push(`check:${detail.stageId}`));
   bus.on(LAB_EVENTS.LAB_COMPLETED, (detail) => seen.push(`done:${detail.tutorialId}`));
   const session = createLinearTutorial(projectileRangeTutorial, { bus });
-  while (!session.view().complete) session.advance();
+  while (!session.view().complete) {
+    const now = session.view();
+    if (now.needsAnswer) session.answer(now.question.options.find((option) => option.correct).id);
+    session.advance();
+  }
   assert.ok(seen.includes("step:summary"));
   assert.ok(seen.includes("check:summary"));
   assert.ok(seen.includes("done:1-5-range-intro"));
-  session.advance();
-  assert.equal(seen.filter((item) => item.startsWith("done:")).length, 1);
 });

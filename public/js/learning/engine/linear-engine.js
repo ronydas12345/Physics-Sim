@@ -1,9 +1,11 @@
 /**
- * Linear tutorial session. Follows stage.next only. Branch conditions wait for Stage 4.
+ * Learning session. Follows stage.next on the standard spine and stage.branches
+ * when a condition matches. Simulation action detection waits for a later stage.
  */
 
 import { emptyLearningState, validateTutorialDefinition } from "../schema.js";
 import { LAB_EVENTS } from "../../shared/lab-events.js";
+import { destinationFor, guidanceLabel, resolveBranch } from "./branch-resolver.js";
 
 const TYPE_LABELS = {
   introduction: "Introduction",
@@ -32,31 +34,47 @@ export function linearPath(def) {
 
 export function stageTexts(stage) {
   return {
-    instruction: stage?.instruction || stage?.body || "",
+    instruction: stage?.instruction || stage?.question?.prompt || stage?.body || "",
     explanation: stage?.explanation || "",
     kindLabel: TYPE_LABELS[stage?.type] || stage?.type || "",
   };
 }
 
+function bump(map, id) {
+  return { ...map, [id]: (map[id] || 0) + 1 };
+}
+
 export function createLinearTutorial(def, { state, bus, now } = {}) {
-  const errors = validateTutorialDefinition(def);
-  if (errors.length) throw new Error(`Invalid tutorial: ${errors.join("; ")}`);
+  const errorsList = validateTutorialDefinition(def);
+  if (errorsList.length) throw new Error(`Invalid tutorial: ${errorsList.join("; ")}`);
 
   const path = linearPath(def);
   const clock = now || (() => Date.now());
   let currentId = def.start;
   let completed = [];
   let finished = false;
+  let guidanceLevel = "standard";
+  let attempts = {};
+  let errorCounts = {};
+  let hintsUsed = {};
+  let flags = {};
+  let visit = [def.start];
+  let pending = null;
+  let lastAnswer = null;
 
   function restore(saved) {
     if (!saved) return;
-    if (saved.currentStage && def.stages[saved.currentStage] && path.includes(saved.currentStage)) {
-      currentId = saved.currentStage;
-    }
+    if (saved.currentStage && def.stages[saved.currentStage]) currentId = saved.currentStage;
     if (Array.isArray(saved.completedStages)) {
       completed = saved.completedStages.filter((id) => def.stages[id]);
     }
-    finished = Boolean(saved.complete) && path[path.length - 1] === currentId;
+    if (saved.guidanceLevel) guidanceLevel = saved.guidanceLevel;
+    if (saved.attempts) attempts = { ...saved.attempts };
+    if (saved.errors) errorCounts = { ...saved.errors };
+    if (saved.hintsUsed) hintsUsed = { ...saved.hintsUsed };
+    if (saved.flags) flags = { ...saved.flags };
+    finished = Boolean(saved.complete) && !def.stages[currentId]?.next;
+    visit = path.includes(currentId) ? path.slice(0, path.indexOf(currentId) + 1) : [def.start, currentId];
   }
 
   restore(state);
@@ -67,13 +85,53 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
 
   function indexOf(id) {
     const index = path.indexOf(id);
-    return index < 0 ? 0 : index;
+    if (index >= 0) return index;
+    for (let i = visit.length - 1; i >= 0; i -= 1) {
+      const spine = path.indexOf(visit[i]);
+      if (spine >= 0) return spine;
+    }
+    return 0;
+  }
+
+  function context() {
+    const stage = def.stages[currentId];
+    const answered = lastAnswer?.stageId === currentId;
+    return {
+      pending,
+      answered,
+      correct: Boolean(answered && lastAnswer.correct),
+      misconception: Boolean(answered && lastAnswer.misconception),
+      attempts: attempts[currentId] || 0,
+      errors: errorCounts[currentId] || 0,
+      hinted: (hintsUsed[currentId] || 0) > 0,
+    };
+  }
+
+  function questionView(stage) {
+    if (stage.type !== "conceptual-question" || !stage.question) return null;
+    const selected = lastAnswer?.stageId === currentId ? lastAnswer.choiceId : null;
+    const option = stage.question.options?.find((entry) => entry.id === selected);
+    let feedback = "";
+    if (option?.correct) feedback = stage.question.feedbackCorrect || "That matches the identity.";
+    else if (option) feedback = stage.question.feedbackWrong || "Not that option. Try the relationship, not a single trial.";
+    return {
+      prompt: stage.question.prompt,
+      options: stage.question.options || [],
+      selected,
+      correct: Boolean(option?.correct),
+      feedback,
+    };
   }
 
   function view() {
     const stage = def.stages[currentId];
     const copy = stageTexts(stage);
     const index = indexOf(currentId);
+    const question = questionView(stage);
+    const hintTotal = (stage.hints || []).length;
+    const hintCount = Math.min(hintsUsed[currentId] || 0, hintTotal);
+    const level = stage.guidance || guidanceLevel;
+    const needsAnswer = stage.type === "conceptual-question" && !question?.selected;
     return {
       tutorialId: def.id,
       simulationId: def.simulationId,
@@ -89,11 +147,20 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
       total: path.length,
       path,
       completedStages: [...completed],
-      isFirst: index === 0,
-      isLast: index === path.length - 1,
+      isFirst: visit.length <= 1,
+      isLast: !stage.next && !stage.branches,
       complete: finished,
-      canPrev: index > 0,
-      canNext: !finished,
+      canPrev: visit.length > 1,
+      canNext: !finished && !needsAnswer,
+      needsAnswer,
+      guidanceLevel: level,
+      guidanceLabel: guidanceLabel(level),
+      question,
+      hints: (stage.hints || []).slice(0, hintCount),
+      hintCount,
+      hintTotal,
+      canHint: hintCount < hintTotal,
+      flags: { ...flags },
     };
   }
 
@@ -102,40 +169,112 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
       ...emptyLearningState(def.id),
       currentStage: currentId,
       completedStages: [...completed],
+      guidanceLevel,
+      attempts: { ...attempts },
+      errors: { ...errorCounts },
+      hintsUsed: { ...hintsUsed },
+      flags: { ...flags },
       lastSessionAt: clock(),
       complete: finished,
     };
   }
 
-  function advance() {
-    if (finished) return view();
-    const stage = def.stages[currentId];
-    markDone(currentId);
-    bus?.emit(LAB_EVENTS.LAB_STEP_COMPLETED, { tutorialId: def.id, stageId: currentId });
-    if (stage.type === "checkpoint" || stage.type === "summary") {
-      bus?.emit(LAB_EVENTS.LAB_CHECKPOINT_REACHED, { tutorialId: def.id, stageId: currentId });
-    }
-    if (!stage.next || !def.stages[stage.next]) {
+  function enter(dest, condition) {
+    if (!dest || !def.stages[dest]) {
       finished = true;
       bus?.emit(LAB_EVENTS.LAB_COMPLETED, { tutorialId: def.id });
       return view();
     }
-    currentId = stage.next;
+    if (dest === currentId) return view();
+    markDone(currentId);
+    const from = currentId;
+    currentId = dest;
+    pending = null;
+    lastAnswer = lastAnswer?.stageId === currentId ? lastAnswer : null;
+    if (def.stages[dest].guidance) guidanceLevel = def.stages[dest].guidance;
+    else if (path.includes(dest)) guidanceLevel = "standard";
+    visit = [...visit, dest];
+    bus?.emit(LAB_EVENTS.LAB_STEP_COMPLETED, { tutorialId: def.id, stageId: from });
+    if (condition && dest !== def.stages[from].next) {
+      flags = { ...flags, lastBranch: condition };
+      bus?.emit(LAB_EVENTS.TUTORIAL_BRANCH_CHANGED, {
+        tutorialId: def.id,
+        from,
+        to: dest,
+        condition,
+        guidanceLevel,
+      });
+    }
+    const arrived = def.stages[dest];
+    if (arrived.type === "checkpoint" || arrived.type === "summary") {
+      bus?.emit(LAB_EVENTS.LAB_CHECKPOINT_REACHED, { tutorialId: def.id, stageId: dest });
+    }
+    return view();
+  }
+
+  function advance() {
+    if (finished) return view();
+    const stage = def.stages[currentId];
+    const condition = resolveBranch(stage, context());
+    if (condition === null) return view();
+    const dest = destinationFor(stage, condition);
+    if (!dest) {
+      markDone(currentId);
+      finished = true;
+      bus?.emit(LAB_EVENTS.LAB_STEP_COMPLETED, { tutorialId: def.id, stageId: currentId });
+      bus?.emit(LAB_EVENTS.LAB_CHECKPOINT_REACHED, { tutorialId: def.id, stageId: currentId });
+      bus?.emit(LAB_EVENTS.LAB_COMPLETED, { tutorialId: def.id });
+      return view();
+    }
+    return enter(dest, condition);
+  }
+
+  function answer(choiceId) {
+    const stage = def.stages[currentId];
+    const option = stage?.question?.options?.find((entry) => entry.id === choiceId);
+    if (!option) return view();
+    attempts = bump(attempts, currentId);
+    const correct = Boolean(option.correct);
+    if (!correct) errorCounts = bump(errorCounts, currentId);
+    lastAnswer = {
+      stageId: currentId,
+      choiceId,
+      correct,
+      misconception: !correct,
+    };
+    return view();
+  }
+
+  function requestHint() {
+    const stage = def.stages[currentId];
+    const total = (stage.hints || []).length;
+    if (!total) return view();
+    const used = hintsUsed[currentId] || 0;
+    if (used < total) hintsUsed = bump(hintsUsed, currentId);
+    pending = "HINT_REQUESTED";
+    bus?.emit(LAB_EVENTS.TUTORIAL_HINT_REQUESTED, { tutorialId: def.id, stageId: currentId });
     return view();
   }
 
   function back() {
-    const index = indexOf(currentId);
-    if (index <= 0) return view();
+    if (visit.length <= 1) return view();
+    visit = visit.slice(0, -1);
+    currentId = visit[visit.length - 1];
     finished = false;
-    currentId = path[index - 1];
+    pending = null;
+    lastAnswer = lastAnswer?.stageId === currentId ? lastAnswer : null;
+    if (def.stages[currentId].guidance) guidanceLevel = def.stages[currentId].guidance;
+    else if (path.includes(currentId)) guidanceLevel = "standard";
     return view();
   }
 
   function go(id) {
-    if (!id || !def.stages[id] || !path.includes(id)) return view();
+    if (!id || !def.stages[id]) return view();
     finished = false;
+    pending = null;
     currentId = id;
+    visit = [...visit, id];
+    lastAnswer = lastAnswer?.stageId === currentId ? lastAnswer : null;
     return view();
   }
 
@@ -143,17 +282,32 @@ export function createLinearTutorial(def, { state, bus, now } = {}) {
     currentId = def.start;
     completed = [];
     finished = false;
+    guidanceLevel = "standard";
+    attempts = {};
+    errorCounts = {};
+    hintsUsed = {};
+    flags = {};
+    visit = [def.start];
+    pending = null;
+    lastAnswer = null;
     return view();
   }
 
-  return { view, snapshot, advance, back, go, restart, path };
+  return { view, snapshot, advance, back, go, restart, answer, requestHint, path };
 }
 
 export function walkLinear(def) {
   const session = createLinearTutorial(def);
   const frames = [session.view()];
-  while (!session.view().complete) {
+  let guard = 0;
+  while (!session.view().complete && guard < 40) {
+    const now = session.view();
+    if (now.needsAnswer) {
+      const choice = now.question?.options?.find((option) => option.correct);
+      if (choice) session.answer(choice.id);
+    }
     frames.push(session.advance());
+    guard += 1;
   }
   return frames;
 }

@@ -87,6 +87,7 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
         <button type="button" class="btn primary" id="learning-next">Next</button>
       </footer>
       <div class="tutorial-tools">
+        <button type="button" class="text-link" id="learning-hint" hidden>Hint</button>
         <button type="button" class="text-link" id="learning-restart">Restart this tutorial</button>
       </div>
     </aside>
@@ -114,21 +115,44 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
     if (!view) return;
     host.querySelector("#learning-kind").textContent = `${view.title} · ${view.kindLabel}`;
     host.querySelector("#learning-title").textContent = view.stage.title;
-    host.querySelector("#learning-progress").textContent = `Stage ${view.index + 1} of ${view.total}`;
+    const onSpine = view.path.includes(view.stageId);
+    host.querySelector("#learning-progress").textContent = onSpine
+      ? `Stage ${view.index + 1} of ${view.total} · ${view.guidanceLabel}`
+      : view.guidanceLabel;
     host.querySelector("#learning-prev").disabled = !view.canPrev;
     const nextBtn = host.querySelector("#learning-next");
-    nextBtn.disabled = view.complete;
+    nextBtn.disabled = view.complete || view.needsAnswer;
     const nextText = view.isLast || view.complete ? "Finish" : "Next";
     const nextLabel = nextBtn.querySelector(".btn-label");
     if (nextLabel) nextLabel.textContent = nextText;
     else nextBtn.textContent = nextText;
+    const hintBtn = host.querySelector("#learning-hint");
+    if (hintBtn) {
+      hintBtn.hidden = view.hintTotal === 0;
+      hintBtn.disabled = !view.canHint;
+    }
     const explanation = view.explanation
       ? `<p class="tutorial-explanation">${escapeHtml(view.explanation)}</p>`
+      : "";
+    const hints = view.hints
+      .map((text, i) => `<p class="tutorial-hint-line">Hint ${i + 1}: ${escapeHtml(text)}</p>`)
+      .join("");
+    const question = view.question
+      ? `<div class="tutorial-prompt"><div class="presets tutorial-choices">${view.question.options
+          .map(
+            (option) =>
+              `<button type="button" class="chip${view.question.selected === option.id ? " active" : ""}" data-learning-choice="${escapeHtml(option.id)}">${escapeHtml(option.label)}</button>`,
+          )
+          .join("")}</div>${
+          view.question.feedback
+            ? `<p class="${view.question.correct ? "tutorial-done" : "tutorial-explanation"}">${escapeHtml(view.question.feedback)}</p>`
+            : ""
+        }</div>`
       : "";
     const done = view.complete
       ? `<p class="tutorial-done">You can reopen this path any time. Closing it does not reset the lab.</p>`
       : "";
-    body.innerHTML = `<p class="tutorial-action">${escapeHtml(view.instruction)}</p>${explanation}${done}`;
+    body.innerHTML = `<p class="tutorial-action">${escapeHtml(view.instruction)}</p>${explanation}${question}${hints}${done}`;
     toc.innerHTML = view.path
       .map((id) => {
         const title = def.stages[id].title;
@@ -173,6 +197,16 @@ export function bindLearningTutorial(root, { simulationId, bus } = {}) {
     render();
   });
   host.querySelector("#learning-restart").addEventListener("click", () => open(true));
+  host.querySelector("#learning-hint").addEventListener("click", () => {
+    session?.requestHint();
+    render();
+  });
+  body.addEventListener("click", (event) => {
+    const choice = event.target.closest("[data-learning-choice]");
+    if (!choice) return;
+    session?.answer(choice.dataset.learningChoice);
+    render();
+  });
   toc.addEventListener("click", (event) => {
     const jump = event.target.closest("[data-jump]");
     if (!jump) return;

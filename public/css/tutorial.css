@@ -202,6 +202,21 @@
   margin: 0 0 12px;
 }
 
+.tutorial-hint-line {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: var(--inset, var(--raised));
+  border-radius: 10px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+#learning-hint.has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .tutorial-hint summary {
   cursor: pointer;
   font-weight: 700;
