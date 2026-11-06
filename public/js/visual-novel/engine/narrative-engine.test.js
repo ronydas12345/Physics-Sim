@@ -72,22 +72,21 @@ test("advance waits on choices, and reset returns to the start", () => {
   assert.equal(session.view().awaitingChoice, false);
 });
 
-test("skip stops at the next checkpoint and never picks a choice", () => {
+test("skip to checkpoint stops at a choice; skip all takes a default path to the end", () => {
   assert.equal(nextCheckpointId(projectileArrivalStory, "facility-exterior"), "control-room");
   const session = createNarrativeSession(projectileArrivalStory);
   session.skipToCheckpoint();
   assert.equal(session.view().sceneId, "control-room");
   assert.equal(session.view().awaitingChoice, true);
   assert.equal(session.view().checkpoint, "decision");
-  const before = session.view().lastChoiceId;
-  session.skipAll();
-  assert.equal(session.view().awaitingChoice, true);
-  assert.equal(session.view().lastChoiceId, before);
-  session.choose("report");
   session.skipAll();
   assert.equal(session.view().complete, true);
-  assert.ok(session.view().history.some((entry) => entry.choiceLabel?.includes("original experiment")));
+  assert.equal(session.view().awaitingChoice, false);
+  assert.ok(session.view().history.some((entry) => entry.choiceLabel));
   assert.ok(session.view().history.some((entry) => entry.speaker === "Mara"));
+  const fromStart = createNarrativeSession(projectileArrivalStory);
+  fromStart.skipAll();
+  assert.equal(fromStart.view().complete, true);
   session.reset();
   assert.equal(session.view().history.length, 1);
 });

@@ -188,11 +188,22 @@ export function createNarrativeSession(story) {
     return view();
   }
 
+  function skipChoiceId() {
+    const options = line()?.choices || [];
+    return options.find((choice) => choice.skipDefault)?.id || options[0]?.id || null;
+  }
+
   function skipAll() {
-    if (complete || awaitingChoice()) return view();
+    if (complete) return view();
     let guard = 0;
-    while (!complete && !awaitingChoice() && guard < 400) {
-      advance();
+    while (!complete && guard < 400) {
+      if (awaitingChoice()) {
+        const id = skipChoiceId();
+        if (!id) break;
+        choose(id);
+      } else {
+        advance();
+      }
       guard += 1;
     }
     return view();
