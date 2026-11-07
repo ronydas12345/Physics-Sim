@@ -1,4 +1,11 @@
 /** Demonstration-only Scenes 1–7. Replace later with THE QUIET VECTOR canon. */
+function miss(flag) {
+  return {
+    CONCEPT_MISUNDERSTANDING: { set: { [flag]: true }, add: { labErrors: 1 } },
+    REPEATED_ERROR: { set: { [flag]: true }, add: { labErrors: 1 } },
+  };
+}
+
 export const projectileArrivalStory = {
   id: "projectile-arrival",
   title: "The Incomplete Report",
@@ -13,6 +20,27 @@ export const projectileArrivalStory = {
     sawLaunch: false,
     interpretation: "",
     lastAngle: null,
+    neededSupport: false,
+    missedComponents: false,
+    missedControls: false,
+    missedComplement: false,
+    askedHint: false,
+    labErrors: 0,
+    labHints: 0,
+  },
+  learning: {
+    hint: { set: { askedHint: true }, add: { labHints: 1 } },
+    stages: {
+      "hv-check": miss("missedComponents"),
+      "hv-retry": miss("missedComponents"),
+      "control-check": miss("missedControls"),
+      "control-retry": miss("missedControls"),
+      "concept-check": miss("missedComplement"),
+      "concept-retry": miss("missedComplement"),
+      investigate: {
+        HINT_REQUESTED: { set: { missedControls: true } },
+      },
+    },
   },
   events: {
     launch: { add: { launches: 1 }, set: { sawLaunch: true } },
@@ -182,6 +210,54 @@ export const projectileArrivalStory = {
           position: "center",
           text: "A recorded row belongs to you. Compare it with the next launch before you trust the archive.",
         },
+        learning: {
+          "hv-check": {
+            speaker: "elias",
+            expression: "focused",
+            position: "right",
+            enter: "elias",
+            text: "Hold the split: vx does not change in flight. Gravity only takes vy.",
+          },
+          "hv-retry": {
+            speaker: "elias",
+            expression: "focused",
+            position: "right",
+            enter: "elias",
+            text: "Hold the split: vx does not change in flight. Gravity only takes vy.",
+          },
+          "control-check": {
+            speaker: "mara",
+            expression: "thinking",
+            position: "center",
+            text: "Two knobs at once hide the cause. Hold speed and gravity still if you want angle to be the only change.",
+          },
+          "control-retry": {
+            speaker: "mara",
+            expression: "thinking",
+            position: "center",
+            text: "Two knobs at once hide the cause. Hold speed and gravity still if you want angle to be the only change.",
+          },
+          "concept-check": {
+            speaker: "elias",
+            expression: "amused",
+            position: "right",
+            enter: "elias",
+            text: "30° and 60° can share a range on flat ground. Height does not follow that pair.",
+          },
+          "concept-retry": {
+            speaker: "elias",
+            expression: "amused",
+            position: "right",
+            enter: "elias",
+            text: "30° and 60° can share a range on flat ground. Height does not follow that pair.",
+          },
+          hint: {
+            speaker: "mara",
+            expression: "neutral",
+            position: "center",
+            text: "Use the hint, then run the rails. The apparatus will still show the same identity.",
+          },
+        },
       },
       lines: [
         {
@@ -206,6 +282,18 @@ export const projectileArrivalStory = {
           expression: "serious",
           position: "left",
           text: "You have a measured baseline. What did the trials actually show?",
+          ifVarText: {
+            missedComplement:
+              "You had to sit with complementary angles before they clicked. Look at the ranges you recorded. What did the trials actually show?",
+            missedControls:
+              "Isolating one knob is the whole method. With speed and gravity held still, what did the trials actually show?",
+            missedComponents:
+              "vx did not change in flight. Keep that in mind. What did the trials actually show?",
+            askedHint:
+              "A hint is not a shortcut if you still run the rails. What did the trials actually show?",
+            neededSupport:
+              "The lab asked you to look twice. That is useful. What did the trials actually show?",
+          },
           choices: [
             {
               id: "range",
@@ -265,6 +353,27 @@ export const projectileArrivalStory = {
           text: "The archived curve was too clean because it hid a knob. Complementary angles only share a range when that knob stays fixed.",
         },
         {
+          speaker: "elias",
+          expression: "focused",
+          position: "right",
+          when: { missedComponents: true },
+          text: "vx stayed constant on every shot we watched. That is why range is a horizontal story, even when the arc looks dramatic.",
+        },
+        {
+          speaker: "mara",
+          expression: "thinking",
+          position: "left",
+          when: { missedControls: true },
+          text: "The identity only appears when speed and gravity stay put. Change two knobs and the archive looks contradictory for the wrong reason.",
+        },
+        {
+          speaker: "elias",
+          expression: "confused",
+          position: "right",
+          when: { missedComplement: true },
+          text: "30° and 60° sharing a range is not a coincidence. Same speed, same g, complementary angles, equal distance. Height still belongs to the steeper shot.",
+        },
+        {
           speaker: "mara",
           expression: "serious",
           position: "left",
@@ -315,9 +424,20 @@ export const projectileArrivalStory = {
         },
         {
           speaker: "mara",
+          expression: "thinking",
+          position: "left",
+          when: { neededSupport: true },
+          text: "Looking twice is not a penalty. It is how a missing condition gets found.",
+        },
+        {
+          speaker: "mara",
           expression: "neutral",
           position: "left",
           text: "Replay this chapter whenever you want. The lab stays open. Completing the story is not the same as finishing the experiment.",
+          ifVarText: {
+            neededSupport:
+              "Replay if you want a cleaner first look. The lab stays open. Completing the story is not the same as finishing the experiment.",
+          },
         },
       ],
     },

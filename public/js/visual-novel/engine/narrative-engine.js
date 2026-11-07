@@ -5,7 +5,7 @@
 
 import { labActionKey } from "../../shared/lab-events.js";
 import { VN_SAVE_VERSION, validateNarrativeSave } from "../saves/vn-saves.js";
-import { applyPatch, conditionOk, emptyVars } from "./conditions.js";
+import { applyLearningPatch, applyPatch, conditionOk, emptyVars, learningComment } from "./conditions.js";
 import { nextCheckpointId } from "./skip.js";
 
 function emptyStage(story) {
@@ -203,6 +203,21 @@ export function createNarrativeSession(story, { bus } = {}) {
   }
 
   function notify(action, detail = {}) {
+    if (action === "tutorial-branch" || action === "tutorial-hint") {
+      const payload = action === "tutorial-hint" ? { ...detail, source: "hint" } : detail;
+      vars = applyLearningPatch(vars, story, payload);
+      if (waitingForLab() && !pendingEvent) {
+        const comment = learningComment(scene(), action, detail);
+        const family = action === "tutorial-hint" ? "hint" : detail.from || detail.stageId || "branch";
+        const heardKey = `${sceneId}:learn:${family}`;
+        if (comment && !heard.has(heardKey)) {
+          heard.add(heardKey);
+          pendingEvent = { ...comment, action: "learning" };
+          land();
+        }
+      }
+      return view();
+    }
     const key = labActionKey(action);
     if (key) {
       labDone.add(key);

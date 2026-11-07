@@ -51,6 +51,7 @@ const HUD_PATHS = {
   reveal: `<path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.3" fill="currentColor"/>`,
   replay: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 5v5h5M19 19v-5h-5M6.5 10A7 7 0 0 1 19 9M17.5 14A7 7 0 0 1 5 15"/>`,
   close: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M7 7l10 10M17 7 7 17"/>`,
+  finish: `<path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" d="M5 8.2h14v11.2H5z"/><path fill="currentColor" d="M5 8.2 7.2 4.8h9.6L19 8.2z"/><path fill="none" stroke="var(--panel, #fffaf1)" stroke-width="1.8" d="M9 13.4h6"/>`,
 };
 
 function hudButton(attrs, label, icon) {
@@ -178,6 +179,31 @@ export function vnScreenMarkup(story = projectileArrivalStory) {
           <input type="range" min="0" max="1" step="0.05" data-vn-voice />
         </label>
       </aside>
+      <aside class="vn-finish" data-vn-finish-panel hidden>
+        <div class="vn-finish-frame">
+          <span class="vn-finish-bracket vn-finish-bracket-tl" aria-hidden="true"></span>
+          <span class="vn-finish-bracket vn-finish-bracket-tr" aria-hidden="true"></span>
+          <span class="vn-finish-bracket vn-finish-bracket-bl" aria-hidden="true"></span>
+          <span class="vn-finish-bracket vn-finish-bracket-br" aria-hidden="true"></span>
+          <p class="vn-finish-kicker"><span class="vn-finish-pip" aria-hidden="true"></span> Facility archive · File closed</p>
+          <h2>${escapeHtml(story.title)}</h2>
+          <p class="vn-finish-lede">Baseline recorded. The omitted condition remains open.</p>
+          <dl class="vn-finish-meta">
+            <div><dt>Channel</dt><dd>Story / 1.5</dd></div>
+            <div><dt>Status</dt><dd>Closed</dd></div>
+            <div><dt>Lab</dt><dd>Available</dd></div>
+          </dl>
+          <nav class="vn-finish-actions" aria-label="Chapter finish">
+            <button type="button" class="vn-finish-cmd" data-vn-finish-replay><span class="vn-finish-idx">01</span><span>Replay chapter</span></button>
+            <button type="button" class="vn-finish-cmd" data-vn-finish-lab><span class="vn-finish-idx">02</span><span>Return to lab</span></button>
+            <button type="button" class="vn-finish-cmd" data-vn-finish-history><span class="vn-finish-idx">03</span><span>Dialogue history</span></button>
+            <button type="button" class="vn-finish-cmd" data-vn-finish-saves><span class="vn-finish-idx">04</span><span>Save / Load</span></button>
+            <a class="vn-finish-cmd" href="/" data-link data-vn-finish-title><span class="vn-finish-idx">05</span><span>Return to title</span></a>
+            <button type="button" class="vn-finish-cmd vn-finish-cmd-ghost" data-vn-finish-dismiss><span class="vn-finish-idx">00</span><span>Review last line</span></button>
+          </nav>
+          <p class="vn-finish-foot">Completing the story is not the same as finishing the experiment.</p>
+        </div>
+      </aside>
     </section>`;
 }
 
@@ -200,6 +226,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     history: screen.querySelector("[data-vn-history-panel]"),
     settings: screen.querySelector("[data-vn-settings-panel]"),
     saves: screen.querySelector("[data-vn-saves-panel]"),
+    finish: screen.querySelector("[data-vn-finish-panel]"),
   };
   const saveStatus = screen.querySelector("[data-vn-save-status]");
   const importInput = screen.querySelector("[data-vn-import]");
@@ -208,6 +235,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
   let lastScene = "";
   let lastLine = "";
   let chapterCompleteSent = false;
+  let endMenuArmed = true;
   let veilTimer = 0;
   let autoArmedAt = 0;
   let raf = 0;
@@ -226,13 +254,19 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     if (name === "history") paintHistory();
     if (name === "settings") syncSettingsForm();
     if (name === "saves") paintSaves();
+    if (name === "finish") {
+      endMenuArmed = false;
+      screen.querySelector("[data-vn-finish-replay]")?.focus();
+    }
   }
 
   function closePanels() {
+    const from = openPanel;
     openPanel = null;
     for (const el of Object.values(panels)) {
       if (el) el.hidden = true;
     }
+    if (session.view().complete && from && from !== "finish") showPanel("finish");
   }
 
   function applyChrome() {
@@ -445,9 +479,11 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       lastScene = view.sceneId;
       bus?.emit(LAB_EVENTS.STORY_SCENE_UNLOCKED, { storyId: view.storyId, sceneId: view.sceneId });
     }
+    screen.classList.toggle("is-complete", view.complete);
     if (view.complete) {
-      if (hintEl) hintEl.textContent = "Chapter complete. The lab stays available.";
-      setHudLabel(nextBtn, "Replay", "replay");
+      if (hintEl) hintEl.textContent = "Chapter archived. Continue opens the finish menu.";
+      setHudLabel(nextBtn, "Finish", "finish");
+      if (endMenuArmed && (!openPanel || openPanel === "finish")) showPanel("finish");
       if (!chapterCompleteSent) {
         chapterCompleteSent = true;
         bus?.emit(LAB_EVENTS.STORY_CHAPTER_COMPLETED, { storyId: view.storyId });
@@ -497,7 +533,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       return;
     }
     if (view.complete) {
-      replayChapter();
+      showPanel("finish");
       return;
     }
     session.advance();
@@ -533,9 +569,10 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     raf = requestAnimationFrame(loop);
   }
 
-  function replayChapter() {
-    if (!window.confirm("Replay from the start? Manual save slots are kept.")) return;
+  function replayChapter({ confirm = true } = {}) {
+    if (confirm && !window.confirm("Replay from the start? Manual save slots are kept.")) return;
     chapterCompleteSent = false;
+    endMenuArmed = true;
     session.reset();
     persistAutosave();
     closePanels();
@@ -553,6 +590,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     if (event.key === "Escape") {
       event.preventDefault();
       if (menuOpen()) closePanels();
+      else if (session.view().complete) showPanel("finish");
       else showPanel("pause");
       return;
     }
@@ -731,22 +769,55 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     event.stopPropagation();
     replayChapter();
   });
-  screen.querySelector("[data-vn-title]")?.addEventListener("click", (event) => {
+  screen.querySelector("[data-vn-finish-replay]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    replayChapter({ confirm: false });
+  });
+  screen.querySelector("[data-vn-finish-history]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    showPanel("history");
+  });
+  screen.querySelector("[data-vn-finish-saves]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    showPanel("saves");
+  });
+  screen.querySelector("[data-vn-finish-dismiss]")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closePanels();
+  });
+  const leaveChapter = (event) => {
     if (!window.confirm("Leave the chapter? Autosave keeps this position. Manual slots stay.")) {
       event.preventDefault();
       event.stopPropagation();
     }
-  });
+  };
+  screen.querySelector("[data-vn-title]")?.addEventListener("click", leaveChapter);
+  screen.querySelector("[data-vn-finish-title]")?.addEventListener("click", leaveChapter);
+  const goToLab = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closePanels();
+    document.getElementById("tab-btn-lab")?.click();
+  };
   const backLab = screen.querySelector("[data-vn-back-lab]");
-  if (mode === "tab" && backLab) {
-    backLab.textContent = "Return to Lab";
-    backLab.addEventListener("click", (event) => {
+  const finishLab = screen.querySelector("[data-vn-finish-lab]");
+  if (mode === "tab") {
+    if (backLab) {
+      backLab.textContent = "Return to Lab";
+      backLab.addEventListener("click", goToLab);
+    }
+    finishLab?.addEventListener("click", goToLab);
+  } else {
+    finishLab?.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      closePanels();
-      document.getElementById("tab-btn-lab")?.click();
+      window.location.assign("/simulations/module-1/1-5");
     });
   }
+  panels.finish?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (!event.target.closest(".vn-finish-frame")) closePanels();
+  });
 
   nextBtn?.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -761,7 +832,7 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
     paint();
   });
   screen.addEventListener("click", (event) => {
-    if (event.target.closest("[data-vn-ui], .vn-panel, [data-vn-next], [data-vn-choice]")) return;
+    if (event.target.closest("[data-vn-ui], .vn-panel, .vn-finish-frame, [data-vn-next], [data-vn-choice]")) return;
     if (menuOpen()) {
       closePanels();
       return;
@@ -789,6 +860,16 @@ export function mountVnScreen(root, { story = projectileArrivalStory, bus = null
       }),
       bus.on(LAB_EVENTS.LAUNCH_ANGLE_CHANGED, (detail) => {
         session.notify("angle", detail);
+        persistAutosave();
+        paint();
+      }),
+      bus.on(LAB_EVENTS.TUTORIAL_BRANCH_CHANGED, (detail) => {
+        session.notify("tutorial-branch", detail);
+        persistAutosave();
+        paint();
+      }),
+      bus.on(LAB_EVENTS.TUTORIAL_HINT_REQUESTED, (detail) => {
+        session.notify("tutorial-hint", detail);
         persistAutosave();
         paint();
       }),

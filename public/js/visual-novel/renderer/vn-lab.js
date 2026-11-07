@@ -28,7 +28,7 @@ export function bindVnLab(root, { bus, story = projectileArrivalStory } = {}) {
   }
 
   tab.addEventListener("click", ensure);
-  if (!panel.hidden) ensure();
+  ensure();
   const stop = bus ? [bus.on(LAB_EVENTS.STORY_RESUMES, returnToStory)] : [];
 
   return () => {

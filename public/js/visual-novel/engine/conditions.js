@@ -37,3 +37,27 @@ export function applyPatch(vars = {}, patch = {}) {
   }
   return next;
 }
+
+export function applyLearningPatch(vars = {}, story, detail = {}) {
+  const table = story?.learning || {};
+  let next = { ...vars };
+  if (detail.source === "hint") {
+    next = applyPatch(next, table.hint || { set: { askedHint: true }, add: { labHints: 1 } });
+  }
+  const from = detail.from || detail.stageId || "";
+  const condition = detail.condition || "";
+  const stagePatch = table.stages?.[from]?.[condition];
+  if (stagePatch) next = applyPatch(next, stagePatch);
+  if (detail.guidanceLevel === "supported") {
+    next = applyPatch(next, { set: { neededSupport: true } });
+  }
+  return next;
+}
+
+export function learningComment(scene, action, detail = {}) {
+  const table = scene?.on?.learning;
+  if (!table) return null;
+  if (action === "tutorial-hint") return table.hint || null;
+  const from = detail.from || detail.stageId || "";
+  return table[from] || null;
+}
